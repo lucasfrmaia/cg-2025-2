@@ -42,16 +42,17 @@ def ndc_to_user(ndcx, Xm, XM, ndcy, Ym, YM):
 
 print("Sistema de Transformacoes de Coordenadas\n")
 X = float(input("Digite o valor de X: "))
+Y = float(input("Digite o valor de Y: "))
+
 Xm = float(input("Digite o valor de Xm: "))
 XM = float(input("Digite o valor de XM: "))
-Y = float(input("Digite o valor de Y: "))
 Ym = float(input("Digite o valor de Ym: "))
 YM = float(input("Digite o valor de YM: "))
 
-coordenadaInicialX = float(input("Digite o valor inicial NDC de X: "))
-coordenadaFinalX = float(input("Digite o valor final NDC de X: "))
-coordenadaInicialY = float(input("Digite o valor inicial NDC de Y: "))
-coordenadaFinalY = float(input("Digite o valor final NDC de Y: "))
+coordenadaInicialX = 0
+coordenadaFinalX = 1
+coordenadaInicialY = 0
+coordenadaFinalY = 1
 
 NDH = float(input("Digite a largura da tela: "))
 NDV = float(input("Digite a altura da tela: "))
@@ -79,3 +80,22 @@ yDoPixel = NDV - DCY #Vertical (dado pelo usuário) - Altura da Tela (calculado)
 canvas.create_rectangle(DCX, yDoPixel, DCX + 10, yDoPixel + 10, fill="black")
 
 tela.mainloop()
+
+'''
+Para copiar
+
+200
+150
+100
+300
+100
+200
+800
+600
+
+------------------
+
+Coordenadas do mundo: [200, 150]
+Janela do mundo: Limite em X [200, 100] | Limite em Y [200, 100]
+Tamanho da jnaela: 800 X 600
+'''
