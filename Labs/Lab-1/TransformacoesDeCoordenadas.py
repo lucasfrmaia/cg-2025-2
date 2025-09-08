@@ -77,7 +77,7 @@ canvas.pack(padx=3, pady=3)
 
 yDoPixel = NDV - DCY #Vertical (dado pelo usuário) - Altura da Tela (calculado)
 
-canvas.create_rectangle(DCX, yDoPixel, DCX + 10, yDoPixel + 10, fill="black")
+canvas.create_rectangle(DCX, yDoPixel, DCX + 1, yDoPixel + 1, fill="black")
 
 tela.mainloop()
 
