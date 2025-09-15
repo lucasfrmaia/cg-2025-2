@@ -69,7 +69,7 @@ public class MainScreen extends JFrame {
     }
 
     private void initializeScreen() {
-        setTitle("Projeto Computação Gráfica/Processamento de Imagem");
+        setTitle("Projeto Computação Gráfica");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(Constants.WIDTH_MAIN_SCREEN, Constants.HEIGHT_MAIN_SCREEN);
     }
