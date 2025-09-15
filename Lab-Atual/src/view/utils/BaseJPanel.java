@@ -9,6 +9,9 @@ public abstract class BaseJPanel extends JPanel {
 
     public BaseJPanel() {
         this.setSize(Constants.WIDTH_CARTESIAN_PLANE, Constants.HEIGHT_CARTESIAN_PLANE);
+        setBackground(Constants.BACKGROUND_COLOR);
+        setBorder(BorderFactory.createLineBorder(Constants.SECONDARY_COLOR, 1));
+        setFont(Constants.UI_FONT);
     }
 
     public void clear() {

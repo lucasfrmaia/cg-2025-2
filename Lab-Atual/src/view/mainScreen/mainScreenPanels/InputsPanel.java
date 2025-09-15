@@ -1,6 +1,7 @@
 package view.mainScreen.mainScreenPanels;
 
 
+import utils.Constants;
 import view.mainScreen.MainScreen;
 import view.utils.DataOptions;
 import project_cg.inputsPanel.primitivesInputs.*;
@@ -16,6 +17,16 @@ import java.awt.*;
 
 public class InputsPanel extends JPanel {
     private JButton clearButton = new JButton("Limpar");
+    {
+        clearButton.setFont(Constants.UI_FONT);
+        clearButton.setBackground(Constants.PRIMARY_COLOR);
+        clearButton.setForeground(Color.WHITE);
+        clearButton.setBorder(BorderFactory.createLineBorder(Constants.PRIMARY_COLOR, 2));
+        clearButton.setFocusPainted(false);
+        clearButton.setContentAreaFilled(true);
+        clearButton.setRolloverEnabled(true);
+        clearButton.setOpaque(true);
+    }
 
     public InputsPanel() {
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();

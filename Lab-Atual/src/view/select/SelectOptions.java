@@ -41,14 +41,22 @@ public class SelectOptions extends JPanel {
 
     public void drawPanel() {
         setLayout(new BorderLayout());
+        setBackground(Constants.BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding for UI/UX
 
         optionPanel = new OptionPanel();
+        optionPanel.setBackground(Constants.BACKGROUND_COLOR);
 
         JPanel comboBoxPanel = new JPanel();
         comboBoxPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        comboBoxPanel.setBackground(Constants.BACKGROUND_COLOR);
+        comboBoxPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Better spacing
         add(comboBoxPanel, BorderLayout.SOUTH);
 
         comboBox1 = new JComboBox<>();
+        comboBox1.setFont(Constants.UI_FONT);
+        comboBox1.setBackground(Color.WHITE);
+        comboBox1.setBorder(BorderFactory.createLineBorder(Constants.SECONDARY_COLOR, 1));
 
         comboBox1.addItem(Constants.DEFAULT_OPTION_CHECKBOX);
 
@@ -60,6 +68,9 @@ public class SelectOptions extends JPanel {
 
         modelComboBox2 = new DefaultComboBoxModel<>();
         comboBox2 = new JComboBox<>(modelComboBox2);
+        comboBox2.setFont(Constants.UI_FONT);
+        comboBox2.setBackground(Color.WHITE);
+        comboBox2.setBorder(BorderFactory.createLineBorder(Constants.SECONDARY_COLOR, 1));
         comboBoxPanel.add(comboBox2);
 
         comboBox2.setEnabled(false);
@@ -94,10 +105,11 @@ public class SelectOptions extends JPanel {
 
                 inputsFrame.setTitle("Projeto Computação Gráfica/Processamento de Imagem");
                 inputsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                inputsFrame.setSize(800, 300);
                 inputsFrame.setLocationRelativeTo(null);
-                inputsFrame.setResizable(false);
+                inputsFrame.setResizable(false); // Disable resize
+                inputsFrame.setUndecorated(false); // Keep title bar but no maximize
                 inputsFrame.add(optionPanel);
+                inputsFrame.pack(); // Adapt size to content
 
                 optionPanel.revalidate();
                 optionPanel.repaint();

@@ -1,5 +1,7 @@
 package view.utils;
 
+import utils.Constants;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,6 +15,7 @@ public abstract class ShapePanel extends JPanel {
 
     public ShapePanel() {
         setLayout(new GridBagLayout());
+        setBackground(Constants.BACKGROUND_COLOR);
         calculateButton = new JButton("Calcular");
         currentGridY = 0;
 
@@ -35,11 +38,18 @@ public abstract class ShapePanel extends JPanel {
 
 
     private void addCalculateButton() {
+        calculateButton.setFont(Constants.UI_FONT);
+        calculateButton.setBackground(Constants.SUCCESS_COLOR);
+        calculateButton.setForeground(Color.WHITE);
+        calculateButton.setBorder(BorderFactory.createLineBorder(Constants.SUCCESS_COLOR, 2));
+        calculateButton.setFocusPainted(false);
+        calculateButton.setContentAreaFilled(true);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = currentGridY++;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 0, 0, 0);
+        gbc.insets = new Insets(20, 0, 0, 0); // More space above button
         gbc.anchor = GridBagConstraints.CENTER;
         add(calculateButton, gbc);
     }
@@ -89,6 +99,7 @@ public abstract class ShapePanel extends JPanel {
         removeAll();
 
         setLayout(new GridBagLayout());
+        setBackground(Constants.BACKGROUND_COLOR);
         calculateButton = new JButton("Calcular");
         currentGridY = 0;
 

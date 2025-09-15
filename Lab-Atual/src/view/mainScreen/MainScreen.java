@@ -22,14 +22,9 @@ public class MainScreen extends JFrame {
     public MainScreen(JPanel homePanel) {
         this.JPanelHandler = new JPanelHandler();
         this.homePanel = homePanel;
+        this.setResizable(false);
 
         initializeScreen();
-        this.initializeViewportWindow();
-    }
-
-    private void initializeViewportWindow() {
-        int viewportWidth = 400;  // Largura da viewport
-        int viewportHeight = 400; // Altura da viewport
     }
 
     public JPanelHandler getCartesianPlaneHandler() {
@@ -71,7 +66,19 @@ public class MainScreen extends JFrame {
     private void initializeScreen() {
         setTitle("Projeto Computação Gráfica");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Set modern Nimbus Look and Feel
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            SwingUtilities.updateComponentTreeUI(this);
+        } catch (Exception e) {
+            // Fallback to default if Nimbus not available
+            e.printStackTrace();
+        }
+
         setSize(Constants.WIDTH_MAIN_SCREEN, Constants.HEIGHT_MAIN_SCREEN);
+        setLocationRelativeTo(null); // Center the window
+        getContentPane().setBackground(Constants.BACKGROUND_COLOR);
     }
 
     public void updateCurrentPanel(String categoryCatersianPlane) {
