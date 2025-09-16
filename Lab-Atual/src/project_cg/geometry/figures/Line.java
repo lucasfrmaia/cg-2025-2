@@ -3,6 +3,8 @@ package project_cg.geometry.figures;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.bases.BaseLine;
 
+import java.awt.*;
+
 public class Line extends BaseFigure {
 
     private Point2D start, end;
@@ -26,6 +28,11 @@ public class Line extends BaseFigure {
     @Override
     public String getID() {
         return "Reta: [%s, %s]".formatted(start, end);
+    }
+
+    @Override
+    public int getColor() {
+        return Color.RED.getRGB();
     }
 
 }

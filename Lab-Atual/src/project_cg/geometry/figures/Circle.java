@@ -30,7 +30,7 @@ public class Circle extends BaseFigure {
 
     @Override
     public int getColor() {
-        return Color.GREEN.getRGB();
+        return Color.BLUE.getRGB();
     }
 
 }

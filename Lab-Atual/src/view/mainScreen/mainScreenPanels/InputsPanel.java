@@ -60,7 +60,6 @@ public class InputsPanel extends JPanel {
         TrigonometricCircleInputs trigonometricCircleInputs = new TrigonometricCircleInputs();
         MidpointCircleInputs midpointCircleInputs = new MidpointCircleInputs();
         MidpointLineInputs midpointLineInputs = new MidpointLineInputs();
-        MidpointElipseInputs midpointElipseInputs = new MidpointElipseInputs();
 
         //dataOptions.addOption("Transformações", "Desenhar Reta", midpointLineInputs);
         dataOptions.addOption("Transformações", "Desenhar Quadrado", polygonInputs);
@@ -76,7 +75,6 @@ public class InputsPanel extends JPanel {
         dataOptions.addOption("Primitivas", "Método trigonométrico da circunferência", trigonometricCircleInputs);
         dataOptions.addOption("Primitivas", "Ponto médio da circunferência", midpointCircleInputs);
         dataOptions.addOption("Primitivas", "Ponto médio das Retas", midpointLineInputs);
-        dataOptions.addOption("Primitivas", "Ponto médio da Elipse", midpointElipseInputs);
 
         add(new SelectOptions(dataOptions), BorderLayout.CENTER);
         add(clearButton, BorderLayout.SOUTH);

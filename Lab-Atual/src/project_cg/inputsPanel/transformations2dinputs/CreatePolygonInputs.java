@@ -2,6 +2,7 @@ package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
+import project_cg.primitives.DDALine;
 import project_cg.primitives.MidpointLine;
 import view.mainScreen.MainScreen;
 import view.utils.ShapePanel;
@@ -62,8 +63,6 @@ public class CreatePolygonInputs extends ShapePanel {
 
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
 
-        MidpointLine midpointLine = new MidpointLine();
-
         Square square = new Square(
             new Point2D[] {
                 new Point2D(points1[0], points1[1]),
@@ -71,7 +70,7 @@ public class CreatePolygonInputs extends ShapePanel {
                 new Point2D(points3[0], points3[1]),
                 new Point2D(points4[0], points4[1])
             },
-            midpointLine
+            new DDALine()
         );
 
        mainScreen.geometricFiguresHandler.addFigure(square);
