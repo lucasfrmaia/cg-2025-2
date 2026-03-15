@@ -101,7 +101,7 @@ public class SelectOptions extends JPanel {
 
                 JFrame inputsFrame = new JFrame();
 
-                inputsFrame.setTitle("Projeto Computação Gráfica/Processamento de Imagem");
+                inputsFrame.setTitle("Projeto Computação Gráfica");
                 inputsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 inputsFrame.setSize(800, 300);
                 inputsFrame.setLocationRelativeTo(null);
