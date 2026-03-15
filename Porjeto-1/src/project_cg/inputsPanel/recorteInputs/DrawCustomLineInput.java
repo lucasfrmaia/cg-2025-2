@@ -19,6 +19,11 @@ public class DrawCustomLineInput extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         p1Field = new JTextField(12);
         p2Field = new JTextField(12);
@@ -67,3 +72,4 @@ public class DrawCustomLineInput extends ShapePanel {
                 .getPanelByCategory("Recorte de Janela de Cohen-Sutherland");
     }
 }
+

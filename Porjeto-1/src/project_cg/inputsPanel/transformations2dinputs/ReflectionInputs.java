@@ -2,11 +2,13 @@ package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
 import project_cg.geometry.points.Point2D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Reflection;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 
+import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
 import java.util.Objects;
 import java.util.function.Function;
@@ -18,6 +20,11 @@ public class ReflectionInputs extends ShapePanel {
     @Override
     protected boolean isLeftAligned() {
         return true;
+    }
+
+    @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Reflexão";
     }
 
 
@@ -46,15 +53,20 @@ public class ReflectionInputs extends ShapePanel {
         String squareSelected = (String) comboBoxFigures.getSelectedItem();
         BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(squareSelected);
 
-        figure.getVertex(
-                point2D -> {
-                    assert reflectionFunnction != null;
-                    Point2D pointReflected = reflectionFunnction.apply(point2D);
-                    point2D.updatePoint(pointReflected);
-                }
-        );
+        if (figure == null) {
+            JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a reflexao.");
+            return;
+        }
 
-        mainScreen.updateFigures();
+        QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
+
+        assert reflectionFunnction != null;
+        plane.queueTransformation(figure.getID(), reflectionFunnction::apply);
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Reflexao adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
+        );
     }
 }
 

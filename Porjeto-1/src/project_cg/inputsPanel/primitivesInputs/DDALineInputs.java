@@ -20,6 +20,11 @@ public class DDALineInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         inputP1 = new JTextField(10);
         inputP1.setToolTipText("Digite o ponto P1");
@@ -56,7 +61,7 @@ public class DDALineInputs extends ShapePanel {
             mainScreen.updateFigures();
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira valores válidos para P1 e P2.");
+            JOptionPane.showMessageDialog(this, "Por favor, insira valores validos para P1 e P2.");
         }
     }
 }

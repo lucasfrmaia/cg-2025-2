@@ -20,6 +20,11 @@ public class MidpointElipseInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         cxField = new JTextField(10);
         cyField = new JTextField(10);

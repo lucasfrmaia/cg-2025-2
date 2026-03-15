@@ -1,7 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
-import project_cg.geometry.points.Point2D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Scale;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
@@ -20,6 +20,11 @@ public class ScaleInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Escala";
+    }
+
+    @Override
     protected void initializeInputs() {
         scaleX = new JTextField(10);
         scaleY = new JTextField(10);
@@ -33,22 +38,29 @@ public class ScaleInputs extends ShapePanel {
 
     @Override
     protected void onCalculate() {
-        double sx = Double.parseDouble(scaleX.getText());
-        double sy = Double.parseDouble(scaleY.getText());
+        try {
+            double sx = Double.parseDouble(scaleX.getText().trim());
+            double sy = Double.parseDouble(scaleY.getText().trim());
 
-        MainScreen mainScreen = MainScreenSingleton.getMainScreen();
+            MainScreen mainScreen = MainScreenSingleton.getMainScreen();
+            String figureSelected = (String) comboBoxFigures.getSelectedItem();
+            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
 
-        String figureSelected = (String) comboBoxFigures.getSelectedItem();
-        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
+            if (figure == null) {
+                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a escala.");
+                return;
+            }
 
-        figure.getVertex(
-                point2D -> {
-                    Point2D pointScaled = Scale.scalePoint(point2D, sx, sy);
-                    point2D.updatePoint(pointScaled);
-                }
-        );
+            QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
+            plane.queueTransformation(figure.getID(), point -> Scale.scalePoint(point, sx, sy));
 
-        mainScreen.updateFigures();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Escala adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
+            );
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Digite valores validos para escala X e Y.");
+        }
     }
 }
 

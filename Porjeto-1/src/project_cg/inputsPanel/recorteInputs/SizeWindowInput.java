@@ -14,6 +14,11 @@ public class SizeWindowInput extends ShapePanel {
     private JTextField widthScreen;
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         heightScreen = new JTextField(15);
         widthScreen = new JTextField(15);
@@ -49,3 +54,4 @@ public class SizeWindowInput extends ShapePanel {
     }
 
 }
+

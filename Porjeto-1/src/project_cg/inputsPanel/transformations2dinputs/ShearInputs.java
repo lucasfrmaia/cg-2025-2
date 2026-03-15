@@ -1,7 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
-import project_cg.geometry.points.Point2D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Shear;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
@@ -17,6 +17,11 @@ public class ShearInputs extends ShapePanel {
     @Override
     protected boolean isLeftAligned() {
         return true;
+    }
+
+    @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Cisalhamento";
     }
 
     @Override
@@ -36,36 +41,39 @@ public class ShearInputs extends ShapePanel {
 
     @Override
     protected void onCalculate() {
+        try {
+            double a = Double.parseDouble(inputA.getText().trim());
+            double b = Double.parseDouble(inputB.getText().trim());
 
-        double a = Double.parseDouble(inputA.getText());
-        double b = Double.parseDouble(inputB.getText());
+            String shearType = (String) shearTypeComboBox.getSelectedItem();
 
-        String shearType = (String) shearTypeComboBox.getSelectedItem();
+            MainScreen mainScreen = MainScreenSingleton.getMainScreen();
 
-        MainScreen mainScreen = MainScreenSingleton.getMainScreen();
+            String squareSelected = (String) comboBoxFigures.getSelectedItem();
+            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(squareSelected);
 
-        String squareSelected = (String) comboBoxFigures.getSelectedItem();
-        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(squareSelected);
+            if (figure == null) {
+                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar o cisalhamento.");
+                return;
+            }
 
-        figure.getVertex(
-                point2D -> {
-                    assert shearType != null;
+            QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
 
-                    Point2D pointReflected;
+            if ("X".equals(shearType)) {
+                plane.queueTransformation(figure.getID(), point -> Shear.shearX(point, a));
+            } else if ("Y".equals(shearType)) {
+                plane.queueTransformation(figure.getID(), point -> Shear.shearY(point, b));
+            } else {
+                plane.queueTransformation(figure.getID(), point -> Shear.shearXY(point, a, b));
+            }
 
-                    if (shearType.equals("X")) {
-                       pointReflected = Shear.shearX(point2D, a);
-                    } else if (shearType.equals("Y")) {
-                        pointReflected = Shear.shearY(point2D, b);
-                    } else {
-                        pointReflected = Shear.shearXY(point2D, a, b);
-                    }
-
-                    point2D.updatePoint(pointReflected);
-                }
-        );
-
-        mainScreen.updateFigures();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Cisalhamento adicionado. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
+            );
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Digite valores validos para os parametros de cisalhamento.");
+        }
     }
 
 }

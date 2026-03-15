@@ -1,7 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
-import project_cg.geometry.points.Point2D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Translation;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
@@ -20,6 +20,11 @@ public class TranslationInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Translação";
+    }
+
+    @Override
     protected void initializeInputs() {
         translationX = new JTextField(10);
         translationY = new JTextField(10);
@@ -32,22 +37,29 @@ public class TranslationInputs extends ShapePanel {
 
     @Override
     protected void onCalculate() {
-        int tx = Integer.parseInt(translationX.getText());
-        int ty = Integer.parseInt(translationY.getText());
+        try {
+            int tx = Integer.parseInt(translationX.getText().trim());
+            int ty = Integer.parseInt(translationY.getText().trim());
 
-        MainScreen mainScreen = MainScreenSingleton.getMainScreen();
+            MainScreen mainScreen = MainScreenSingleton.getMainScreen();
+            String figureSelected = (String) comboBoxFigures.getSelectedItem();
+            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
 
-        String figureSelected = (String) comboBoxFigures.getSelectedItem();
-        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
+            if (figure == null) {
+                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a translacao.");
+                return;
+            }
 
-        figure.getVertex(
-                point2D -> {
-                    Point2D pointTransladed = Translation.translatePoint(point2D, tx, ty);
-                    point2D.updatePoint(pointTransladed);
-                }
-        );
+            QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
+            plane.queueTransformation(figure.getID(), point -> Translation.translatePoint(point, tx, ty));
 
-        mainScreen.updateFigures();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Translacao adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
+            );
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Digite valores inteiros validos para translacao X e Y.");
+        }
     }
 
 }

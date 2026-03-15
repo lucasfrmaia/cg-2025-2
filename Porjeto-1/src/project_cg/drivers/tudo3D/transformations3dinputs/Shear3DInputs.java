@@ -23,8 +23,13 @@ public class Shear3DInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Cisalhamento 3D";
+    }
+
+    @Override
     protected void initializeInputs() {
-        // Opções de eixos para cisalhamento
+        // Opcoes de eixos para cisalhamento
         shearAxisComboBox = new JComboBox<>(new String[]{"X (Y, Z)", "Y (X, Z)", "Z (X, Y)"});
         shearFactor1Input = new JTextField(10);
         shearFactor2Input = new JTextField(10);
@@ -44,7 +49,7 @@ public class Shear3DInputs extends ShapePanel {
             double shearFactor1 = Double.parseDouble(shearFactor1Input.getText());
             double shearFactor2 = Double.parseDouble(shearFactor2Input.getText());
 
-            // Seleciona a função de cisalhamento com base no eixo escolhido
+            // Seleciona a funcao de cisalhamento com base no eixo escolhido
             ShearFunction shearFunction = switch (Objects.requireNonNull(axis)) {
                 case "X (Y, Z)" -> Shear3D::shearX;
                 case "Y (X, Z)" -> Shear3D::shearY;
@@ -53,29 +58,24 @@ public class Shear3DInputs extends ShapePanel {
             };
 
             if (shearFunction != null) {
-                // Obtém os vértices do cubo
+                // Obtem os vertices do cubo
                 Point3D[] vertices = plane3D.getCubeVertices();
 
-                if (vertices != null && vertices.length == 8) {
-                    // Aplica o cisalhamento a cada vértice no array
-                    for (int i = 0; i < vertices.length; i++) {
-                        vertices[i] = shearFunction.apply(vertices[i], shearFactor1, shearFactor2);
-                    }
-
-                    // Atualiza os vértices no plano cartesiano 3D
-                    plane3D.setCubeVertices(vertices);
-
-                    // Reinicia a renderização do plano para refletir as mudanças
-                    new Thread(() -> plane3D.update(vertices)).start();
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "Vértices inválidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                if (vertices == null || vertices.length != 8) {
+                    JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
+
+                plane3D.queueTransformation(point -> shearFunction.apply(point, shearFactor1, shearFactor2));
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Cisalhamento 3D adicionado. Total pendente: " + plane3D.getPendingTransformationsCount()
+                );
             } else {
-                JOptionPane.showMessageDialog(this, "Eixo de cisalhamento inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Eixo de cisalhamento invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Fator de cisalhamento inválido. Insira valores numéricos válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fator de cisalhamento invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 

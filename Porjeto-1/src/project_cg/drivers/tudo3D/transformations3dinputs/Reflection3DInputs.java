@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 public class Reflection3DInputs extends ShapePanel {
     private JComboBox<String> reflectionTypeComboBox;
-    private CartesianPlane3D plane3D;
 
     public Reflection3DInputs() {}
 
@@ -23,10 +22,15 @@ public class Reflection3DInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Reflexao 3D";
+    }
+
+    @Override
     protected void initializeInputs() {
-        // Tipos de reflexão em 3D
+        // Tipos de reflexao em 3D
         reflectionTypeComboBox = new JComboBox<>(new String[]{"XY", "XZ", "YZ", "Origem"});
-        addComboBox("Tipo de Reflexão:", reflectionTypeComboBox);
+        addComboBox("Tipo de Reflexao:", reflectionTypeComboBox);
     }
 
     @Override
@@ -36,7 +40,7 @@ public class Reflection3DInputs extends ShapePanel {
 
         String reflectionType = (String) reflectionTypeComboBox.getSelectedItem();
 
-        // Seleciona a função de reflexão com base na escolha do usuário
+        // Seleciona a funcao de reflexao com base na escolha do usuario
         Function<Point3D, Point3D> reflectionFunction = switch (Objects.requireNonNull(reflectionType)) {
             case "XY" -> Reflection3D::reflectInXY;
             case "XZ" -> Reflection3D::reflectInXZ;
@@ -46,25 +50,20 @@ public class Reflection3DInputs extends ShapePanel {
         };
 
         if (reflectionFunction != null) {
-            // Obtém os vértices do cubo
             Point3D[] vertices = plane3D.getCubeVertices();
 
-            if (vertices != null && vertices.length == 8) {
-                // Aplica a reflexão a cada vértice no array
-                for (int i = 0; i < vertices.length; i++) {
-                    vertices[i] = reflectionFunction.apply(vertices[i]);
-                }
-
-                // Atualiza os vértices do plano cartesiano 3D
-                plane3D.setCubeVertices(vertices);
-
-                // Reinicia a renderização do plano para refletir as mudanças
-                new Thread(() -> plane3D.update(vertices)).start();
-            } else {
-                JOptionPane.showMessageDialog(this, "Vértices inválidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+            if (vertices == null || vertices.length != 8) {
+                JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            plane3D.queueTransformation(reflectionFunction::apply);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Reflexao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
+            );
         } else {
-            JOptionPane.showMessageDialog(this, "Tipo de reflexão inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

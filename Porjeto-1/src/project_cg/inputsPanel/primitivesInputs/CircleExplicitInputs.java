@@ -19,9 +19,14 @@ public class CircleExplicitInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         radiusField = new JTextField(15);
-        radiusField.setToolTipText("Digite o raio do círculo");
+        radiusField.setToolTipText("Digite o raio do circulo");
 
         addInputField("Raio:", radiusField);
     }
@@ -40,7 +45,7 @@ public class CircleExplicitInputs extends ShapePanel {
             mainScreen.updateFigures();
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira um número válido.");
+            JOptionPane.showMessageDialog(this, "Por favor, insira um numero valido.");
         }
     }
 }

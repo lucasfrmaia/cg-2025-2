@@ -19,6 +19,11 @@ public class MidpointCircleInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         radiusField = new JTextField(10);
 
@@ -39,7 +44,7 @@ public class MidpointCircleInputs extends ShapePanel {
             mainScreen.updateFigures();
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira um número válido.");
+            JOptionPane.showMessageDialog(this, "Por favor, insira um numero valido.");
         }
     }
 

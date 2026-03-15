@@ -22,6 +22,11 @@ public class Scale3DInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Escala 3D";
+    }
+
+    @Override
     protected void initializeInputs() {
         // Campos de entrada para os fatores de escala em X, Y e Z
         scaleXInput = new JTextField(10);
@@ -39,30 +44,26 @@ public class Scale3DInputs extends ShapePanel {
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
             CartesianPlane3D plane3D = mainScreen.JPanelHandler.getCartesianPlane3D();
 
-            // Obtém os fatores de escala fornecidos pelo usuário
+            // Obtem os fatores de escala fornecidos pelo usuario
             double sx = Double.parseDouble(scaleXInput.getText());
             double sy = Double.parseDouble(scaleYInput.getText());
             double sz = Double.parseDouble(scaleZInput.getText());
 
-            // Obtém os vértices do cubo
+            // Obtem os vertices do cubo
             Point3D[] vertices = plane3D.getCubeVertices();
 
-            if (vertices != null && vertices.length == 8) {
-                // Aplica a escala a cada vértice no array
-                for (int i = 0; i < vertices.length; i++) {
-                    vertices[i] = Scale3D.scalePoint(vertices[i], sx, sy, sz);
-                }
-
-                // Atualiza os vértices no plano cartesiano 3D
-                plane3D.setCubeVertices(vertices);
-
-                // Reinicia a renderização do plano para refletir as mudanças
-                new Thread(() -> plane3D.update(vertices)).start();
-            } else {
-                JOptionPane.showMessageDialog(this, "Vértices inválidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+            if (vertices == null || vertices.length != 8) {
+                JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            plane3D.queueTransformation(point -> Scale3D.scalePoint(point, sx, sy, sz));
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Escala 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
+            );
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Fator de escala inválido. Insira valores numéricos válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fator de escala invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

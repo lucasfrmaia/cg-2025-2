@@ -22,15 +22,20 @@ public class Translation3DInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Translacao 3D";
+    }
+
+    @Override
     protected void initializeInputs() {
-        // Campos de entrada para os valores de translação em X, Y e Z
+        // Campos de entrada para os valores de translacao em X, Y e Z
         translateXInput = new JTextField(10);
         translateYInput = new JTextField(10);
         translateZInput = new JTextField(10);
 
-        addInputField("Valor de translação em X:", translateXInput);
-        addInputField("Valor de translação em Y:", translateYInput);
-        addInputField("Valor de translação em Z:", translateZInput);
+        addInputField("Valor de translacao em X:", translateXInput);
+        addInputField("Valor de translacao em Y:", translateYInput);
+        addInputField("Valor de translacao em Z:", translateZInput);
     }
 
     @Override
@@ -39,31 +44,27 @@ public class Translation3DInputs extends ShapePanel {
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
             CartesianPlane3D plane3D = mainScreen.JPanelHandler.getCartesianPlane3D();
 
-            // Obtém os valores de translação fornecidos pelo usuário
+            // Obtem os valores de translacao fornecidos pelo usuario
             double tx = Double.parseDouble(translateXInput.getText());
             double ty = Double.parseDouble(translateYInput.getText());
             double tz = Double.parseDouble(translateZInput.getText());
 
-            // Obtém os vértices do cubo
+            // Obtem os vertices do cubo
             Point3D[] vertices = plane3D.getCubeVertices();
 
-            if (vertices != null && vertices.length == 8) {
-                // Aplica a translação a cada vértice no array
-                for (int i = 0; i < vertices.length; i++) {
-                    vertices[i] = Translation3D.translatePoint(vertices[i], tx, ty, tz);
-                }
-
-                // Atualiza os vértices no plano cartesiano 3D
-                plane3D.setCubeVertices(vertices);
-
-                // Reinicia a renderização do plano para refletir as mudanças
-                new Thread(() -> plane3D.update(vertices)).start();
-            } else {
-                JOptionPane.showMessageDialog(this, "Vértices inválidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+            if (vertices == null || vertices.length != 8) {
+                JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
+            plane3D.queueTransformation(point -> Translation3D.translatePoint(point, tx, ty, tz));
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Translacao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
+            );
+
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Valor de translação inválido. Insira valores numéricos válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Valor de translacao invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

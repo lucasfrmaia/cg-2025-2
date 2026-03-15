@@ -63,8 +63,6 @@ public class RecorteSutherlandPlane extends CartesianPlane2D {
 		if (quantity <= 0) {
 			throw new IllegalArgumentException("A quantidade de linhas deve ser maior que zero.");
 		}
-
-		originalLines.clear();
 		clippedLines.clear();
 
 		int insideCount = Math.max(1, quantity / 2);

@@ -22,13 +22,18 @@ public class Rotation3DInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Adicionar Rotacao 3D";
+    }
+
+    @Override
     protected void initializeInputs() {
-        // Opções de eixos de rotação
+        // Opcoes de eixos de rotacao
         rotationAxisComboBox = new JComboBox<>(new String[]{"X", "Y", "Z"});
         angleInput = new JTextField(10);
 
-        addComboBox("Eixo de rotação:", rotationAxisComboBox);
-        addInputField("Ângulo de rotação (em graus):", angleInput);
+        addComboBox("Eixo de rotacao:", rotationAxisComboBox);
+        addInputField("Angulo de rotacao (em graus):", angleInput);
     }
 
     @Override
@@ -40,7 +45,7 @@ public class Rotation3DInputs extends ShapePanel {
             String axis = (String) rotationAxisComboBox.getSelectedItem();
             double angle = Double.parseDouble(angleInput.getText());
 
-            // Seleciona a função de rotação com base no eixo escolhido
+            // Seleciona a funcao de rotacao com base no eixo escolhido
             BiFunction<Point3D, Double, Point3D> rotationFunction = switch (Objects.requireNonNull(axis)) {
                 case "X" -> Rotation3D::rotateX;
                 case "Y" -> Rotation3D::rotateY;
@@ -49,28 +54,22 @@ public class Rotation3DInputs extends ShapePanel {
             };
 
             if (rotationFunction != null) {
-                // Obtém os vértices do cubo
                 Point3D[] vertices = plane3D.getCubeVertices();
-
-                if (vertices != null && vertices.length == 8) {
-                    // Aplica a rotação a cada vértice no array
-                    for (int i = 0; i < vertices.length; i++) {
-                        vertices[i] = rotationFunction.apply(vertices[i], angle);
-                    }
-
-                    // Atualiza os vértices no plano cartesiano 3D
-                    plane3D.setCubeVertices(vertices);
-
-                    // Reinicia a renderização do plano para refletir as mudanças
-                    new Thread(() -> plane3D.update(vertices)).start();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Vértices inválidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                if (vertices == null || vertices.length != 8) {
+                    JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
+
+                plane3D.queueTransformation(point -> rotationFunction.apply(point, angle));
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Rotacao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
+                );
             } else {
-                JOptionPane.showMessageDialog(this, "Eixo de rotação inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Eixo de rotacao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Ângulo inválido. Insira um número válido.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Angulo invalido. Insira um numero valido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

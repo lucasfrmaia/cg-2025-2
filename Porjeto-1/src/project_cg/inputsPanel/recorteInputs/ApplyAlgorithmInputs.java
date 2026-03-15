@@ -15,6 +15,11 @@ public class ApplyAlgorithmInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         JTextField hintField = new JTextField("Recorta as linhas geradas na viewport atual.", 26);
         hintField.setEditable(false);
@@ -44,3 +49,4 @@ public class ApplyAlgorithmInputs extends ShapePanel {
                 .getPanelByCategory("Recorte de Janela de Cohen-Sutherland");
     }
 }
+

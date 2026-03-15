@@ -7,10 +7,14 @@ import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
 import project_cg.drivers.viewport3d.Viewport3D;
 import utils.BaseJPanel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CartesianPlane3D extends BaseJPanel {
     private long window;
     private Point3D[] cubeVertices;
     private Viewport3D viewport3D;
+    private final List<TransformationOperation3D> pendingTransformations;
 
     public CartesianPlane3D() {
         cubeVertices = new Point3D[]{
@@ -19,6 +23,8 @@ public class CartesianPlane3D extends BaseJPanel {
             new Point3D(0, 0, 1), new Point3D(1, 0, 1),
             new Point3D(1, 1, 1), new Point3D(0, 1, 1)
         };
+
+        pendingTransformations = new ArrayList<>();
         
         viewport3D = new Viewport3D(800, 50, 400, 400, this); // Posição e tamanho da viewport
     }
@@ -26,6 +32,7 @@ public class CartesianPlane3D extends BaseJPanel {
     @Override
     public CartesianPlane3D reset() {
         this.resetCube();
+        clearQueuedTransformations();
         return this;
     }
 
@@ -90,6 +97,47 @@ public class CartesianPlane3D extends BaseJPanel {
         this.cubeVertices = cubeVertices;
     }
 
+    public void queueTransformation(TransformationOperation3D operation) {
+        if (operation == null) {
+            throw new IllegalArgumentException("A transformacao nao pode ser nula.");
+        }
+
+        pendingTransformations.add(operation);
+    }
+
+    public int getPendingTransformationsCount() {
+        return pendingTransformations.size();
+    }
+
+    public void clearQueuedTransformations() {
+        pendingTransformations.clear();
+    }
+
+    public void applyQueuedTransformations() {
+        if (cubeVertices == null || cubeVertices.length != 8) {
+            throw new IllegalStateException("Vertices invalidos ou ausentes.");
+        }
+
+        if (pendingTransformations.isEmpty()) {
+            throw new IllegalStateException("Nao ha transformacoes acumuladas para aplicar.");
+        }
+
+        List<TransformationOperation3D> operationsSnapshot = new ArrayList<>(pendingTransformations);
+
+        for (int i = 0; i < cubeVertices.length; i++) {
+            Point3D transformedPoint = cubeVertices[i];
+
+            for (TransformationOperation3D operation : operationsSnapshot) {
+                transformedPoint = operation.apply(transformedPoint);
+            }
+
+            cubeVertices[i] = transformedPoint;
+        }
+
+        update(cubeVertices);
+        clearQueuedTransformations();
+    }
+
     public void drawAxes() {
         GL11.glBegin(GL11.GL_LINES);
 
@@ -147,5 +195,10 @@ public class CartesianPlane3D extends BaseJPanel {
             new Point3D(1, 1, 1), new Point3D(0, 1, 1)
         };
         update(cubeVertices);
+    }
+
+    @FunctionalInterface
+    public interface TransformationOperation3D {
+        Point3D apply(Point3D point);
     }
 }

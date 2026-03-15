@@ -18,6 +18,11 @@ public class DrawLinesInputs extends ShapePanel {
 
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         quantityField = new JTextField(8);
         quantityField.setText("12");
@@ -34,7 +39,7 @@ public class DrawLinesInputs extends ShapePanel {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Foram geradas " + plane.getOriginalLineCount() + " linhas aleatorias."
+                    "Foram adicionadas " + quantity + " linhas aleatorias. Total atual: " + plane.getOriginalLineCount() + "."
             );
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite uma quantidade inteira valida.");
@@ -49,3 +54,4 @@ public class DrawLinesInputs extends ShapePanel {
                 .getPanelByCategory("Recorte de Janela de Cohen-Sutherland");
     }
 }
+

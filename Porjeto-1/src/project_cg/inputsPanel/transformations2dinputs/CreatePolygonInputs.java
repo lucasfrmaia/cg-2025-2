@@ -23,6 +23,11 @@ public class CreatePolygonInputs extends ShapePanel {
     }
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
         pointsInput1 = new JTextField(16);
         pointsInput2 = new JTextField(16);
@@ -86,3 +91,4 @@ public class CreatePolygonInputs extends ShapePanel {
 
 
 }
+

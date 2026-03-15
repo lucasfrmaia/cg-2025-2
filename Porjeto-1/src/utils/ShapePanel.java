@@ -14,7 +14,7 @@ public abstract class ShapePanel extends JPanel {
 
     public ShapePanel() {
         setLayout(new GridBagLayout());
-        calculateButton = new JButton("Calcular");
+        calculateButton = new JButton(getLabelButtonCalcular());
         currentGridY = 0;
 
         initializeInputs();
@@ -33,6 +33,8 @@ public abstract class ShapePanel extends JPanel {
     }
 
     protected abstract void initializeInputs();
+
+    protected abstract String getLabelButtonCalcular();
 
 
     private void addCalculateButton() {
@@ -97,7 +99,7 @@ public abstract class ShapePanel extends JPanel {
         removeAll();
 
         setLayout(new GridBagLayout());
-        calculateButton = new JButton("Calcular");
+        calculateButton = new JButton(getLabelButtonCalcular());
         currentGridY = 0;
 
         initializeInputs();

@@ -7,10 +7,12 @@ import project_cg.drivers.tudo3D.transformations3dinputs.Scale3DInputs;
 import project_cg.drivers.tudo3D.transformations3dinputs.Shear3DInputs;
 import project_cg.drivers.tudo3D.transformations3dinputs.StartCartesianPlaneInputs;
 import project_cg.drivers.tudo3D.transformations3dinputs.Translation3DInputs;
+import project_cg.drivers.tudo3D.transformations3dinputs.ApplyQueuedTransformations3DInputs;
 import project_cg.geometry.planeCartesians.cartesiansPlane.CartesianPlane2D;
 import project_cg.geometry.planeCartesians.cartesiansPlane.PixelCartesianPlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.inputsPanel.recorteInputs.ApplyAlgorithmInputs;
 import project_cg.inputsPanel.recorteInputs.DrawCustomLineInput;
 import project_cg.inputsPanel.recorteInputs.DrawLinesInputs;
@@ -27,6 +29,7 @@ import project_cg.inputsPanel.transformations2dinputs.RotationInputs;
 import project_cg.inputsPanel.transformations2dinputs.ScaleInputs;
 import project_cg.inputsPanel.transformations2dinputs.ShearInputs;
 import project_cg.inputsPanel.transformations2dinputs.TranslationInputs;
+import project_cg.inputsPanel.transformations2dinputs.ApplyQueuedTransformationsInputs;
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
 import utils.Constants;
 import view.mainScreen.MainScreen;
@@ -68,7 +71,7 @@ public class MainScreenV2 {
 
     private void setupPlanesAndOptions() {
         CartesianPlane2D primitivaPlane = new CartesianPlane2D();
-        CartesianPlane2DWithViewport transformacoesPlane = new CartesianPlane2DWithViewport();
+        QueuedTransformationsPlane transformacoesPlane = new QueuedTransformationsPlane();
         PixelCartesianPlane pixelPlane = new PixelCartesianPlane();
         RecorteSutherlandPlane recortePlane = new RecorteSutherlandPlane();
         CartesianPlane3D cartesianPlane3D = new CartesianPlane3D();
@@ -87,6 +90,7 @@ public class MainScreenV2 {
         dataOptions.addOption("Transformações", "Aplicar Cisalhamento", new ShearInputs());
         dataOptions.addOption("Transformações", "Aplicar Translação", new TranslationInputs());
         dataOptions.addOption("Transformações", "Aplicar Reflexão", new ReflectionInputs());
+        dataOptions.addOption("Transformações", "Aplicar Transformações Acumuladas", new ApplyQueuedTransformationsInputs());
 
         dataOptions.addOption("Primitivas", "DDA", new DDALineInputs());
         dataOptions.addOption("Primitivas", "Equação explicita da circunferência", new CircleExplicitInputs());
@@ -106,6 +110,7 @@ public class MainScreenV2 {
         dataOptions.addOption("Plano 3D", "Aplicar uma Escala", new Scale3DInputs());
         dataOptions.addOption("Plano 3D", "Aplicar um Cisalhamento", new Shear3DInputs());
         dataOptions.addOption("Plano 3D", "Aplicar uma Translação", new Translation3DInputs());
+        dataOptions.addOption("Plano 3D", "Aplicar Transformacoes 3D Acumuladas", new ApplyQueuedTransformations3DInputs());
     }
 
     private void setupMainLayout() {

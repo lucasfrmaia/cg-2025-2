@@ -21,8 +21,13 @@ public class CreateCubeInputs extends ShapePanel {
     private JTextField pointInput8;
 
     @Override
+    protected String getLabelButtonCalcular() {
+        return "Calcular";
+    }
+
+    @Override
     protected void initializeInputs() {
-        // Inicializa os campos de entrada para os 8 vértices do cubo
+        // Inicializa os campos de entrada para os 8 vertices do cubo
         pointInput1 = new JTextField(50);
         pointInput2 = new JTextField(50);
         pointInput3 = new JTextField(50);
@@ -32,7 +37,7 @@ public class CreateCubeInputs extends ShapePanel {
         pointInput7 = new JTextField(50);
         pointInput8 = new JTextField(50);
 
-        // Adiciona os campos de entrada com os rótulos apropriados
+        // Adiciona os campos de entrada com os rotulos apropriados
         addInputField("Digite o (x, y, z) do Ponto 1:", pointInput1);
         addInputField("Digite o (x, y, z) do Ponto 2:", pointInput2);
         addInputField("Digite o (x, y, z) do Ponto 3:", pointInput3);
@@ -59,14 +64,15 @@ public class CreateCubeInputs extends ShapePanel {
             Point3D p7 = createPointFromInput(pointInput7);
             Point3D p8 = createPointFromInput(pointInput8);
 
-            // Cria o array de vértices do cubo
+            // Cria o array de vertices do cubo
             Point3D[] cubeVertices = {p1, p2, p3, p4, p5, p6, p7, p8};
+            plane3D.clearQueuedTransformations();
 
             // Inicia o plano cartesiano 3D e desenha o cubo
             new Thread(() -> plane3D.update(cubeVertices)).start();
 
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Coordenadas inválidas. Use números separados por espaços.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Coordenadas invalidas. Use numeros separados por espacos.", "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
