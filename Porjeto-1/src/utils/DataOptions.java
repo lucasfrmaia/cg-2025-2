@@ -1,4 +1,4 @@
-package view.utils;
+package utils;
 
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;

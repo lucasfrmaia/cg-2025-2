@@ -3,10 +3,14 @@ package project_cg.drivers.tudo3D.transformations3dinputs;
 import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 
 public class StartCartesianPlaneInputs extends ShapePanel {
 
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
     @Override
     protected void initializeInputs() {}

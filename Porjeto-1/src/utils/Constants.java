@@ -3,9 +3,9 @@ package utils;
 import java.awt.*;
 
 public class Constants {
-    public static final int WIDTH_MAIN_SCREEN = 1300;
-    public static final int HEIGHT_MAIN_SCREEN = 860;
-    public static final int WIDTH_CARTESIAN_PLANE = (int) (WIDTH_MAIN_SCREEN * 0.99);
+    public static final int WIDTH_MAIN_SCREEN = 1700;
+    public static final int HEIGHT_MAIN_SCREEN = 850;
+    public static final int WIDTH_CARTESIAN_PLANE = (int) (WIDTH_MAIN_SCREEN * 0.81);
     public static final int HEIGHT_CARTESIAN_PLANE = (int) (HEIGHT_MAIN_SCREEN * 0.85);
     public static final String DEFAULT_OPTION_CHECKBOX = "Selecione uma opção...";
     public static final String DISABLED_OPTION_SELECT = "";

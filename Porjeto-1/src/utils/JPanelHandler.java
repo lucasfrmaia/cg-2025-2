@@ -1,4 +1,4 @@
-package view.utils;
+package utils;
 
 import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;

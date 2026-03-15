@@ -3,7 +3,7 @@ package project_cg.inputsPanel.transformations2dinputs;
 import project_cg.geometry.figures.BaseFigure;
 import project_cg.geometry.points.Point2D;
 import project_cg.transformations2d.Reflection;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 
@@ -14,6 +14,11 @@ import java.util.function.Function;
 public class ReflectionInputs extends ShapePanel {
     private JComboBox<String> reflectionTypeComboBox;
     private JComboBox<String> comboBoxFigures;
+
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
 
     @Override

@@ -4,7 +4,7 @@ import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.MidpointLine;
 import view.mainScreen.MainScreen;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreenSingleton;
 
 import javax.swing.*;
@@ -18,16 +18,21 @@ public class CreatePolygonInputs extends ShapePanel {
     private JTextField pointsInput4;
 
     @Override
-    protected void initializeInputs() {
-        pointsInput1 = new JTextField(30);
-        pointsInput2 = new JTextField(30);
-        pointsInput3 = new JTextField(30);
-        pointsInput4 = new JTextField(30);
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
-        addInputField("Digite as coordenadas (x, y) do Ponto 1:", pointsInput1);
-        addInputField("Digite as coordenadas (x, y) do Ponto 2", pointsInput2);
-        addInputField("Digite as coordenadas (x, y) do Ponto 3", pointsInput3);
-        addInputField("Digite as coordenadas (x, y) do Ponto 4", pointsInput4);
+    @Override
+    protected void initializeInputs() {
+        pointsInput1 = new JTextField(16);
+        pointsInput2 = new JTextField(16);
+        pointsInput3 = new JTextField(16);
+        pointsInput4 = new JTextField(16);
+
+        addInputField("P1 (x y):", pointsInput1);
+        addInputField("P2 (x y):", pointsInput2);
+        addInputField("P3 (x y):", pointsInput3);
+        addInputField("P4 (x y):", pointsInput4);
     }
 
     @Override

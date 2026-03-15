@@ -3,7 +3,7 @@ package project_cg.inputsPanel.transformations2dinputs;
 import project_cg.geometry.figures.BaseFigure;
 import project_cg.geometry.points.Point2D;
 import project_cg.transformations2d.Translation;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 
@@ -13,6 +13,12 @@ public class TranslationInputs extends ShapePanel {
     private JTextField translationX, translationY;
 
     private JComboBox<String> comboBoxFigures;
+
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
+
     @Override
     protected void initializeInputs() {
         translationX = new JTextField(10);

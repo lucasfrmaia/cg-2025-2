@@ -1,7 +1,4 @@
-package view.utils;
-
-import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
-import utils.Constants;
+package utils;
 
 import javax.swing.*;
 

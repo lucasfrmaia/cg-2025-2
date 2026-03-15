@@ -2,7 +2,7 @@ package project_cg.inputsPanel.primitivesInputs;
 
 import project_cg.geometry.figures.Ellipse;
 import project_cg.primitives.MidpointElipse;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 
@@ -15,14 +15,19 @@ public class MidpointElipseInputs extends ShapePanel {
     private JTextField bField;
 
     @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
+
+    @Override
     protected void initializeInputs() {
         cxField = new JTextField(10);
         cyField = new JTextField(10);
         aField = new JTextField(10);
         bField = new JTextField(10);
 
-        addInputField("Eixo A:", aField);
-        addInputField("Eixo B:", bField);
+        addInputField("A:", aField);
+        addInputField("B:", bField);
     }
 
     @Override

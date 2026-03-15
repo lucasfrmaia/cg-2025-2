@@ -1,14 +1,12 @@
-import view.mainScreen.MainScreen;
-import view.mainScreen.mainScreenPanels.InputsPanel;
 import view.mainScreen.MainScreenSingleton;
-import view.utils.GeometricFiguresHandler;
+import view.MainScreenV2;
+
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-        mainScreen.setInputs(new InputsPanel());
-        mainScreen.setLocationRelativeTo(null);
-        mainScreen.setLayoutPanel();
-        mainScreen.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            new MainScreenV2(MainScreenSingleton.getMainScreen());
+        });
     }
 }

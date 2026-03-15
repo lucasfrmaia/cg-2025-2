@@ -3,7 +3,7 @@ package project_cg.inputsPanel.transformations2dinputs;
 import project_cg.geometry.figures.BaseFigure;
 import project_cg.geometry.points.Point2D;
 import project_cg.transformations2d.Shear;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 
@@ -13,6 +13,11 @@ public class ShearInputs extends ShapePanel {
     private JComboBox<String> shearTypeComboBox;
     private JComboBox<String> comboBoxFigures;
     private JTextField inputA, inputB;
+
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
     @Override
     protected void initializeInputs() {

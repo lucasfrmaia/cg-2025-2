@@ -5,7 +5,7 @@ import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
 import project_cg.drivers.tudo3D.transformations3d.Reflection3D;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -16,6 +16,11 @@ public class Reflection3DInputs extends ShapePanel {
     private CartesianPlane3D plane3D;
 
     public Reflection3DInputs() {}
+
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
     @Override
     protected void initializeInputs() {

@@ -1,7 +1,7 @@
 package project_cg.drivers.tudo3D.transformations3d;
 
 import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
-import view.utils.Matrix;
+import utils.Matrix;
 
 public class Translation3D {
 

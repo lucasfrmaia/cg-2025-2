@@ -3,7 +3,7 @@ package project_cg.inputsPanel.primitivesInputs;
 import project_cg.geometry.figures.Line;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.DDALine;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
 // import project_cg.primitives.DDALine;
@@ -15,6 +15,11 @@ public class DDALineInputs extends ShapePanel {
     private JTextField inputP2;
 
     @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
+
+    @Override
     protected void initializeInputs() {
         inputP1 = new JTextField(10);
         inputP1.setToolTipText("Digite o ponto P1");
@@ -22,8 +27,8 @@ public class DDALineInputs extends ShapePanel {
         inputP2 = new JTextField(10);
         inputP2.setToolTipText("Digite o ponto P2");
 
-        addInputField("Ponto P1:", inputP1);
-        addInputField("Ponto P2:", inputP2);
+        addInputField("P1 (x y):", inputP1);
+        addInputField("P2 (x y):", inputP2);
     }
 
     @Override

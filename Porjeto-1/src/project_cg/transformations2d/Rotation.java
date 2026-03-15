@@ -1,7 +1,7 @@
 package project_cg.transformations2d;
 
 import project_cg.geometry.points.Point2D;
-import view.utils.Matrix;
+import utils.Matrix;
 
 public class Rotation {
 

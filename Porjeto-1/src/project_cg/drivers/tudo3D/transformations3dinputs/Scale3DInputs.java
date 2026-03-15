@@ -5,7 +5,7 @@ import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
 import project_cg.drivers.tudo3D.transformations3d.Scale3D;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 
 import javax.swing.*;
 
@@ -15,6 +15,11 @@ public class Scale3DInputs extends ShapePanel {
     private JTextField scaleZInput;
 
     public Scale3DInputs() {}
+
+    @Override
+    protected boolean isLeftAligned() {
+        return true;
+    }
 
     @Override
     protected void initializeInputs() {

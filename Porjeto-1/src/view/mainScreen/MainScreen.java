@@ -1,13 +1,12 @@
 package view.mainScreen;
 
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
-import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.ViewportWindow;
 import project_cg.geometry.figures.BaseFigure;
 import project_cg.geometry.points.Point2D;
 import utils.Constants;
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
-import view.utils.JPanelHandler;
-import view.utils.GeometricFiguresHandler;
+import utils.JPanelHandler;
+import utils.GeometricFiguresHandler;
 
 import javax.swing.*;
 import java.awt.*;

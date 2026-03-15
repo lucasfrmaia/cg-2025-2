@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
 import project_cg.drivers.viewport3d.Viewport3D;
-import view.utils.BaseJPanel;
+import utils.BaseJPanel;
 
 public class CartesianPlane3D extends BaseJPanel {
     private long window;

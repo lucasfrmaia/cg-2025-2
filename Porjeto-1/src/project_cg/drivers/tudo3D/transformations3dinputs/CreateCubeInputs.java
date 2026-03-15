@@ -4,7 +4,7 @@ import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
 import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
-import view.utils.ShapePanel;
+import utils.ShapePanel;
 
 import javax.swing.*;
 import java.util.Arrays;

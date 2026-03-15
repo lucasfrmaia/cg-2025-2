@@ -1,4 +1,4 @@
-package view.utils;
+package utils;
 
 public class OptionDisabled extends ShapePanel{
 
