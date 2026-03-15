@@ -115,6 +115,7 @@ public class MainScreen extends JFrame {
             ((CartesianPlane2DWithViewport) cartesianPlane1).updateViewport();
         }
 
+        MainScreenSingleton.refreshAllComboBoxGeometriFigures();
         cartesianPlane1.repaint();
     }
 

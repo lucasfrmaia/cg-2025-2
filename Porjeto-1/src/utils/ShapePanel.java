@@ -11,6 +11,10 @@ public abstract class ShapePanel extends JPanel {
     protected JButton calculateButton;
     private int currentGridY;
 
+    protected boolean isLeftAligned() {
+        return false;
+    }
+
     public ShapePanel() {
         setLayout(new GridBagLayout());
         calculateButton = new JButton("Calcular");
@@ -41,23 +45,27 @@ public abstract class ShapePanel extends JPanel {
         gbc.gridwidth = 2;
         gbc.insets = new Insets(10, 0, 0, 0);
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 1.0;
         add(calculateButton, gbc);
     }
 
 
     protected void addInputField(String labelText, JTextField textField) {
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        int leftPadding = isLeftAligned() ? 2 : 5;
+        gbc.insets = new Insets(4, leftPadding, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
 
 
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 0;
+        gbc.anchor = isLeftAligned() ? GridBagConstraints.WEST : GridBagConstraints.EAST;
         add(new JLabel(labelText), gbc);
 
 
         gbc.gridx = 1;
+        gbc.weightx = isLeftAligned() ? 1.0 : 0;
         gbc.anchor = GridBagConstraints.WEST;
         add(textField, gbc);
 
@@ -66,16 +74,19 @@ public abstract class ShapePanel extends JPanel {
 
     protected void addComboBox(String labelText, JComboBox<String> comboBox) {
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        int leftPadding = isLeftAligned() ? 2 : 5;
+        gbc.insets = new Insets(4, leftPadding, 4, 4);
         gbc.anchor = GridBagConstraints.CENTER;
 
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 0;
+        gbc.anchor = isLeftAligned() ? GridBagConstraints.WEST : GridBagConstraints.EAST;
         add(new JLabel(labelText), gbc);
 
 
         gbc.gridx = 1;
+        gbc.weightx = isLeftAligned() ? 1.0 : 0;
         gbc.anchor = GridBagConstraints.WEST;
         add(comboBox, gbc);
 
