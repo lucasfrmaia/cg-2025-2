@@ -2,9 +2,8 @@ package view.mainScreen.mainScreenPanels;
 
 import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
 import project_cg.drivers.tudo3D.transformations3dinputs.*;
-import project_cg.ecgSimulator.ECGSimulation;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
-import project_cg.inputsPanel.ecgInputs.ECGSimulationInputs;
+
 import view.mainScreen.MainScreen;
 import view.utils.DataOptions;
 import project_cg.inputsPanel.primitivesInputs.*;
@@ -33,7 +32,6 @@ public class InputsPanel extends JPanel {
         CartesianPlane2DWithViewport transformacoesPlane = new CartesianPlane2DWithViewport();
 
         PixelCartesianPlane pixelPlane = new PixelCartesianPlane();
-        ECGSimulation ecgSimulation = new ECGSimulation();
         CartesianPlane3D cartesianPlane3D = new CartesianPlane3D();
 
         // Main3DViewer main3DViewer = new Main3DViewer();
@@ -42,7 +40,6 @@ public class InputsPanel extends JPanel {
         mainScreen.JPanelHandler.addJPanel("Primitivas", primitivaPlane);
         mainScreen.JPanelHandler.addJPanel("Transformações", transformacoesPlane);
         mainScreen.JPanelHandler.addJPanel("Pixel", pixelPlane);
-        mainScreen.JPanelHandler.addJPanel("Simulador de Coracão", ecgSimulation);
         mainScreen.JPanelHandler.addJPanel("Plano 3D", cartesianPlane3D);
 
         // ToDo fluxo, não mexer p n estourar o codigo
@@ -64,9 +61,6 @@ public class InputsPanel extends JPanel {
         MidpointLineInputs midpointLineInputs = new MidpointLineInputs();
         MidpointElipseInputs midpointElipseInputs = new MidpointElipseInputs();
 
-        // Input do ECG
-        ECGSimulationInputs ecgSimulationInputs = new ECGSimulationInputs();
-
         //dataOptions.addOption("Transformações", "Desenhar Reta", midpointLineInputs);
 
         dataOptions.addOption("Transformações", "Desenhar Quadrado", polygonInputs);
@@ -83,9 +77,6 @@ public class InputsPanel extends JPanel {
         dataOptions.addOption("Primitivas", "Ponto médio da circunferência", midpointCircleInputs);
         dataOptions.addOption("Primitivas", "Ponto médio das Retas", midpointLineInputs);
         dataOptions.addOption("Primitivas", "Ponto médio da Elipse", midpointElipseInputs);
-
-        // Opções do ECG
-        dataOptions.addOption("Simulador de Coracão", "Definir Tempo", ecgSimulationInputs);
 
         // Transformácões 3d
         dataOptions.addOption("Plano 3D",  "Iniciar Janela 3D", new StartCartesianPlaneInputs());
