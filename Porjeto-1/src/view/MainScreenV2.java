@@ -17,6 +17,7 @@ import project_cg.inputsPanel.recorteInputs.ApplyAlgorithmInputs;
 import project_cg.inputsPanel.recorteInputs.DrawCustomLineInput;
 import project_cg.inputsPanel.recorteInputs.DrawLinesInputs;
 import project_cg.inputsPanel.recorteInputs.SizeWindowInput;
+import project_cg.inputsPanel.primitivesInputs.BezierInputs;
 import project_cg.inputsPanel.primitivesInputs.CircleExplicitInputs;
 import project_cg.inputsPanel.primitivesInputs.DDALineInputs;
 import project_cg.inputsPanel.primitivesInputs.MidpointCircleInputs;
@@ -71,12 +72,14 @@ public class MainScreenV2 {
 
     private void setupPlanesAndOptions() {
         CartesianPlane2D primitivaPlane = new CartesianPlane2D();
+        CartesianPlane2D bezierPlane = new CartesianPlane2D();
         QueuedTransformationsPlane transformacoesPlane = new QueuedTransformationsPlane();
         PixelCartesianPlane pixelPlane = new PixelCartesianPlane();
         RecorteSutherlandPlane recortePlane = new RecorteSutherlandPlane();
         CartesianPlane3D cartesianPlane3D = new CartesianPlane3D();
 
         mainScreen.JPanelHandler.addJPanel("Primitivas", primitivaPlane);
+        mainScreen.JPanelHandler.addJPanel("Algoritmo de Bezier", bezierPlane);
         mainScreen.JPanelHandler.addJPanel("Transformações", transformacoesPlane);
         mainScreen.JPanelHandler.addJPanel("Pixel", pixelPlane);
         mainScreen.JPanelHandler.addJPanel("Recorte de Janela de Cohen-Sutherland", recortePlane);
@@ -98,6 +101,8 @@ public class MainScreenV2 {
         dataOptions.addOption("Primitivas", "Ponto médio da circunferência", new MidpointCircleInputs());
         dataOptions.addOption("Primitivas", "Ponto médio das Retas", new MidpointLineInputs());
         dataOptions.addOption("Primitivas", "Ponto médio da Elipse", new MidpointElipseInputs());
+
+        dataOptions.addOption("Algoritmo de Bezier", "Bezier Cúbica", new BezierInputs());
 
         dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Definir tamanho da viewport", new SizeWindowInput());
         dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
