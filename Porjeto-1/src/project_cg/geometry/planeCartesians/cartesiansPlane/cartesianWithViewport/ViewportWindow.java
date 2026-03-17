@@ -16,6 +16,7 @@ public class ViewportWindow extends JFrame {
         setSize(width, height);
         setLayout(new BorderLayout());
         setResizable(false);
+        setAlwaysOnTop(true);
 
         // Inicializa a viewport
         viewport = new Viewport2D(0, 0, width, height);
@@ -39,7 +40,10 @@ public class ViewportWindow extends JFrame {
     }
 
     public void enableViewport() {
+        setAlwaysOnTop(true);
         setVisible(true);
+        toFront();
+        requestFocus();
     }
 
     public void disableViewport() {

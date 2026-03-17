@@ -47,10 +47,15 @@ public class CartesianPlane3D extends BaseJPanel {
             throw new IllegalStateException("Falha ao inicializar GLFW");
         }
 
+        // Mantem a janela 3D sempre acima das demais, equivalente ao alwaysOnTop.
+        GLFW.glfwWindowHint(GLFW.GLFW_FLOATING, GLFW.GLFW_TRUE);
+
         window = GLFW.glfwCreateWindow(1300, 600, "Plano Cartesiano 3D com Cubo", 0, 0);
         if (window == 0) {
             throw new RuntimeException("Falha ao criar a janela GLFW");
         }
+
+        GLFW.glfwSetWindowAttrib(window, GLFW.GLFW_FLOATING, GLFW.GLFW_TRUE);
 
         GLFW.glfwMakeContextCurrent(window);
         GLFW.glfwSwapInterval(1);
@@ -76,6 +81,7 @@ public class CartesianPlane3D extends BaseJPanel {
             
             // Renderiza o conteúdo da viewport 3D
             viewport3D.renderViewport();
+            viewport3D.drawViewportFrameOverlay(1300, 600);
 
             GLFW.glfwSwapBuffers(window);
             GLFW.glfwPollEvents();

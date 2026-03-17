@@ -49,11 +49,6 @@ public class RotationInputs extends ShapePanel {
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
             plane.queueTransformation(figure.getID(), point -> Rotation.rotatePoint(point, angle));
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Rotacao adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
-            );
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite um angulo valido.");
         }

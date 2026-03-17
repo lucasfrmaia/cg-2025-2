@@ -53,11 +53,6 @@ public class ScaleInputs extends ShapePanel {
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
             plane.queueTransformation(figure.getID(), point -> Scale.scalePoint(point, sx, sy));
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Escala adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
-            );
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para escala X e Y.");
         }

@@ -58,10 +58,6 @@ public class Scale3DInputs extends ShapePanel {
             }
 
             plane3D.queueTransformation(point -> Scale3D.scalePoint(point, sx, sy, sz));
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Escala 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
-            );
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Fator de escala invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }

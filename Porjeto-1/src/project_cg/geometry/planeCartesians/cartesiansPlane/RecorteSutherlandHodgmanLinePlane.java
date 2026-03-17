@@ -132,7 +132,7 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
         originalLines.clear();
         clippedLines.clear();
         drawCartesianPlane();
-        drawViewportWindow();
+        drawViewportWindowCenteredAtOrigin();
         repaint();
     }
 
@@ -161,34 +161,62 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
 
     private void redrawScene() {
         drawCartesianPlane();
-        drawViewportWindow();
+        drawViewportWindowCenteredAtOrigin();
         drawSegments(originalLines, Color.RED.getRGB());
         drawSegments(clippedLines, Color.GREEN.getRGB());
         repaint();
     }
 
-    private void drawViewportWindow() {
-        Point2D topLeft = new Point2D(xMin, yMax);
-        Point2D topRight = new Point2D(xMax, yMax);
-        Point2D bottomRight = new Point2D(xMax, yMin);
-        Point2D bottomLeft = new Point2D(xMin, yMin);
+    private void drawViewportWindowCenteredAtOrigin() {
+        int halfWidth = viewportWidth / 2;
+        int halfHeight = viewportHeight / 2;
+
+        Point2D topLeft = new Point2D(-halfWidth, halfHeight);
+        Point2D topRight = new Point2D(halfWidth, halfHeight);
+        Point2D bottomRight = new Point2D(halfWidth, -halfHeight);
+        Point2D bottomLeft = new Point2D(-halfWidth, -halfHeight);
 
         int borderColor = Color.WHITE.getRGB();
-        drawLineWithMidpoint(topLeft, topRight, borderColor);
-        drawLineWithMidpoint(topRight, bottomRight, borderColor);
-        drawLineWithMidpoint(bottomRight, bottomLeft, borderColor);
-        drawLineWithMidpoint(bottomLeft, topLeft, borderColor);
+        drawLineWithMidpointCentered(topLeft, topRight, borderColor);
+        drawLineWithMidpointCentered(topRight, bottomRight, borderColor);
+        drawLineWithMidpointCentered(bottomRight, bottomLeft, borderColor);
+        drawLineWithMidpointCentered(bottomLeft, topLeft, borderColor);
     }
 
     private void drawSegments(List<LineSegment> segments, int rgb) {
         for (LineSegment segment : segments) {
-            drawLineWithMidpoint(segment.start, segment.end, rgb);
+            drawLineWithMidpointBottomLeft(segment.start, segment.end, rgb);
         }
     }
 
-    private void drawLineWithMidpoint(Point2D start, Point2D end, int rgb) {
+    private void drawLineWithMidpointCentered(Point2D start, Point2D end, int rgb) {
         MidpointLine midpointLine = new MidpointLine(point -> setPixel(point, rgb));
         midpointLine.desenhaLinha(start, end);
+    }
+
+    private void drawLineWithMidpointBottomLeft(Point2D start, Point2D end, int rgb) {
+        MidpointLine midpointLine = new MidpointLine(point -> setPixelBottomLeft(point, rgb));
+        midpointLine.desenhaLinha(start, end);
+    }
+
+    @Override
+    public void setPixel(Point2D point, int rgb) {
+        super.setPixel(point, rgb);
+    }
+
+    private void setPixelBottomLeft(Point2D point, int rgb) {
+        int x = (int) Math.round(point.x);
+        int y = (int) Math.round(point.y);
+
+        int viewportOriginX = (image.getWidth() - viewportWidth) / 2;
+        int viewportOriginY = (image.getHeight() - viewportHeight) / 2;
+
+        int screenX = viewportOriginX + x;
+        int screenY = viewportOriginY + (viewportHeight - 1 - y);
+
+        if (screenX >= 0 && screenX < image.getWidth() && screenY >= 0 && screenY < image.getHeight()) {
+            image.setRGB(screenX, screenY, rgb);
+        }
     }
 
     private Point2D randomPointInsideViewport() {

@@ -58,10 +58,6 @@ public class Translation3DInputs extends ShapePanel {
             }
 
             plane3D.queueTransformation(point -> Translation3D.translatePoint(point, tx, ty, tz));
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Translacao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
-            );
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Valor de translacao invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);

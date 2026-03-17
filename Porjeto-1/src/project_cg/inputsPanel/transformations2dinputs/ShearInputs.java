@@ -66,11 +66,6 @@ public class ShearInputs extends ShapePanel {
             } else {
                 plane.queueTransformation(figure.getID(), point -> Shear.shearXY(point, a, b));
             }
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Cisalhamento adicionado. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
-            );
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para os parametros de cisalhamento.");
         }

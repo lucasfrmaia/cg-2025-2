@@ -52,11 +52,6 @@ public class TranslationInputs extends ShapePanel {
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
             plane.queueTransformation(figure.getID(), point -> Translation.translatePoint(point, tx, ty));
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Translacao adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
-            );
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores inteiros validos para translacao X e Y.");
         }

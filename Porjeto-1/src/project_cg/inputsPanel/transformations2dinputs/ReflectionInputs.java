@@ -62,11 +62,6 @@ public class ReflectionInputs extends ShapePanel {
 
         assert reflectionFunnction != null;
         plane.queueTransformation(figure.getID(), reflectionFunnction::apply);
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Reflexao adicionada. Total pendente para a figura: " + plane.getPendingCount(figure.getID())
-        );
     }
 }
 

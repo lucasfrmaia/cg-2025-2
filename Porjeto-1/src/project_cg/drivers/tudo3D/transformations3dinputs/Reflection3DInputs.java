@@ -58,10 +58,6 @@ public class Reflection3DInputs extends ShapePanel {
             }
 
             plane3D.queueTransformation(reflectionFunction::apply);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Reflexao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
-            );
         } else {
             JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }

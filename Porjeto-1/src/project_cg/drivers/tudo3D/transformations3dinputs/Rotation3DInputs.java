@@ -61,10 +61,6 @@ public class Rotation3DInputs extends ShapePanel {
                 }
 
                 plane3D.queueTransformation(point -> rotationFunction.apply(point, angle));
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Rotacao 3D adicionada. Total pendente: " + plane3D.getPendingTransformationsCount()
-                );
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de rotacao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }

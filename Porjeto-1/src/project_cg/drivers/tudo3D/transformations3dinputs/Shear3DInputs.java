@@ -67,10 +67,6 @@ public class Shear3DInputs extends ShapePanel {
                 }
 
                 plane3D.queueTransformation(point -> shearFunction.apply(point, shearFactor1, shearFactor2));
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Cisalhamento 3D adicionado. Total pendente: " + plane3D.getPendingTransformationsCount()
-                );
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de cisalhamento invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
