@@ -12,7 +12,8 @@ public class Bezier extends BasePrimitives {
         super(callback);
     }
 
-    public Bezier() {}
+    public Bezier() {
+    }
 
     public void drawBezierCurve(List<Point2D> controlPoints, int segments) {
         if (controlPoints == null || controlPoints.size() < 4 || segments <= 0) {

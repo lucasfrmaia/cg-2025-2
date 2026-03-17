@@ -11,8 +11,10 @@ import project_cg.drivers.tudo3D.transformations3dinputs.ApplyQueuedTransformati
 import project_cg.geometry.planeCartesians.cartesiansPlane.CartesianPlane2D;
 import project_cg.geometry.planeCartesians.cartesiansPlane.PixelCartesianPlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;
+import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandHodgmanLinePlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
+import project_cg.inputsPanel.conicSectionsInputs.ConicSectionsInputs;
 import project_cg.inputsPanel.recorteInputs.ApplyAlgorithmInputs;
 import project_cg.inputsPanel.recorteInputs.DrawCustomLineInput;
 import project_cg.inputsPanel.recorteInputs.DrawLinesInputs;
@@ -75,14 +77,18 @@ public class MainScreenV2 {
         CartesianPlane2D bezierPlane = new CartesianPlane2D();
         QueuedTransformationsPlane transformacoesPlane = new QueuedTransformationsPlane();
         PixelCartesianPlane pixelPlane = new PixelCartesianPlane();
-        RecorteSutherlandPlane recortePlane = new RecorteSutherlandPlane();
+        CartesianPlane2D conicSectionsPlane = new CartesianPlane2D();
+        RecorteSutherlandPlane cohenSutherlandPlane = new RecorteSutherlandPlane();
+        RecorteSutherlandHodgmanLinePlane sutherlandHodgmanPlane = new RecorteSutherlandHodgmanLinePlane();
         CartesianPlane3D cartesianPlane3D = new CartesianPlane3D();
 
         mainScreen.JPanelHandler.addJPanel("Primitivas", primitivaPlane);
         mainScreen.JPanelHandler.addJPanel("Algoritmo de Bezier", bezierPlane);
         mainScreen.JPanelHandler.addJPanel("Transformações", transformacoesPlane);
         mainScreen.JPanelHandler.addJPanel("Pixel", pixelPlane);
-        mainScreen.JPanelHandler.addJPanel("Recorte de Janela de Cohen-Sutherland", recortePlane);
+        mainScreen.JPanelHandler.addJPanel("Seções Cônicas", conicSectionsPlane);
+        mainScreen.JPanelHandler.addJPanel("Recorte de Linhas Cohen-Sutherland", cohenSutherlandPlane);
+        mainScreen.JPanelHandler.addJPanel("Recorte de Linhas Sutherland-Hodgman", sutherlandHodgmanPlane);
         mainScreen.JPanelHandler.addJPanel("Plano 3D", cartesianPlane3D);
 
         mainScreen.setGeometricFiguresHandler(new GeometricFiguresHandler(mainScreen.getCartesianPlaneHandler()));
@@ -102,12 +108,19 @@ public class MainScreenV2 {
         dataOptions.addOption("Primitivas", "Ponto médio das Retas", new MidpointLineInputs());
         dataOptions.addOption("Primitivas", "Ponto médio da Elipse", new MidpointElipseInputs());
 
+        dataOptions.addOption("Seções Cônicas", "Gerar Seção Cônica (Elipse/Parábola/Hipérbole)", new ConicSectionsInputs());
+
         dataOptions.addOption("Algoritmo de Bezier", "Bezier Cúbica", new BezierInputs());
 
-        dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Definir tamanho da viewport", new SizeWindowInput());
-        dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
-        dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Desenhar reta customizada", new DrawCustomLineInput());
-        dataOptions.addOption("Recorte de Janela de Cohen-Sutherland", "Aplicar recorte de Cohen-Sutherland", new ApplyAlgorithmInputs());
+        dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Definir tamanho da viewport", new SizeWindowInput());
+        dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
+        dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Desenhar reta customizada", new DrawCustomLineInput());
+        dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Aplicar recorte de Cohen-Sutherland", new ApplyAlgorithmInputs());
+
+        dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Definir tamanho da viewport", new SizeWindowInput());
+        dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
+        dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Desenhar reta customizada", new DrawCustomLineInput());
+        dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Aplicar recorte de Sutherland-Hodgman", new ApplyAlgorithmInputs());
 
         dataOptions.addOption("Plano 3D", "Iniciar Janela 3D", new StartCartesianPlaneInputs());
         dataOptions.addOption("Plano 3D", "Aplicar uma Rotação", new Rotation3DInputs());

@@ -1,6 +1,7 @@
 package project_cg.inputsPanel.recorteInputs;
 
-import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;
+import project_cg.geometry.planeCartesians.cartesiansPlane.LineClippingPlane;
+import utils.BaseJPanel;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
@@ -34,7 +35,7 @@ public class DrawLinesInputs extends ShapePanel {
         try {
             int quantity = Integer.parseInt(quantityField.getText().trim());
 
-            RecorteSutherlandPlane plane = getRecortePlane();
+            LineClippingPlane plane = getRecortePlane();
             plane.generateRandomLines(quantity);
 
             JOptionPane.showMessageDialog(
@@ -48,10 +49,16 @@ public class DrawLinesInputs extends ShapePanel {
         }
     }
 
-    private RecorteSutherlandPlane getRecortePlane() {
+    private LineClippingPlane getRecortePlane() {
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-        return (RecorteSutherlandPlane) mainScreen.JPanelHandler
-                .getPanelByCategory("Recorte de Janela de Cohen-Sutherland");
+        String currentCategory = mainScreen.JPanelHandler.getCurrentCategory();
+        BaseJPanel panel = mainScreen.JPanelHandler.getPanelByCategory(currentCategory);
+
+        if (panel instanceof LineClippingPlane) {
+            return (LineClippingPlane) panel;
+        }
+
+        throw new IllegalStateException("A categoria atual nao suporta recorte de linhas.");
     }
 }
 

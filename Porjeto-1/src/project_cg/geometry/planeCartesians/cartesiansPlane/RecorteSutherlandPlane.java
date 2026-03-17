@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RecorteSutherlandPlane extends CartesianPlane2D {
+public class RecorteSutherlandPlane extends CartesianPlane2D implements LineClippingPlane {
 
 	private static final int DEFAULT_VIEWPORT_WIDTH = 300;
 	private static final int DEFAULT_VIEWPORT_HEIGHT = 220;
@@ -36,6 +36,7 @@ public class RecorteSutherlandPlane extends CartesianPlane2D {
 		generateRandomLines(DEFAULT_RANDOM_LINES);
 	}
 
+	@Override
 	public void setViewportSize(int width, int height) {
 		if (width <= 0 || height <= 0) {
 			throw new IllegalArgumentException("A viewport deve ter largura e altura positivas.");
@@ -53,12 +54,14 @@ public class RecorteSutherlandPlane extends CartesianPlane2D {
 		redrawScene();
 	}
 
+	@Override
 	public void addCustomLine(Point2D start, Point2D end) {
 		originalLines.add(new LineSegment(start, end));
 		clippedLines.clear();
 		redrawScene();
 	}
 
+	@Override
 	public void generateRandomLines(int quantity) {
 		if (quantity <= 0) {
 			throw new IllegalArgumentException("A quantidade de linhas deve ser maior que zero.");
@@ -81,6 +84,7 @@ public class RecorteSutherlandPlane extends CartesianPlane2D {
 		redrawScene();
 	}
 
+	@Override
 	public void applyClipping() {
 		clippedLines.clear();
 
@@ -102,18 +106,22 @@ public class RecorteSutherlandPlane extends CartesianPlane2D {
 		redrawScene();
 	}
 
+	@Override
 	public int getOriginalLineCount() {
 		return originalLines.size();
 	}
 
+	@Override
 	public int getClippedLineCount() {
 		return clippedLines.size();
 	}
 
+	@Override
 	public int getViewportWidthValue() {
 		return viewportWidth;
 	}
 
+	@Override
 	public int getViewportHeightValue() {
 		return viewportHeight;
 	}

@@ -1,7 +1,8 @@
 package project_cg.inputsPanel.recorteInputs;
 
-import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;
+import project_cg.geometry.planeCartesians.cartesiansPlane.LineClippingPlane;
 import project_cg.geometry.points.Point2D;
+import utils.BaseJPanel;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
 import view.mainScreen.MainScreenSingleton;
@@ -41,7 +42,7 @@ public class DrawCustomLineInput extends ShapePanel {
             Point2D p1 = parsePoint(p1Field.getText());
             Point2D p2 = parsePoint(p2Field.getText());
 
-            RecorteSutherlandPlane plane = getRecortePlane();
+            LineClippingPlane plane = getRecortePlane();
             plane.addCustomLine(p1, p2);
 
             JOptionPane.showMessageDialog(this, "Reta customizada adicionada ao recorte.");
@@ -66,10 +67,16 @@ public class DrawCustomLineInput extends ShapePanel {
         }
     }
 
-    private RecorteSutherlandPlane getRecortePlane() {
+    private LineClippingPlane getRecortePlane() {
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-        return (RecorteSutherlandPlane) mainScreen.JPanelHandler
-                .getPanelByCategory("Recorte de Janela de Cohen-Sutherland");
+        String currentCategory = mainScreen.JPanelHandler.getCurrentCategory();
+        BaseJPanel panel = mainScreen.JPanelHandler.getPanelByCategory(currentCategory);
+
+        if (panel instanceof LineClippingPlane) {
+            return (LineClippingPlane) panel;
+        }
+
+        throw new IllegalStateException("A categoria atual nao suporta recorte de linhas.");
     }
 }
 
