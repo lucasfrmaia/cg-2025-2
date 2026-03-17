@@ -51,17 +51,43 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
 
         List<TransformationOperation> operationsSnapshot = new ArrayList<>(operations);
 
+        Point2D focalPoint = getFirstPointAsFocalPoint(figure);
+
         figure.getVertex(point -> {
-            Point2D transformedPoint = point;
+            Point2D transformedPoint = new Point2D(
+                    point.getX() - focalPoint.getX(),
+                    point.getY() - focalPoint.getY()
+            );
 
             for (TransformationOperation operation : operationsSnapshot) {
                 transformedPoint = operation.apply(transformedPoint);
             }
 
+            transformedPoint = new Point2D(
+                    transformedPoint.getX() + focalPoint.getX(),
+                    transformedPoint.getY() + focalPoint.getY()
+            );
+
             point.updatePoint(transformedPoint);
         });
 
         pendingTransformations.remove(figureId);
+    }
+
+    private Point2D getFirstPointAsFocalPoint(BaseFigure figure) {
+        final Point2D[] firstPoint = {null};
+
+        figure.getVertex(point -> {
+            if (firstPoint[0] == null) {
+                firstPoint[0] = new Point2D(point.getX(), point.getY());
+            }
+        });
+
+        if (firstPoint[0] == null) {
+            throw new IllegalStateException("Nao foi possivel obter o ponto focal da figura.");
+        }
+
+        return firstPoint[0];
     }
 
     public void clearQueuedTransformations(String figureId) {

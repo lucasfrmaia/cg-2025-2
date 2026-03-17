@@ -129,19 +129,42 @@ public class CartesianPlane3D extends BaseJPanel {
         }
 
         List<TransformationOperation3D> operationsSnapshot = new ArrayList<>(pendingTransformations);
+        Point3D focalPoint = getFirstPointAsFocalPoint(cubeVertices);
 
         for (int i = 0; i < cubeVertices.length; i++) {
-            Point3D transformedPoint = cubeVertices[i];
+            Point3D transformedPoint = new Point3D(
+                    cubeVertices[i].getX() - focalPoint.getX(),
+                    cubeVertices[i].getY() - focalPoint.getY(),
+                    cubeVertices[i].getZ() - focalPoint.getZ()
+            );
 
             for (TransformationOperation3D operation : operationsSnapshot) {
                 transformedPoint = operation.apply(transformedPoint);
             }
+
+            transformedPoint = new Point3D(
+                    transformedPoint.getX() + focalPoint.getX(),
+                    transformedPoint.getY() + focalPoint.getY(),
+                    transformedPoint.getZ() + focalPoint.getZ()
+            );
 
             cubeVertices[i] = transformedPoint;
         }
 
         update(cubeVertices);
         clearQueuedTransformations();
+    }
+
+    private Point3D getFirstPointAsFocalPoint(Point3D[] vertices) {
+        if (vertices.length == 0) {
+            throw new IllegalStateException("Nao foi possivel obter o ponto focal do cubo.");
+        }
+
+        return new Point3D(
+                vertices[0].getX(),
+                vertices[0].getY(),
+                vertices[0].getZ()
+        );
     }
 
     public void drawAxes() {

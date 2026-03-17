@@ -12,8 +12,6 @@ import javax.swing.*;
 public class TranslationInputs extends ShapePanel {
     private JTextField translationX, translationY;
 
-    private JComboBox<String> comboBoxFigures;
-
     @Override
     protected boolean isLeftAligned() {
         return true;
@@ -28,9 +26,7 @@ public class TranslationInputs extends ShapePanel {
     protected void initializeInputs() {
         translationX = new JTextField(10);
         translationY = new JTextField(10);
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
 
-        addComboBox("Escolha uma figura", comboBoxFigures);
         addInputField("Translação X:", translationX);
         addInputField("Translação Y:", translationY);
     }
@@ -42,11 +38,10 @@ public class TranslationInputs extends ShapePanel {
             int ty = Integer.parseInt(translationY.getText().trim());
 
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-            String figureSelected = (String) comboBoxFigures.getSelectedItem();
-            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
+            BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
             if (figure == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a translacao.");
+                JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a translacao.");
                 return;
             }
 
@@ -55,6 +50,14 @@ public class TranslationInputs extends ShapePanel {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores inteiros validos para translacao X e Y.");
         }
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 
 }

@@ -10,8 +10,6 @@ import javax.swing.*;
 
 public class ApplyQueuedTransformationsInputs extends ShapePanel {
 
-    private JComboBox<String> comboBoxFigures;
-
     @Override
     protected boolean isLeftAligned() {
         return true;
@@ -24,21 +22,18 @@ public class ApplyQueuedTransformationsInputs extends ShapePanel {
 
     @Override
     protected void initializeInputs() {
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
-        addComboBox("Escolha uma figura", comboBoxFigures);
     }
 
     @Override
     protected void onCalculate() {
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-        String figureSelected = (String) comboBoxFigures.getSelectedItem();
+        BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
-        if (figureSelected == null || figureSelected.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Selecione uma figura para aplicar as transformacoes.");
+        if (figure == null) {
+            JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de aplicar as transformacoes.");
             return;
         }
 
-        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
         QueuedTransformationsPlane plane = getQueuedPlane(mainScreen);
 
         try {
@@ -48,6 +43,14 @@ public class ApplyQueuedTransformationsInputs extends ShapePanel {
         } catch (IllegalStateException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
         }
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 
     private QueuedTransformationsPlane getQueuedPlane(MainScreen mainScreen) {

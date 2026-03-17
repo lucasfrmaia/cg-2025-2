@@ -12,8 +12,6 @@ import javax.swing.*;
 public class ScaleInputs extends ShapePanel {
     private JTextField scaleX, scaleY;
 
-    private JComboBox<String> comboBoxFigures;
-
     @Override
     protected boolean isLeftAligned() {
         return true;
@@ -28,10 +26,6 @@ public class ScaleInputs extends ShapePanel {
     protected void initializeInputs() {
         scaleX = new JTextField(10);
         scaleY = new JTextField(10);
-
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
-
-        addComboBox("Escolha uma figura", comboBoxFigures);
         addInputField("Escala X:", scaleX);
         addInputField("Escala Y:", scaleY);
     }
@@ -43,11 +37,10 @@ public class ScaleInputs extends ShapePanel {
             double sy = Double.parseDouble(scaleY.getText().trim());
 
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-            String figureSelected = (String) comboBoxFigures.getSelectedItem();
-            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
+            BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
             if (figure == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a escala.");
+                JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a escala.");
                 return;
             }
 
@@ -56,6 +49,14 @@ public class ScaleInputs extends ShapePanel {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para escala X e Y.");
         }
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 }
 

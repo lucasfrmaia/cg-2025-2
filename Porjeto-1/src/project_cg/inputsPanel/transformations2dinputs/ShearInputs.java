@@ -11,7 +11,6 @@ import javax.swing.*;
 
 public class ShearInputs extends ShapePanel {
     private JComboBox<String> shearTypeComboBox;
-    private JComboBox<String> comboBoxFigures;
     private JTextField inputA, inputB;
 
     @Override
@@ -27,9 +26,7 @@ public class ShearInputs extends ShapePanel {
     @Override
     protected void initializeInputs() {
         shearTypeComboBox = new JComboBox<>(new String[]{"X", "Y", "XY"});
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
 
-        addComboBox("Escolha uma figura", comboBoxFigures);
         addComboBox("Tipo de Cisalhamento:", shearTypeComboBox);
 
         inputA = new JTextField(10);
@@ -48,12 +45,10 @@ public class ShearInputs extends ShapePanel {
             String shearType = (String) shearTypeComboBox.getSelectedItem();
 
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-
-            String squareSelected = (String) comboBoxFigures.getSelectedItem();
-            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(squareSelected);
+            BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
             if (figure == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar o cisalhamento.");
+                JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar o cisalhamento.");
                 return;
             }
 
@@ -69,6 +64,14 @@ public class ShearInputs extends ShapePanel {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para os parametros de cisalhamento.");
         }
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 
 }

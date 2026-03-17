@@ -2,6 +2,7 @@ package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.primitives.MidpointLine;
 import view.mainScreen.MainScreen;
 import utils.ShapePanel;
@@ -83,6 +84,11 @@ public class CreatePolygonInputs extends ShapePanel {
             },
             midpointLine
         );
+
+       mainScreen.geometricFiguresHandler.resetFigures();
+
+       QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
+       plane.clearAllQueuedTransformations();
 
        mainScreen.geometricFiguresHandler.addFigure(square);
        mainScreen.updateFigures();

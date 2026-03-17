@@ -15,7 +15,6 @@ import java.util.function.Function;
 
 public class ReflectionInputs extends ShapePanel {
     private JComboBox<String> reflectionTypeComboBox;
-    private JComboBox<String> comboBoxFigures;
 
     @Override
     protected boolean isLeftAligned() {
@@ -31,9 +30,6 @@ public class ReflectionInputs extends ShapePanel {
     @Override
     protected void initializeInputs() {
         reflectionTypeComboBox = new JComboBox<>(new String[]{"X", "Y", "Origem"});
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
-
-        addComboBox("Escolha uma figura", comboBoxFigures);
         addComboBox("Tipo de Reflexão:", reflectionTypeComboBox);
     }
 
@@ -50,11 +46,10 @@ public class ReflectionInputs extends ShapePanel {
             default -> null;
         };
 
-        String squareSelected = (String) comboBoxFigures.getSelectedItem();
-        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(squareSelected);
+        BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
         if (figure == null) {
-            JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a reflexao.");
+            JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a reflexao.");
             return;
         }
 
@@ -62,6 +57,14 @@ public class ReflectionInputs extends ShapePanel {
 
         assert reflectionFunnction != null;
         plane.queueTransformation(figure.getID(), reflectionFunnction::apply);
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 }
 

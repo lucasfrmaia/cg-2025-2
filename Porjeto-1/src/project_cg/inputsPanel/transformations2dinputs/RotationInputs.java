@@ -12,8 +12,6 @@ import javax.swing.*;
 public class RotationInputs extends ShapePanel {
     private JTextField angleInput;
 
-    private JComboBox<String> comboBoxFigures;
-
     @Override
     protected boolean isLeftAligned() {
         return true;
@@ -27,9 +25,6 @@ public class RotationInputs extends ShapePanel {
     @Override
     protected void initializeInputs() {
         angleInput = new JTextField(10);
-        comboBoxFigures = MainScreenSingleton.getComboBoxGeometriFigures();
-
-        addComboBox("Escolha uma figura", comboBoxFigures);
         addInputField("Ângulo de Rotação:", angleInput);
     }
 
@@ -38,12 +33,10 @@ public class RotationInputs extends ShapePanel {
         try {
             double angle = Double.parseDouble(angleInput.getText().trim());
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-
-            String figureSelected = (String) comboBoxFigures.getSelectedItem();
-            BaseFigure figure = mainScreen.geometricFiguresHandler.getFigureByID(figureSelected);
+            BaseFigure figure = getSingleTransformationFigure(mainScreen);
 
             if (figure == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma figura valida para adicionar a rotacao.");
+                JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a rotacao.");
                 return;
             }
 
@@ -52,6 +45,14 @@ public class RotationInputs extends ShapePanel {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite um angulo valido.");
         }
+    }
+
+    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+            return null;
+        }
+
+        return mainScreen.geometricFiguresHandler.getFigures().get(0);
     }
 }
 
