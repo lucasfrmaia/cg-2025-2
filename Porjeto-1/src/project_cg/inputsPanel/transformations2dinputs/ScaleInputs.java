@@ -46,7 +46,8 @@ public class ScaleInputs extends ShapePanel {
             }
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
-            plane.queueTransformation(Scale.getMatrixScala(sx, sy));
+            plane.queueTransformation(new Scale(sx, sy));
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para escala X e Y.");
         }

@@ -57,7 +57,8 @@ public class Scale3DInputs extends ShapePanel {
                 return;
             }
 
-            plane3D.queueTransformation(Scale3D.getMatrixScale(sx, sy, sz));
+            plane3D.queueTransformation(new Scale3D(sx, sy, sz));
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Fator de escala invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);
         }

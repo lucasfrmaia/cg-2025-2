@@ -47,7 +47,8 @@ public class TranslationInputs extends ShapePanel {
             }
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
-            plane.queueTransformation(Translation.getMatrixTranslation(tx, ty));
+            plane.queueTransformation(new Translation(tx, ty));
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores inteiros validos para translacao X e Y.");
         }

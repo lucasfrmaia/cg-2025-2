@@ -49,14 +49,14 @@ public class Shear3DInputs extends ShapePanel {
             double shearFactor1 = Double.parseDouble(shearFactor1Input.getText());
             double shearFactor2 = Double.parseDouble(shearFactor2Input.getText());
 
-            double[][] shearMatrix = switch (Objects.requireNonNull(axis)) {
-                case "X (Y, Z)" -> Shear3D.getMatrixShearX(shearFactor1, shearFactor2);
-                case "Y (X, Z)" -> Shear3D.getMatrixShearY(shearFactor1, shearFactor2);
-                case "Z (X, Y)" -> Shear3D.getMatrixShearZ(shearFactor1, shearFactor2);
+            Shear3D shear = switch (Objects.requireNonNull(axis)) {
+                case "X (Y, Z)" -> new Shear3D(Shear3D.Axis.X, shearFactor1, shearFactor2);
+                case "Y (X, Z)" -> new Shear3D(Shear3D.Axis.Y, shearFactor1, shearFactor2);
+                case "Z (X, Y)" -> new Shear3D(Shear3D.Axis.Z, shearFactor1, shearFactor2);
                 default -> null;
             };
 
-            if (shearMatrix != null) {
+            if (shear != null) {
                 // Obtem os vertices do cubo
                 Point3D[] vertices = plane3D.getCubeVertices();
 
@@ -65,7 +65,8 @@ public class Shear3DInputs extends ShapePanel {
                     return;
                 }
 
-                plane3D.queueTransformation(shearMatrix);
+                plane3D.queueTransformation(shear);
+                view.MainScreenV2.refreshQueuedTransformationsIndicator();
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de cisalhamento invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }

@@ -39,15 +39,15 @@ public class Reflection3DInputs extends ShapePanel {
 
         String reflectionType = (String) reflectionTypeComboBox.getSelectedItem();
 
-        double[][] reflectionMatrix = switch (Objects.requireNonNull(reflectionType)) {
-            case "XY" -> Reflection3D.getReflectionMatrixInXY();
-            case "XZ" -> Reflection3D.getReflectionMatrixInXZ();
-            case "YZ" -> Reflection3D.getReflectionMatrixInYZ();
-            case "Origem" -> Reflection3D.getReflectionMatrixInOrigin();
+        Reflection3D reflection = switch (Objects.requireNonNull(reflectionType)) {
+            case "XY" -> new Reflection3D(Reflection3D.Type.IN_XY);
+            case "XZ" -> new Reflection3D(Reflection3D.Type.IN_XZ);
+            case "YZ" -> new Reflection3D(Reflection3D.Type.IN_YZ);
+            case "Origem" -> new Reflection3D(Reflection3D.Type.IN_ORIGIN);
             default -> null;
         };
 
-        if (reflectionMatrix != null) {
+        if (reflection != null) {
             Point3D[] vertices = plane3D.getCubeVertices();
 
             if (vertices == null || vertices.length != 8) {
@@ -55,7 +55,8 @@ public class Reflection3DInputs extends ShapePanel {
                 return;
             }
 
-            plane3D.queueTransformation(reflectionMatrix);
+            plane3D.queueTransformation(reflection);
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } else {
             JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }

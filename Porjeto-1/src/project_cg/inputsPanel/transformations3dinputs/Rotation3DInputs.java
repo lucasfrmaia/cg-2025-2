@@ -44,21 +44,22 @@ public class Rotation3DInputs extends ShapePanel {
             String axis = (String) rotationAxisComboBox.getSelectedItem();
             double angle = Double.parseDouble(angleInput.getText());
 
-            double[][] rotationMatrix = switch (Objects.requireNonNull(axis)) {
-                case "X" -> Rotation3D.getMatrixRotationX(angle);
-                case "Y" -> Rotation3D.getMatrixRotationY(angle);
-                case "Z" -> Rotation3D.getMatrixRotationZ(angle);
+            Rotation3D rotation = switch (Objects.requireNonNull(axis)) {
+                case "X" -> new Rotation3D(Rotation3D.Axis.X, angle);
+                case "Y" -> new Rotation3D(Rotation3D.Axis.Y, angle);
+                case "Z" -> new Rotation3D(Rotation3D.Axis.Z, angle);
                 default -> null;
             };
 
-            if (rotationMatrix != null) {
+            if (rotation != null) {
                 Point3D[] vertices = plane3D.getCubeVertices();
                 if (vertices == null || vertices.length != 8) {
                     JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                plane3D.queueTransformation(rotationMatrix);
+                plane3D.queueTransformation(rotation);
+                view.MainScreenV2.refreshQueuedTransformationsIndicator();
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de rotacao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }

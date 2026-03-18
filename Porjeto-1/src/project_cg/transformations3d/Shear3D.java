@@ -5,6 +5,35 @@ import utils.Matrix;
 
 public class Shear3D {
 
+    public enum Axis {
+        X,
+        Y,
+        Z
+    }
+
+    private final Axis axis;
+    private final double factor1;
+    private final double factor2;
+
+    public Shear3D(Axis axis, double factor1, double factor2) {
+        this.axis = axis;
+        this.factor1 = factor1;
+        this.factor2 = factor2;
+    }
+
+    public double[][] getTransformation() {
+        switch (axis) {
+            case X:
+                return getMatrixShearX(factor1, factor2);
+            case Y:
+                return getMatrixShearY(factor1, factor2);
+            case Z:
+                return getMatrixShearZ(factor1, factor2);
+            default:
+                throw new IllegalArgumentException("Eixo de cisalhamento desconhecido: " + axis);
+        }
+    }
+
     // Método para aplicar cisalhamento no eixo X em relação a Y e Z
     public static Point3D shearX(Point3D point, double shy, double shz) {
         double[][] pointHomogeneous = new double[][] {
@@ -81,6 +110,11 @@ public class Shear3D {
             { shx, shy, 1, 0 },
             { 0, 0, 0, 1 }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "Sh" + axis + "(" + factor1 + ", " + factor2 + ")";
     }
     
 

@@ -38,10 +38,10 @@ public class ReflectionInputs extends ShapePanel {
 
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
 
-        double[][] reflectionMatrix = switch (Objects.requireNonNull(reflectionType)) {
-            case "X" -> Reflection.getReflectionMatrixInX();
-            case "Y" -> Reflection.getReflectionMatrixInY();
-            case "Origem" -> Reflection.getReflectionMatrixInOrigin();
+        Reflection reflection = switch (Objects.requireNonNull(reflectionType)) {
+            case "X" -> new Reflection(Reflection.Type.IN_X);
+            case "Y" -> new Reflection(Reflection.Type.IN_Y);
+            case "Origem" -> new Reflection(Reflection.Type.IN_ORIGIN);
             default -> null;
         };
 
@@ -54,12 +54,13 @@ public class ReflectionInputs extends ShapePanel {
 
         QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
 
-        if (reflectionMatrix == null) {
+        if (reflection == null) {
             JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.");
             return;
         }
 
-        plane.queueTransformation(reflectionMatrix);
+        plane.queueTransformation(reflection);
+        view.MainScreenV2.refreshQueuedTransformationsIndicator();
     }
 
     private Square getSingleTransformationSquare(MainScreen mainScreen) {

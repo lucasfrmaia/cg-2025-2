@@ -1,52 +1,41 @@
 package project_cg.transformations2d;
 
 import project_cg.geometry.points.Point2D;
+import project_cg.transformations.BaseTransformation2d;
 import utils.Matrix;
 
 
-public class Shear { //Cisalhamento
+public class Shear implements BaseTransformation2d { //Cisalhamento
 
-    public static Point2D shearX(Point2D point, double shx) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
+        public enum Type {
+                IN_X,
+                IN_Y,
+                IN_XY
+        }
 
-        double[][] matrix = getMatrixShearX(shx);
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
+        private final Type type;
+        private final double a;
+        private final double b;
 
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
-    }
+        public Shear(Type type, double a, double b) {
+                this.type = type;
+                this.a = a;
+                this.b = b;
+        }
 
-    public static Point2D shearY(Point2D point, double shy) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
-
-        double[][] matrix = getMatrixShearY(shy);
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
-
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
-    }
-
-    public static Point2D shearXY(Point2D point, double shx, double shy) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
-
-        double[][] matrix = getMatrixShearXY(shx, shy);
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
-
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
-    }
+        @Override
+        public double[][] getTransformation() {
+                switch (type) {
+                        case IN_X:
+                                return getMatrixShearX(a);
+                        case IN_Y:
+                                return getMatrixShearY(b);
+                        case IN_XY:
+                                return getMatrixShearXY(a, b);
+                        default:
+                                throw new IllegalArgumentException("Tipo de cisalhamento desconhecido: " + type);
+                }
+        }
 
 
     public static double[][] getMatrixShearY(double shy) {
@@ -72,6 +61,20 @@ public class Shear { //Cisalhamento
                 { 0, 0, 1 }
         };
     }
+
+        @Override
+        public String toString() {
+                switch (type) {
+                        case IN_X:
+                                return "ShX(" + a + ")";
+                        case IN_Y:
+                                return "ShY(" + b + ")";
+                        case IN_XY:
+                                return "ShXY(" + a + ", " + b + ")";
+                        default:
+                                return "Sh(?)";
+                }
+        }
 
 
 }

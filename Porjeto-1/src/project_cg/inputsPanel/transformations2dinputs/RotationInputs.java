@@ -42,7 +42,8 @@ public class RotationInputs extends ShapePanel {
             }
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
-            plane.queueTransformation(Rotation.getMatrixRotation(angle));
+            plane.queueTransformation(new Rotation(angle));
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite um angulo valido.");
         }

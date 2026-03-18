@@ -56,12 +56,14 @@ public class ShearInputs extends ShapePanel {
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
 
             if ("X".equals(shearType)) {
-                plane.queueTransformation(Shear.getMatrixShearX(a));
+                plane.queueTransformation(new Shear(Shear.Type.IN_X, a, 0));
             } else if ("Y".equals(shearType)) {
-                plane.queueTransformation(Shear.getMatrixShearY(b));
+                plane.queueTransformation(new Shear(Shear.Type.IN_Y, 0, b));
             } else {
-                plane.queueTransformation(Shear.getMatrixShearXY(a, b));
+                plane.queueTransformation(new Shear(Shear.Type.IN_XY, a, b));
             }
+
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para os parametros de cisalhamento.");
         }

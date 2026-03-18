@@ -5,6 +5,34 @@ import utils.Matrix;
 
 public class Reflection3D {
 
+    public enum Type {
+        IN_XY,
+        IN_XZ,
+        IN_YZ,
+        IN_ORIGIN
+    }
+
+    private final Type type;
+
+    public Reflection3D(Type type) {
+        this.type = type;
+    }
+
+    public double[][] getTransformation() {
+        switch (type) {
+            case IN_XY:
+                return getReflectionMatrixInXY();
+            case IN_XZ:
+                return getReflectionMatrixInXZ();
+            case IN_YZ:
+                return getReflectionMatrixInYZ();
+            case IN_ORIGIN:
+                return getReflectionMatrixInOrigin();
+            default:
+                throw new IllegalArgumentException("Tipo de reflexao 3D desconhecido: " + type);
+        }
+    }
+
     // Reflete o ponto em relação ao plano XY
     public static Point3D reflectInXY(Point3D point) {
         double[][] pointHomogeneous = new double[][] {
@@ -107,6 +135,22 @@ public class Reflection3D {
             { 0, 0, -1, 0 },
             { 0, 0, 0, 1 }
         };
+    }
+
+    @Override
+    public String toString() {
+        switch (type) {
+            case IN_XY:
+                return "Ref(XY)";
+            case IN_XZ:
+                return "Ref(XZ)";
+            case IN_YZ:
+                return "Ref(YZ)";
+            case IN_ORIGIN:
+                return "Ref(O)";
+            default:
+                return "Ref(?)";
+        }
     }
 
 }

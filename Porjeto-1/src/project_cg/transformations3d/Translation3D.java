@@ -5,6 +5,20 @@ import utils.Matrix;
 
 public class Translation3D {
 
+    private final double tx;
+    private final double ty;
+    private final double tz;
+
+    public Translation3D(double tx, double ty, double tz) {
+        this.tx = tx;
+        this.ty = ty;
+        this.tz = tz;
+    }
+
+    public double[][] getTransformation() {
+        return getMatrixTranslation(tx, ty, tz);
+    }
+
 	// Método para transladar um ponto 3D usando uma matriz de translação
     public static Point3D translatePoint(Point3D point, double tx, double ty, double tz) {
         double[][] pointHomogeneous = new double[][] {
@@ -29,6 +43,11 @@ public class Translation3D {
             { 0, 0, 1, 0 },
             { tx, ty, tz, 1 }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "T(" + tx + ", " + ty + ", " + tz + ")";
     }
 
 

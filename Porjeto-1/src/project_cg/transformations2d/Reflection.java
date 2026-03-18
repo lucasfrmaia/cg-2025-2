@@ -1,50 +1,34 @@
 package project_cg.transformations2d;
 
 import project_cg.geometry.points.Point2D;
+import project_cg.transformations.BaseTransformation2d;
 import utils.Matrix;
 
-public class Reflection  {
+public class Reflection  implements BaseTransformation2d {
 
-    public static Point2D reflectPpintInX(Point2D point) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
-
-        double[][] matrix = getReflectionMatrixInX();
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
-
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
+    public enum Type {
+        IN_X,
+        IN_Y,
+        IN_ORIGIN
     }
 
-    public static Point2D reflectPpintInY(Point2D point) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
+    private Type typeTransformation;
 
-        double[][] matrix = getReflectionMatrixInY();
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
-
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
+    public Reflection(Type value) {
+        this.typeTransformation = value;
     }
 
-    public static Point2D reflectPpintInOrigin(Point2D point) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
-
-        double[][] matrix = getReflectionMatrixInOrigin();
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
-
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
+    public double[][] getTransformation() {
+        switch (typeTransformation) {
+            case IN_X:
+                return getReflectionMatrixInX();
+            case IN_Y:
+                return getReflectionMatrixInY();
+            case IN_ORIGIN:
+                return getReflectionMatrixInOrigin();
+            default:
+                throw new IllegalArgumentException("Tipo de reflexão desconhecido: " + typeTransformation);
+        }
     }
 
     public static double[][] getReflectionMatrixInOrigin() {
@@ -71,5 +55,18 @@ public class Reflection  {
         };
     }
 
+    @Override
+    public String toString() {
+        switch (typeTransformation) {
+            case IN_X:
+                return "Rx";
+            case IN_Y:
+                return "Ry";
+            case IN_ORIGIN:
+                return "Rorigem";
+            default:
+                return "Tipo de reflexão desconhecido";
+        }
+    }
 
 }

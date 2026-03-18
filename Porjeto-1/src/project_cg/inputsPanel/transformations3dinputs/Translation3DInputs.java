@@ -57,7 +57,8 @@ public class Translation3DInputs extends ShapePanel {
                 return;
             }
 
-            plane3D.queueTransformation(Translation3D.getMatrixTranslation(tx, ty, tz));
+            plane3D.queueTransformation(new Translation3D(tx, ty, tz));
+            view.MainScreenV2.refreshQueuedTransformationsIndicator();
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Valor de translacao invalido. Insira valores numericos validos.", "Erro", JOptionPane.ERROR_MESSAGE);

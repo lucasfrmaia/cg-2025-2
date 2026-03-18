@@ -4,6 +4,7 @@ import project_cg.geometry.clipping.SutherlandHodgmanLineClipper;
 import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.MidpointLine;
+import project_cg.transformations.BaseTransformation2d;
 import project_cg.transformations2d.Translation;
 import utils.Matrix;
 
@@ -12,20 +13,40 @@ import java.util.List;
 
 public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
 
-    private final List<double[][]> pendingTransformationMatrices;
+    private final List<BaseTransformation2d> pendingTransformations;
     private final List<LineSegment> clippedSquareSegments;
 
     public QueuedTransformationsPlane() {
-        this.pendingTransformationMatrices = new ArrayList<>();
+        this.pendingTransformations = new ArrayList<>();
         this.clippedSquareSegments = new ArrayList<>();
     }
 
-    public void queueTransformation(double[][] transformationMatrix) {
-        if (transformationMatrix == null || transformationMatrix.length != 3 || transformationMatrix[0].length != 3) {
-            throw new IllegalArgumentException("A matriz de transformacao deve ser 3x3.");
+    public void queueTransformation(BaseTransformation2d transformation) {
+        if (transformation == null) {
+            throw new IllegalArgumentException("A transformacao nao pode ser nula.");
         }
 
-        pendingTransformationMatrices.add(transformationMatrix);
+        pendingTransformations.add(transformation);
+    }
+
+    public int getPendingTransformationsCount() {
+        return pendingTransformations.size();
+    }
+
+    public String getPendingTransformationsSummary() {
+        if (pendingTransformations.isEmpty()) {
+            return "Nenhuma";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < pendingTransformations.size(); i++) {
+            if (i > 0) {
+                builder.append(" -> ");
+            }
+            builder.append(pendingTransformations.get(i).toString());
+        }
+
+        return builder.toString();
     }
     
     public void applyQueuedTransformations(Square square) {
@@ -33,7 +54,7 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
             throw new IllegalArgumentException("O quadrado selecionado nao foi encontrado.");
         }
 
-        if (pendingTransformationMatrices.isEmpty()) {
+        if (pendingTransformations.isEmpty()) {
             throw new IllegalStateException("Nao ha transformacoes pendentes para o quadrado selecionado.");
         }
 
@@ -71,9 +92,11 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
     private double[][] buildComposedMatrixFromRightToLeft(Point2D focalPoint) {
         List<double[][]> multiplicationOrder = new ArrayList<>();
 
-        multiplicationOrder.add(Translation.getMatrixTranslation(-focalPoint.getX(), -focalPoint.getY()));
-        multiplicationOrder.addAll(pendingTransformationMatrices);
-        multiplicationOrder.add(Translation.getMatrixTranslation(focalPoint.getX(), focalPoint.getY()));
+        multiplicationOrder.add(new Translation(-focalPoint.getX(), -focalPoint.getY()).getTransformation());
+        for (BaseTransformation2d transformation : pendingTransformations) {
+            multiplicationOrder.add(transformation.getTransformation());
+        }
+        multiplicationOrder.add(new Translation(focalPoint.getX(), focalPoint.getY()).getTransformation());
 
         double[][] composedMatrix = getIdentityMatrix3x3();
 
@@ -109,7 +132,7 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
     }
 
     public void clearAllQueuedTransformations() {
-        pendingTransformationMatrices.clear();
+        pendingTransformations.clear();
     }
 
     private void updateClippedSegments(Square square) {
@@ -155,8 +178,6 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
     @Override
     public void clear() {
         super.clear();
-        clippedSquareSegments.clear();
-        clearAllQueuedTransformations();
     }
 
     @Override

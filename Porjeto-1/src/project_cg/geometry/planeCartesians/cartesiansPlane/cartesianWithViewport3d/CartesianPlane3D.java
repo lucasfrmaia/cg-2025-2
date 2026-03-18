@@ -4,6 +4,10 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import project_cg.geometry.points.Point3D;
+import project_cg.transformations3d.Reflection3D;
+import project_cg.transformations3d.Rotation3D;
+import project_cg.transformations3d.Scale3D;
+import project_cg.transformations3d.Shear3D;
 import project_cg.transformations3d.Translation3D;
 import utils.BaseJPanel;
 import utils.Matrix;
@@ -15,7 +19,7 @@ public class CartesianPlane3D extends BaseJPanel {
     private long window;
     private Point3D[] cubeVertices;
     private Viewport3D viewport3D;
-    private final List<double[][]> pendingTransformationMatrices;
+    private final List<Object> pendingTransformations;
 
     public CartesianPlane3D() {
         cubeVertices = new Point3D[]{
@@ -25,7 +29,7 @@ public class CartesianPlane3D extends BaseJPanel {
             new Point3D(1, 1, 1), new Point3D(0, 1, 1)
         };
 
-        pendingTransformationMatrices = new ArrayList<>();
+        pendingTransformations = new ArrayList<>();
         
         viewport3D = new Viewport3D(800, 50, 400, 400, this); // Posição e tamanho da viewport
     }
@@ -104,20 +108,40 @@ public class CartesianPlane3D extends BaseJPanel {
         this.cubeVertices = cubeVertices;
     }
 
-    public void queueTransformation(double[][] transformationMatrix) {
-        if (transformationMatrix == null || transformationMatrix.length != 4 || transformationMatrix[0].length != 4) {
-            throw new IllegalArgumentException("A matriz de transformacao 3D deve ser 4x4.");
+    public void queueTransformation(Object transformation) {
+        if (!(transformation instanceof Translation3D
+                || transformation instanceof Rotation3D
+                || transformation instanceof Scale3D
+                || transformation instanceof Shear3D
+                || transformation instanceof Reflection3D)) {
+            throw new IllegalArgumentException("Tipo de transformacao 3D invalido.");
         }
 
-        pendingTransformationMatrices.add(transformationMatrix);
+        pendingTransformations.add(transformation);
     }
 
     public int getPendingTransformationsCount() {
-        return pendingTransformationMatrices.size();
+        return pendingTransformations.size();
+    }
+
+    public String getPendingTransformationsSummary() {
+        if (pendingTransformations.isEmpty()) {
+            return "Nenhuma";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < pendingTransformations.size(); i++) {
+            if (i > 0) {
+                builder.append(" -> ");
+            }
+            builder.append(pendingTransformations.get(i).toString());
+        }
+
+        return builder.toString();
     }
 
     public void clearQueuedTransformations() {
-        pendingTransformationMatrices.clear();
+        pendingTransformations.clear();
     }
 
     public void applyQueuedTransformations() {
@@ -125,7 +149,7 @@ public class CartesianPlane3D extends BaseJPanel {
             throw new IllegalStateException("Vertices invalidos ou ausentes.");
         }
 
-        if (pendingTransformationMatrices.isEmpty()) {
+        if (pendingTransformations.isEmpty()) {
             throw new IllegalStateException("Nao ha transformacoes acumuladas para aplicar.");
         }
 
@@ -143,9 +167,11 @@ public class CartesianPlane3D extends BaseJPanel {
     private double[][] buildComposedMatrixFromRightToLeft(Point3D focalPoint) {
         List<double[][]> multiplicationOrder = new ArrayList<>();
 
-        multiplicationOrder.add(Translation3D.getMatrixTranslation(-focalPoint.getX(), -focalPoint.getY(), -focalPoint.getZ()));
-        multiplicationOrder.addAll(pendingTransformationMatrices);
-        multiplicationOrder.add(Translation3D.getMatrixTranslation(focalPoint.getX(), focalPoint.getY(), focalPoint.getZ()));
+        multiplicationOrder.add(new Translation3D(-focalPoint.getX(), -focalPoint.getY(), -focalPoint.getZ()).getTransformation());
+        for (Object transformation : pendingTransformations) {
+            multiplicationOrder.add(getTransformationMatrix(transformation));
+        }
+        multiplicationOrder.add(new Translation3D(focalPoint.getX(), focalPoint.getY(), focalPoint.getZ()).getTransformation());
 
         double[][] composedMatrix = getIdentityMatrix4x4();
 
@@ -154,6 +180,30 @@ public class CartesianPlane3D extends BaseJPanel {
         }
 
         return composedMatrix;
+    }
+
+    private double[][] getTransformationMatrix(Object transformation) {
+        if (transformation instanceof Translation3D) {
+            return ((Translation3D) transformation).getTransformation();
+        }
+
+        if (transformation instanceof Rotation3D) {
+            return ((Rotation3D) transformation).getTransformation();
+        }
+
+        if (transformation instanceof Scale3D) {
+            return ((Scale3D) transformation).getTransformation();
+        }
+
+        if (transformation instanceof Shear3D) {
+            return ((Shear3D) transformation).getTransformation();
+        }
+
+        if (transformation instanceof Reflection3D) {
+            return ((Reflection3D) transformation).getTransformation();
+        }
+
+        throw new IllegalArgumentException("Tipo de transformacao 3D nao suportado: " + transformation);
     }
 
     private double[][] getIdentityMatrix4x4() {

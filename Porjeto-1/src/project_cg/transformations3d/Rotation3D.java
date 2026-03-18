@@ -5,6 +5,33 @@ import utils.Matrix;
 
 public class Rotation3D {
 
+    public enum Axis {
+        X,
+        Y,
+        Z
+    }
+
+    private final Axis axis;
+    private final double angle;
+
+    public Rotation3D(Axis axis, double angle) {
+        this.axis = axis;
+        this.angle = angle;
+    }
+
+    public double[][] getTransformation() {
+        switch (axis) {
+            case X:
+                return getMatrixRotationX(angle);
+            case Y:
+                return getMatrixRotationY(angle);
+            case Z:
+                return getMatrixRotationZ(angle);
+            default:
+                throw new IllegalArgumentException("Eixo de rotacao desconhecido: " + axis);
+        }
+    }
+
     // Rotaciona o ponto em torno do eixo X
     public static Point3D rotateX(Point3D point, double angle) {
         double[][] pointHomogeneous = new double[][] {
@@ -84,6 +111,11 @@ public class Rotation3D {
             { 0, 0, 1, 0 },
             { 0, 0, 0, 1 }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "R" + axis + "(" + angle + ")";
     }
 
 }

@@ -1,22 +1,22 @@
 package project_cg.transformations2d;
 
 import project_cg.geometry.points.Point2D;
+import project_cg.transformations.BaseTransformation2d;
 import utils.Matrix;
 
-public class Translation {
+public class Translation implements BaseTransformation2d {
 
-    public static Point2D translatePoint(Point2D point, double tx, double ty) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
+    private double tx;
+    private double ty;
 
-        double[][] matrix = getMatrixTranslation(tx, ty);
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
+    public Translation(double tx, double ty) {
+        this.tx = tx;
+        this.ty = ty;
+    }
 
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
+    @Override
+    public double[][] getTransformation() {
+        return getMatrixTranslation(tx, ty);
     }
 
     public static double[][] getMatrixTranslation(double tx, double ty) {
@@ -27,6 +27,9 @@ public class Translation {
         };
     }
 
-
+    @Override
+    public String toString() {
+        return "T(" + tx + ", " + ty + ")";
+    }
 
 }

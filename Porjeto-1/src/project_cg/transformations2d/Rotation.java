@@ -1,22 +1,20 @@
 package project_cg.transformations2d;
 
 import project_cg.geometry.points.Point2D;
+import project_cg.transformations.BaseTransformation2d;
 import utils.Matrix;
 
-public class Rotation {
+public class Rotation implements BaseTransformation2d {
 
-    public static Point2D rotatePoint(Point2D point, double angle) {
-        double[][] pointHomogeneous = new double[][] {
-                { point.x, point.y, 1 },
-        };
+    private final double angle;
 
-        double[][] matrix = getMatrixRotation(angle);
-        double[][] result = Matrix.multiply(pointHomogeneous, matrix);
+    public Rotation(double angle) {
+        this.angle = angle;
+    }
 
-        return new Point2D(
-                result[0][0],
-                result[0][1]
-        );
+    @Override
+    public double[][] getTransformation() {
+        return getMatrixRotation(angle);
     }
 
     public static double[][] getMatrixRotation(double angle) {
@@ -27,6 +25,11 @@ public class Rotation {
                 { Math.sin(radians), Math.cos(radians), 0 },
                 { 0, 0, 1 }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "R(" + angle + ")";
     }
 
 

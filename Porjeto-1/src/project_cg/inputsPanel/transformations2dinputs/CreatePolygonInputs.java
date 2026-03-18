@@ -89,6 +89,7 @@ public class CreatePolygonInputs extends ShapePanel {
 
        QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
        plane.clearAllQueuedTransformations();
+    view.MainScreenV2.refreshQueuedTransformationsIndicator();
 
        mainScreen.geometricFiguresHandler.addFigure(square);
        mainScreen.updateFigures();

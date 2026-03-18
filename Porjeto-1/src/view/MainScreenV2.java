@@ -1,6 +1,8 @@
 package view;
 
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport3d.CartesianPlane3D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.recortePlanes.RecorteSutherlandHodgmanLinePlane;
+import project_cg.geometry.planeCartesians.cartesiansPlane.recortePlanes.RecorteSutherlandPlane;
 import project_cg.inputsPanel.transformations3dinputs.Reflection3DInputs;
 import project_cg.inputsPanel.transformations3dinputs.Rotation3DInputs;
 import project_cg.inputsPanel.transformations3dinputs.Scale3DInputs;
@@ -8,9 +10,6 @@ import project_cg.inputsPanel.transformations3dinputs.Shear3DInputs;
 import project_cg.inputsPanel.transformations3dinputs.StartCartesianPlaneInputs;
 import project_cg.inputsPanel.transformations3dinputs.Translation3DInputs;
 import project_cg.geometry.planeCartesians.cartesiansPlane.CartesianPlane2D;
-import project_cg.geometry.planeCartesians.cartesiansPlane.PixelCartesianPlane;
-import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;
-import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandHodgmanLinePlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.inputsPanel.conicSectionsInputs.ConicSectionsInputs;
@@ -45,6 +44,8 @@ import java.awt.*;
 
 public class MainScreenV2 {
 
+    private static MainScreenV2 instance;
+
     private final MainScreen mainScreen;
     private final DataOptions dataOptions;
 
@@ -54,7 +55,9 @@ public class MainScreenV2 {
     private final JComboBox<String> categoryCombo;
 
     private final JPanel inputPanelHolder;
+    private final JLabel queuedTransformationsLabel;
     private final JButton applyQueuedButton;
+    private final JButton clearButton;
 
     public MainScreenV2(MainScreen mainScreen) {
         this.mainScreen = mainScreen;
@@ -66,7 +69,11 @@ public class MainScreenV2 {
         this.categoryCombo = new JComboBox<>();
         this.inputPanelHolder = new JPanel();
         this.inputPanelHolder.setLayout(new GridBagLayout());
+        this.queuedTransformationsLabel = new JLabel("Transformacoes: Nenhuma");
         this.applyQueuedButton = new JButton("Aplicar Transformações");
+        this.clearButton = new JButton("Limpar");
+
+        instance = this;
 
         setupPlanesAndOptions();
         setupMainLayout();
@@ -78,7 +85,6 @@ public class MainScreenV2 {
         CartesianPlane2D primitivaPlane = new CartesianPlane2D();
         CartesianPlane2D bezierPlane = new CartesianPlane2D();
         QueuedTransformationsPlane transformacoesPlane = new QueuedTransformationsPlane();
-        PixelCartesianPlane pixelPlane = new PixelCartesianPlane();
         CartesianPlane2D conicSectionsPlane = new CartesianPlane2D();
         RecorteSutherlandPlane cohenSutherlandPlane = new RecorteSutherlandPlane();
         RecorteSutherlandHodgmanLinePlane sutherlandHodgmanPlane = new RecorteSutherlandHodgmanLinePlane();
@@ -87,7 +93,6 @@ public class MainScreenV2 {
         mainScreen.JPanelHandler.addJPanel("Primitivas", primitivaPlane);
         mainScreen.JPanelHandler.addJPanel("Algoritmo de Bezier", bezierPlane);
         mainScreen.JPanelHandler.addJPanel("Transformações", transformacoesPlane);
-        mainScreen.JPanelHandler.addJPanel("Pixel", pixelPlane);
         mainScreen.JPanelHandler.addJPanel("Seções Cônicas", conicSectionsPlane);
         mainScreen.JPanelHandler.addJPanel("Recorte de Linhas Cohen-Sutherland", cohenSutherlandPlane);
         mainScreen.JPanelHandler.addJPanel("Recorte de Linhas Sutherland-Hodgman", sutherlandHodgmanPlane);
@@ -145,17 +150,21 @@ public class MainScreenV2 {
 
         JLabel inputsTitle = new JLabel("Inputs da Categoria");
 
-        JButton clearButton = new JButton("Limpar");
         clearButton.addActionListener(e -> clearCurrentCategory());
 
         applyQueuedButton.addActionListener(e -> applyQueuedTransformationsForCurrentCategory());
         applyQueuedButton.setVisible(false);
 
+        queuedTransformationsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 6, 2));
+
+        JPanel actionButtons = new JPanel(new GridLayout(1, 2, 8, 0));
+        actionButtons.add(applyQueuedButton);
+        actionButtons.add(clearButton);
+
         JPanel footerButtons = new JPanel();
-        footerButtons.setLayout(new BoxLayout(footerButtons, BoxLayout.Y_AXIS));
-        footerButtons.add(applyQueuedButton);
-        footerButtons.add(Box.createVerticalStrut(6));
-        footerButtons.add(clearButton);
+        footerButtons.setLayout(new BorderLayout(0, 4));
+        footerButtons.add(queuedTransformationsLabel, BorderLayout.NORTH);
+        footerButtons.add(actionButtons, BorderLayout.CENTER);
 
         JScrollPane inputsScroll = new JScrollPane(inputPanelHolder);
         inputsScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -190,6 +199,7 @@ public class MainScreenV2 {
             showInputsByCategory(selectedCategory);
             updateViewportVisibility(selectedCategory);
             updateFooterButtons(selectedCategory);
+            updateQueuedTransformationsSummary();
             repaintCurrentCategory();
         });
     }
@@ -208,6 +218,7 @@ public class MainScreenV2 {
         showInputsByCategory("Primitivas");
         updateViewportVisibility("Primitivas");
         updateFooterButtons("Primitivas");
+        updateQueuedTransformationsSummary();
         repaintCurrentCategory();
 
         mainScreen.setLocationRelativeTo(null);
@@ -315,6 +326,7 @@ public class MainScreenV2 {
         mainScreen.JPanelHandler.resetCurrentJPanel();
         mainScreen.geometricFiguresHandler.resetFigures();
         refreshCartesianCards();
+        updateQueuedTransformationsSummary();
         repaintCurrentCategory();
     }
 
@@ -322,16 +334,22 @@ public class MainScreenV2 {
         if ("Transformações".equals(selectedCategory)) {
             applyQueuedButton.setText("Aplicar Transformações");
             applyQueuedButton.setVisible(true);
+            clearButton.setVisible(true);
+            queuedTransformationsLabel.setVisible(true);
             return;
         }
 
         if ("Plano 3D".equals(selectedCategory)) {
             applyQueuedButton.setText("Aplicar Transformações 3D");
             applyQueuedButton.setVisible(true);
+            clearButton.setVisible(true);
+            queuedTransformationsLabel.setVisible(true);
             return;
         }
 
         applyQueuedButton.setVisible(false);
+        clearButton.setVisible(false);
+        queuedTransformationsLabel.setVisible(false);
     }
 
     private void applyQueuedTransformationsForCurrentCategory() {
@@ -360,6 +378,7 @@ public class MainScreenV2 {
         try {
             plane.applyQueuedTransformations(square);
             mainScreen.updateFigures();
+            updateQueuedTransformationsSummary();
             JOptionPane.showMessageDialog(mainScreen, "Transformacoes acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(mainScreen, ex.getMessage());
@@ -384,10 +403,37 @@ public class MainScreenV2 {
 
         try {
             plane3D.applyQueuedTransformations();
+            updateQueuedTransformationsSummary();
             JOptionPane.showMessageDialog(mainScreen, "Transformacoes 3D acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException ex) {
             JOptionPane.showMessageDialog(mainScreen, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void updateQueuedTransformationsSummary() {
+        String selectedCategory = mainScreen.JPanelHandler.getCurrentCategory();
+
+        if ("Transformações".equals(selectedCategory)) {
+            QueuedTransformationsPlane plane2D = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
+            queuedTransformationsLabel.setText("Transformacoes: " + plane2D.getPendingTransformationsSummary());
+            return;
+        }
+
+        if ("Plano 3D".equals(selectedCategory)) {
+            CartesianPlane3D plane3D = (CartesianPlane3D) mainScreen.JPanelHandler.getPanelByCategory("Plano 3D");
+            queuedTransformationsLabel.setText("Transformacoes: " + plane3D.getPendingTransformationsSummary());
+            return;
+        }
+
+        queuedTransformationsLabel.setText("Transformacoes: Nenhuma");
+    }
+
+    public static void refreshQueuedTransformationsIndicator() {
+        if (instance == null) {
+            return;
+        }
+
+        instance.updateQueuedTransformationsSummary();
     }
 
     private void refreshCartesianCards() {
