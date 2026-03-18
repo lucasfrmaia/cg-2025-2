@@ -25,4 +25,6 @@ public class TrigometricCircle extends BaseCircle {
         }
     }
 
+
+
 }

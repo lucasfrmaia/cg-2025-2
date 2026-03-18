@@ -25,10 +25,6 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
         pendingTransformations.add(transformation);
     }
 
-    public int getPendingTransformationsCount() {
-        return pendingTransformations.size();
-    }
-
     public String getPendingTransformationsSummary() {
         if (pendingTransformations.isEmpty()) {
             return "Nenhuma";
@@ -75,9 +71,11 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
         List<double[][]> multiplicationOrder = new ArrayList<>();
 
         multiplicationOrder.add(new Translation(-focalPoint.getX(), -focalPoint.getY()).getTransformation());
+
         for (BaseTransformation2d transformation : pendingTransformations) {
             multiplicationOrder.add(transformation.getTransformation());
         }
+
         multiplicationOrder.add(new Translation(focalPoint.getX(), focalPoint.getY()).getTransformation());
 
         double[][] composedMatrix = getIdentityMatrix3x3();

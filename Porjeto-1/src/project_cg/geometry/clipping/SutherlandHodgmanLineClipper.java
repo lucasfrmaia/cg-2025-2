@@ -35,8 +35,8 @@ public class SutherlandHodgmanLineClipper {
             return null;
         }
 
-        Point2D first = vertices.get(0);
-        Point2D last = vertices.get(vertices.size() - 1);
+        Point2D first = vertices.getFirst();
+        Point2D last = vertices.getLast();
 
         return new Point2D[] {
                 new Point2D(first.x, first.y),
@@ -50,7 +50,7 @@ public class SutherlandHodgmanLineClipper {
         }
 
         List<Point2D> output = new ArrayList<>();
-        Point2D previous = input.get(input.size() - 1);
+        Point2D previous = input.getLast();
 
         for (Point2D current : input) {
             boolean currentInside = isInside(current, boundary);

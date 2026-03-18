@@ -99,15 +99,4 @@ public class Viewport2D {
         g.drawImage(image, viewportX, viewportY, null);
     }
 
-    public BufferedImage getImage() {
-        return this.image;
-    }
-
-    public int getWidth() {
-        return viewportWidth;
-    }
-
-    public int getHeight() {
-        return viewportHeight;
-    }
 }

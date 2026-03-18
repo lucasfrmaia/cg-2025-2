@@ -16,47 +16,53 @@ public class MidpointElipse extends BaseEllipse {
 
     // Algoritmo de ponto médio para desenhar a elipse centrada na origem
     @Override
-    public void drawEllipse(int a, int b) {
+    public void drawEllipse(int Rx, int Ry) {
+        // Inicialização das variáveis conforme o algoritmo do slide
+        int Rx2 = Rx * Rx;
+        int Ry2 = Ry * Ry;
+        int twoRx2 = 2 * Rx2;
+        int twoRy2 = 2 * Ry2;
+        int p;
         int x = 0;
-        int y = b;
-        int d1 = b * b - a * a * b + a * a / 4;
-        int dx = 2 * b * b * x;
-        int dy = 2 * a * a * y;
+        int y = Ry;
+        int px = 0;
+        int py = twoRx2 * y;
 
+        /* Plota o ponto inicial em cada quadrante (na origem) */
         plotEllipsePoints(x, y);
 
-        // Região 1
-        while (dx < dy) {
+        /* --- Região 1 --- */
+        p = (int) Math.round(Ry2 - (Rx2 * Ry) + (0.25 * Rx2));
+        while (px < py) {
             x++;
-            dx += 2 * b * b;
-            if (d1 < 0) {
-                d1 += dx + b * b;
+            px += twoRy2;
+            if (p < 0) {
+                p += Ry2 + px;
             } else {
                 y--;
-                dy -= 2 * a * a;
-                d1 += dx - dy + b * b;
+                py -= twoRx2;
+                p += Ry2 + px - py;
             }
-
             plotEllipsePoints(x, y);
         }
 
-        // Região 2
-        double d2 = b * b * (x + 0.5) * (x + 0.5) + a * a * (y - 1) * (y - 1) - a * a * b * b;
+        /* --- Região 2 --- */
+        p = (int) Math.round(Ry2 * (x + 0.5) * (x + 0.5) + Rx2 * (y - 1) * (y - 1) - Rx2 * Ry2);
         while (y > 0) {
             y--;
-            dy -= 2 * a * a;
-            if (d2 > 0) {
-                d2 += a * a - dy;
+            py -= twoRx2;
+            if (p > 0) {
+                p += Rx2 - py;
             } else {
                 x++;
-                dx += 2 * b * b;
-                d2 += a * a - dy + dx;
+                px += twoRy2;
+                p += Rx2 - py + px;
             }
             plotEllipsePoints(x, y);
         }
     }
 
-    // Plota os pontos da elipse em todos os octantes sem depender de cx e cy
+    // Plota os pontos da elipse em todos os quadrantes focados na origem
     private void plotEllipsePoints(int x, int y) {
         callback.accept(new Point2D(x, y));
         callback.accept(new Point2D(-x, y));

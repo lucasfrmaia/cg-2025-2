@@ -13,31 +13,41 @@ public class DDALine extends BaseLine {
         super(callback);
     }
 
-    public DDALine() {}
+    public DDALine() {
+    }
 
     @Override
     public void desenhaLinha(Point2D start, Point2D end) {
-        double x1 = start.x;
-        double y1 = start.y;
-        double x2 = end.x;
-        double y2 = end.y;
+        double x0 = start.x;
+        double y0 = start.y;
+        double xEnd = end.x;
+        double yEnd = end.y;
 
-        double dx = x2 - x1;
-        double dy = y2 - y1;
+        double dx = xEnd - x0;
+        double dy = yEnd - y0;
 
-        int steps = (int) Math.max(Math.abs(dx), Math.abs(dy));
+        double steps;
+        double xIncrement, yIncrement;
+        double x = x0;
+        double y = y0;
 
-        double xIncrement = dx / steps;
-        double yIncrement = dy / steps;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            steps = Math.abs(dx);
+        } else {
+            steps = Math.abs(dy);
+        }
 
-        double x = x1;
-        double y = y1;
+        xIncrement = dx / steps;
+        yIncrement = dy / steps;
 
-        for (int i = 0; i <= steps; i++) {
-            callback.accept(new Point2D(x, y));
-            x += xIncrement;
-            y += yIncrement;
+        callback.accept(new Point2D(Math.round(x), Math.round(y)));
+
+        for (int k = 0; k < steps; k++) {
+            x = x + xIncrement;
+            y = y + yIncrement;
+
+            callback.accept(new Point2D(Math.round(x), Math.round(y)));
         }
     }
-}
 
+}

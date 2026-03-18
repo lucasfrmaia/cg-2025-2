@@ -21,15 +21,15 @@ public class MidpointCircle extends BaseCircle {
 
         plotCirclePoints(x, y); // Desenha os pontos a partir da origem
 
-        while (x < y) {
-            x++;
+        while (y > x) {
             if (d < 0) {
-                d += 2 * x + 1;
+                d += 2 * x + 3;
             } else {
+                d += 2 * (x - y) + 5;
                 y--;
-                d += 2 * (x - y) + 1;
             }
 
+            x++;
             plotCirclePoints(x, y);
         }
     }
