@@ -3,6 +3,7 @@ package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewpor
 import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
 import project_cg.transformations.BaseTransformation2d;
+import project_cg.transformations2d.Reflection;
 import project_cg.transformations2d.Translation;
 import utils.Matrix;
 
@@ -50,49 +51,41 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
             throw new IllegalStateException("Nao ha transformacoes pendentes para o quadrado selecionado.");
         }
 
-        Point2D focalPoint = getFirstPointAsFocalPoint(square);
-        double[][] composedMatrix = buildComposedMatrixFromRightToLeft(focalPoint);
+        for (BaseTransformation2d transformation : pendingTransformations) {
+            applyTransformationInQueueOrder(square, transformation);
+        }
 
+        clearAllQueuedTransformations();
+    }
+
+    private void applyTransformationInQueueOrder(Square square, BaseTransformation2d transformation) {
+        double[][] transformationMatrix = transformation.getTransformation();
+
+        if (!(transformation instanceof Translation) && !(transformation instanceof Reflection)) {
+            Point2D focalPoint = getFirstPointAsFocalPoint(square);
+            transformationMatrix = composeMatrixAroundFocalPoint(transformationMatrix, focalPoint);
+        }
+
+        applyMatrixToSquare(square, transformationMatrix);
+    }
+
+    private double[][] composeMatrixAroundFocalPoint(double[][] transformationMatrix, Point2D focalPoint) {
+        double[][] toOrigin = new Translation(-focalPoint.getX(), -focalPoint.getY()).getTransformation();
+        double[][] backToFocal = new Translation(focalPoint.getX(), focalPoint.getY()).getTransformation();
+        return Matrix.multiply(Matrix.multiply(toOrigin, transformationMatrix), backToFocal);
+    }
+
+    private void applyMatrixToSquare(Square square, double[][] matrix) {
         square.getVertex(point -> {
             double[][] pointHomogeneous = new double[][] {
                     { point.getX(), point.getY(), 1 }
             };
 
-            double[][] result = Matrix.multiply(pointHomogeneous, composedMatrix);
+            double[][] result = Matrix.multiply(pointHomogeneous, matrix);
 
             Point2D transformedPoint = new Point2D(result[0][0], result[0][1]);
             point.updatePoint(transformedPoint);
         });
-
-        clearAllQueuedTransformations();
-    }
-
-    private double[][] buildComposedMatrixFromRightToLeft(Point2D focalPoint) {
-        List<double[][]> multiplicationOrder = new ArrayList<>();
-
-        multiplicationOrder.add(new Translation(-focalPoint.getX(), -focalPoint.getY()).getTransformation());
-
-        for (BaseTransformation2d transformation : pendingTransformations) {
-            multiplicationOrder.add(transformation.getTransformation());
-        }
-
-        multiplicationOrder.add(new Translation(focalPoint.getX(), focalPoint.getY()).getTransformation());
-
-        double[][] composedMatrix = getIdentityMatrix3x3();
-
-        for (double[][] matrix : multiplicationOrder) {
-            composedMatrix = Matrix.multiply(composedMatrix, matrix);
-        }
-
-        return composedMatrix;
-    }
-
-    private double[][] getIdentityMatrix3x3() {
-        return new double[][] {
-                { 1, 0, 0 },
-                { 0, 1, 0 },
-                { 0, 0, 1 }
-        };
     }
 
     private Point2D getFirstPointAsFocalPoint(Square square) {

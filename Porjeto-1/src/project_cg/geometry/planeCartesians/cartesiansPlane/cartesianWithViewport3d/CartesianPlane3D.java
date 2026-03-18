@@ -153,33 +153,29 @@ public class CartesianPlane3D extends BaseJPanel {
             throw new IllegalStateException("Nao ha transformacoes acumuladas para aplicar.");
         }
 
-        Point3D focalPoint = getFirstPointAsFocalPoint(cubeVertices);
-        double[][] composedMatrix = buildComposedMatrixFromRightToLeft(focalPoint);
-
-        for (int i = 0; i < cubeVertices.length; i++) {
-            cubeVertices[i] = multiplyPointByMatrix(cubeVertices[i], composedMatrix);
+        for (Object transformation : pendingTransformations) {
+            applyTransformationInQueueOrder(transformation);
         }
 
         update(cubeVertices);
         clearQueuedTransformations();
     }
 
-    private double[][] buildComposedMatrixFromRightToLeft(Point3D focalPoint) {
-        List<double[][]> multiplicationOrder = new ArrayList<>();
+    private void applyTransformationInQueueOrder(Object transformation) {
+        double[][] transformationMatrix = getTransformationMatrix(transformation);
 
-        multiplicationOrder.add(new Translation3D(-focalPoint.getX(), -focalPoint.getY(), -focalPoint.getZ()).getTransformation());
-        for (Object transformation : pendingTransformations) {
-            multiplicationOrder.add(getTransformationMatrix(transformation));
-        }
-        multiplicationOrder.add(new Translation3D(focalPoint.getX(), focalPoint.getY(), focalPoint.getZ()).getTransformation());
-
-        double[][] composedMatrix = getIdentityMatrix4x4();
-
-        for (double[][] matrix : multiplicationOrder) {
-            composedMatrix = Matrix.multiply(composedMatrix, matrix);
+        if (!(transformation instanceof Translation3D) && !(transformation instanceof Reflection3D)) {
+            Point3D focalPoint = getFirstPointAsFocalPoint(cubeVertices);
+            transformationMatrix = composeMatrixAroundFocalPoint(transformationMatrix, focalPoint);
         }
 
-        return composedMatrix;
+        applyMatrixToCube(transformationMatrix);
+    }
+
+    private double[][] composeMatrixAroundFocalPoint(double[][] transformationMatrix, Point3D focalPoint) {
+        double[][] toOrigin = new Translation3D(-focalPoint.getX(), -focalPoint.getY(), -focalPoint.getZ()).getTransformation();
+        double[][] backToFocal = new Translation3D(focalPoint.getX(), focalPoint.getY(), focalPoint.getZ()).getTransformation();
+        return Matrix.multiply(Matrix.multiply(toOrigin, transformationMatrix), backToFocal);
     }
 
     private double[][] getTransformationMatrix(Object transformation) {
@@ -206,13 +202,10 @@ public class CartesianPlane3D extends BaseJPanel {
         throw new IllegalArgumentException("Tipo de transformacao 3D nao suportado: " + transformation);
     }
 
-    private double[][] getIdentityMatrix4x4() {
-        return new double[][] {
-                { 1, 0, 0, 0 },
-                { 0, 1, 0, 0 },
-                { 0, 0, 1, 0 },
-                { 0, 0, 0, 1 }
-        };
+    private void applyMatrixToCube(double[][] matrix) {
+        for (int i = 0; i < cubeVertices.length; i++) {
+            cubeVertices[i] = multiplyPointByMatrix(cubeVertices[i], matrix);
+        }
     }
 
     private Point3D multiplyPointByMatrix(Point3D point, double[][] matrix) {
