@@ -22,16 +22,6 @@ public abstract class ShapePanel extends JPanel {
         calculateButton.addActionListener(e -> onCalculate());
     }
 
-    @Override
-    public int getHeight() {
-        return 800;
-    }
-
-    @Override
-    public int getWidth() {
-        return 600;
-    }
-
     protected abstract void initializeInputs();
 
     protected abstract String getLabelButtonCalcular();
@@ -41,55 +31,78 @@ public abstract class ShapePanel extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = currentGridY++;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 1;
         gbc.insets = new Insets(10, 0, 0, 0);
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         add(calculateButton, gbc);
     }
 
 
     protected void addInputField(String labelText, JTextField textField) {
+        normalizeTextFieldSize(textField);
+
         GridBagConstraints gbc = new GridBagConstraints();
         int leftPadding = isLeftAligned() ? 2 : 5;
-        gbc.insets = new Insets(4, leftPadding, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-
-
+        gbc.insets = new Insets(4, leftPadding, 2, 4);
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
-        gbc.weightx = 0;
-        gbc.anchor = isLeftAligned() ? GridBagConstraints.WEST : GridBagConstraints.EAST;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
         add(new JLabel(labelText), gbc);
 
-
-        gbc.gridx = 1;
-        gbc.weightx = isLeftAligned() ? 1.0 : 0;
+        gbc.gridy = currentGridY + 1;
+        gbc.insets = new Insets(0, leftPadding, 6, 4);
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(textField, gbc);
 
-        currentGridY++;
+        currentGridY += 2;
+    }
+
+    private void normalizeTextFieldSize(JTextField textField) {
+        Dimension compactSize = new Dimension(
+                Constants.INPUT_TEXT_FIELD_WIDTH,
+                Constants.INPUT_TEXT_FIELD_HEIGHT
+        );
+
+        textField.setPreferredSize(compactSize);
+        textField.setMinimumSize(compactSize);
     }
 
     protected void addComboBox(String labelText, JComboBox<String> comboBox) {
+        normalizeComboBoxSize(comboBox);
+
         GridBagConstraints gbc = new GridBagConstraints();
         int leftPadding = isLeftAligned() ? 2 : 5;
-        gbc.insets = new Insets(4, leftPadding, 4, 4);
-        gbc.anchor = GridBagConstraints.CENTER;
-
         gbc.gridx = 0;
         gbc.gridy = currentGridY;
-        gbc.weightx = 0;
-        gbc.anchor = isLeftAligned() ? GridBagConstraints.WEST : GridBagConstraints.EAST;
+        gbc.insets = new Insets(4, leftPadding, 2, 4);
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
         add(new JLabel(labelText), gbc);
 
-
-        gbc.gridx = 1;
-        gbc.weightx = isLeftAligned() ? 1.0 : 0;
+        gbc.gridy = currentGridY + 1;
+        gbc.insets = new Insets(0, leftPadding, 6, 4);
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(comboBox, gbc);
 
-        currentGridY++;
+        currentGridY += 2;
+    }
+
+    private void normalizeComboBoxSize(JComboBox<String> comboBox) {
+        Dimension compactSize = new Dimension(
+                Constants.INPUT_COMBO_BOX_WIDTH,
+                Constants.INPUT_COMBO_BOX_HEIGHT
+        );
+
+        comboBox.setPreferredSize(compactSize);
+        comboBox.setMinimumSize(compactSize);
+        comboBox.setMaximumSize(compactSize);
     }
 
 

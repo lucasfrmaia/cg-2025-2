@@ -20,7 +20,7 @@ public class CircleExplicitInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Desenhar";
     }
 
     @Override

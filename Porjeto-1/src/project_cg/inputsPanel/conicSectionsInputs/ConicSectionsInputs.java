@@ -24,7 +24,7 @@ public class ConicSectionsInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Desenhar";
     }
 
     @Override

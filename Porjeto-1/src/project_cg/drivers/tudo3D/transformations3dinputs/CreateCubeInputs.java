@@ -22,7 +22,7 @@ public class CreateCubeInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Desenhar";
     }
 
     @Override

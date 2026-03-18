@@ -21,7 +21,7 @@ public class DrawCustomLineInput extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Desenhar";
     }
 
     @Override

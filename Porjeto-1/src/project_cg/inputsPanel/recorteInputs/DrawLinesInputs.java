@@ -20,7 +20,7 @@ public class DrawLinesInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Gerar";
     }
 
     @Override

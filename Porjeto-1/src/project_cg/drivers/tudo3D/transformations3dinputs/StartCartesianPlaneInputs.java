@@ -14,7 +14,7 @@ public class StartCartesianPlaneInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Iniciar";
     }
 
     @Override

@@ -25,7 +25,7 @@ public class CreatePolygonInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Desenhar";
     }
 
     @Override

@@ -17,7 +17,7 @@ public class ApplyAlgorithmInputs extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Aplicar";
     }
 
     @Override

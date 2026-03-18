@@ -16,7 +16,7 @@ public class SizeWindowInput extends ShapePanel {
 
     @Override
     protected String getLabelButtonCalcular() {
-        return "Calcular";
+        return "Definir";
     }
 
     @Override
