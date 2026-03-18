@@ -41,6 +41,8 @@ import utils.GeometricFiguresHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainScreenV2 {
 
@@ -55,6 +57,7 @@ public class MainScreenV2 {
     private final JComboBox<String> categoryCombo;
 
     private final JPanel inputPanelHolder;
+    private final JLabel coordinatesLabel;
     private final JLabel queuedTransformationsLabel;
     private final JButton applyQueuedButton;
     private final JButton clearButton;
@@ -69,6 +72,7 @@ public class MainScreenV2 {
         this.categoryCombo = new JComboBox<>();
         this.inputPanelHolder = new JPanel();
         this.inputPanelHolder.setLayout(new GridBagLayout());
+        this.coordinatesLabel = new JLabel("Coordenadas: Nenhuma");
         this.queuedTransformationsLabel = new JLabel("Transformacoes: Nenhuma");
         this.applyQueuedButton = new JButton("Aplicar Transformações");
         this.clearButton = new JButton("Limpar");
@@ -155,6 +159,7 @@ public class MainScreenV2 {
         applyQueuedButton.addActionListener(e -> applyQueuedTransformationsForCurrentCategory());
         applyQueuedButton.setVisible(false);
 
+        coordinatesLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 4, 2));
         queuedTransformationsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 6, 2));
 
         JPanel actionButtons = new JPanel(new GridLayout(1, 2, 8, 0));
@@ -163,7 +168,12 @@ public class MainScreenV2 {
 
         JPanel footerButtons = new JPanel();
         footerButtons.setLayout(new BorderLayout(0, 4));
-        footerButtons.add(queuedTransformationsLabel, BorderLayout.NORTH);
+
+        JPanel footerInfo = new JPanel(new GridLayout(2, 1, 0, 2));
+        footerInfo.add(coordinatesLabel);
+        footerInfo.add(queuedTransformationsLabel);
+
+        footerButtons.add(footerInfo, BorderLayout.NORTH);
         footerButtons.add(actionButtons, BorderLayout.CENTER);
 
         JScrollPane inputsScroll = new JScrollPane(inputPanelHolder);
@@ -331,10 +341,12 @@ public class MainScreenV2 {
     }
 
     private void updateFooterButtons(String selectedCategory) {
+        clearButton.setVisible(true);
+
         if ("Transformações".equals(selectedCategory)) {
             applyQueuedButton.setText("Aplicar Transformações");
             applyQueuedButton.setVisible(true);
-            clearButton.setVisible(true);
+            coordinatesLabel.setVisible(true);
             queuedTransformationsLabel.setVisible(true);
             return;
         }
@@ -342,13 +354,13 @@ public class MainScreenV2 {
         if ("Plano 3D".equals(selectedCategory)) {
             applyQueuedButton.setText("Aplicar Transformações 3D");
             applyQueuedButton.setVisible(true);
-            clearButton.setVisible(true);
+            coordinatesLabel.setVisible(true);
             queuedTransformationsLabel.setVisible(true);
             return;
         }
 
         applyQueuedButton.setVisible(false);
-        clearButton.setVisible(false);
+        coordinatesLabel.setVisible(false);
         queuedTransformationsLabel.setVisible(false);
     }
 
@@ -416,16 +428,69 @@ public class MainScreenV2 {
         if ("Transformações".equals(selectedCategory)) {
             QueuedTransformationsPlane plane2D = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
             queuedTransformationsLabel.setText("Transformacoes: " + plane2D.getPendingTransformationsSummary());
+            coordinatesLabel.setText("Coordenadas: " + getSquareCoordinatesSummary());
             return;
         }
 
         if ("Plano 3D".equals(selectedCategory)) {
             CartesianPlane3D plane3D = (CartesianPlane3D) mainScreen.JPanelHandler.getPanelByCategory("Plano 3D");
             queuedTransformationsLabel.setText("Transformacoes: " + plane3D.getPendingTransformationsSummary());
+            coordinatesLabel.setText("Coordenadas: " + getCubeCoordinatesSummary(plane3D));
             return;
         }
 
+        coordinatesLabel.setText("Coordenadas: Nenhuma");
         queuedTransformationsLabel.setText("Transformacoes: Nenhuma");
+    }
+
+    private String getSquareCoordinatesSummary() {
+        Square square = getSingleTransformationSquare();
+        if (square == null) {
+            return "Quadrado nao encontrado";
+        }
+
+        List<String> vertices = new ArrayList<>();
+        final int[] index = {1};
+
+        square.getVertex(point -> {
+            vertices.add("V" + index[0] + "(" + formatCoordinate(point.getX()) + "," + formatCoordinate(point.getY()) + ")");
+            index[0]++;
+        });
+
+        if (vertices.isEmpty()) {
+            return "Quadrado sem vertices";
+        }
+
+        return String.join(" ", vertices);
+    }
+
+    private String getCubeCoordinatesSummary(CartesianPlane3D plane3D) {
+        if (plane3D == null || plane3D.getCubeVertices() == null || plane3D.getCubeVertices().length == 0) {
+            return "Cubo nao encontrado";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < plane3D.getCubeVertices().length; i++) {
+            if (i > 0) {
+                builder.append(" ");
+            }
+
+            builder.append("P")
+                    .append(i + 1)
+                    .append("(")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getX()))
+                    .append(",")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getY()))
+                    .append(",")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getZ()))
+                    .append(")");
+        }
+
+        return builder.toString();
+    }
+
+    private String formatCoordinate(double value) {
+        return String.format("%.2f", value);
     }
 
     public static void refreshQueuedTransformationsIndicator() {
