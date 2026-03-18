@@ -33,6 +33,7 @@ import project_cg.inputsPanel.transformations2dinputs.ShearInputs;
 import project_cg.inputsPanel.transformations2dinputs.TranslationInputs;
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
 import project_cg.geometry.figures.BaseFigure;
+import project_cg.geometry.figures.Square;
 import utils.Constants;
 import view.mainScreen.MainScreen;
 import utils.BaseJPanel;
@@ -347,9 +348,9 @@ public class MainScreenV2 {
     }
 
     private void applyQueuedTransformations2D() {
-        BaseFigure figure = getSingleTransformationFigure();
+        Square square = getSingleTransformationSquare();
 
-        if (figure == null) {
+        if (square == null) {
             JOptionPane.showMessageDialog(mainScreen, "Desenhe o quadrado de referencia antes de aplicar as transformacoes.");
             return;
         }
@@ -357,7 +358,7 @@ public class MainScreenV2 {
         QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
 
         try {
-            plane.applyQueuedTransformations(figure);
+            plane.applyQueuedTransformations(square);
             mainScreen.updateFigures();
             JOptionPane.showMessageDialog(mainScreen, "Transformacoes acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException | IllegalArgumentException ex) {
@@ -365,12 +366,17 @@ public class MainScreenV2 {
         }
     }
 
-    private BaseFigure getSingleTransformationFigure() {
-        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+    private Square getSingleTransformationSquare() {
+        if (mainScreen.geometricFiguresHandler.getFigures().size() != 1) {
             return null;
         }
 
-        return mainScreen.geometricFiguresHandler.getFigures().get(0);
+        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigures().get(0);
+        if (!(figure instanceof Square)) {
+            return null;
+        }
+
+        return (Square) figure;
     }
 
     private void applyQueuedTransformations3D() {

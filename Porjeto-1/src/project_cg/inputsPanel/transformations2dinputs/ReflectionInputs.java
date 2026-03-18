@@ -1,7 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
-import project_cg.geometry.points.Point2D;
+import project_cg.geometry.figures.Square;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Reflection;
 import utils.ShapePanel;
@@ -11,7 +11,6 @@ import view.mainScreen.MainScreenSingleton;
 import javax.swing.JOptionPane;
 import javax.swing.JComboBox;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class ReflectionInputs extends ShapePanel {
     private JComboBox<String> reflectionTypeComboBox;
@@ -39,32 +38,41 @@ public class ReflectionInputs extends ShapePanel {
 
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
 
-        Function<Point2D, Point2D> reflectionFunnction = switch (Objects.requireNonNull(reflectionType)) {
-            case "X" -> Reflection::reflectPpintInX;
-            case "Y" -> Reflection::reflectPpintInY;
-            case "Origem" -> Reflection::reflectPpintInOrigin;
+        double[][] reflectionMatrix = switch (Objects.requireNonNull(reflectionType)) {
+            case "X" -> Reflection.getReflectionMatrixInX();
+            case "Y" -> Reflection.getReflectionMatrixInY();
+            case "Origem" -> Reflection.getReflectionMatrixInOrigin();
             default -> null;
         };
 
-        BaseFigure figure = getSingleTransformationFigure(mainScreen);
+        Square square = getSingleTransformationSquare(mainScreen);
 
-        if (figure == null) {
+        if (square == null) {
             JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a reflexao.");
             return;
         }
 
         QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
 
-        assert reflectionFunnction != null;
-        plane.queueTransformation(figure.getID(), reflectionFunnction::apply);
+        if (reflectionMatrix == null) {
+            JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.");
+            return;
+        }
+
+        plane.queueTransformation(reflectionMatrix);
     }
 
-    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
-        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+    private Square getSingleTransformationSquare(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().size() != 1) {
             return null;
         }
 
-        return mainScreen.geometricFiguresHandler.getFigures().get(0);
+        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigures().get(0);
+        if (!(figure instanceof Square)) {
+            return null;
+        }
+
+        return (Square) figure;
     }
 }
 

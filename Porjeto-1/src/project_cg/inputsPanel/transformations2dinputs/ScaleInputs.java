@@ -1,6 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
+import project_cg.geometry.figures.Square;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.transformations2d.Scale;
 import utils.ShapePanel;
@@ -37,26 +38,31 @@ public class ScaleInputs extends ShapePanel {
             double sy = Double.parseDouble(scaleY.getText().trim());
 
             MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-            BaseFigure figure = getSingleTransformationFigure(mainScreen);
+            Square square = getSingleTransformationSquare(mainScreen);
 
-            if (figure == null) {
+            if (square == null) {
                 JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de adicionar a escala.");
                 return;
             }
 
             QueuedTransformationsPlane plane = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
-            plane.queueTransformation(figure.getID(), point -> Scale.scalePoint(point, sx, sy));
+            plane.queueTransformation(Scale.getMatrixScala(sx, sy));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Digite valores validos para escala X e Y.");
         }
     }
 
-    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
-        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+    private Square getSingleTransformationSquare(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().size() != 1) {
             return null;
         }
 
-        return mainScreen.geometricFiguresHandler.getFigures().get(0);
+        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigures().get(0);
+        if (!(figure instanceof Square)) {
+            return null;
+        }
+
+        return (Square) figure;
     }
 }
 

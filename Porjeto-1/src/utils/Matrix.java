@@ -67,5 +67,15 @@ public class Matrix {
         return result;
     }
 
+    public static void printMatrix(double[][] matrix) {
+        for (double[] row : matrix) {
+            for (double value : row) {
+                System.out.printf("%.2f ", value);
+            }
+            System.out.println();
+        }
+
+        System.out.println();
+    }
 
 }

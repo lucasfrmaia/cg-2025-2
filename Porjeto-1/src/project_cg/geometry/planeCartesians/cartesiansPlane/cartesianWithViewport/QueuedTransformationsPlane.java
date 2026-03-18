@@ -1,83 +1,83 @@
 package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport;
 
-import project_cg.geometry.figures.BaseFigure;
+import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
+import project_cg.transformations2d.Translation;
+import utils.Matrix;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
 
-    private final Map<String, List<TransformationOperation>> pendingTransformations;
+    private final List<double[][]> pendingTransformationMatrices;
 
     public QueuedTransformationsPlane() {
-        this.pendingTransformations = new LinkedHashMap<>();
+        this.pendingTransformationMatrices = new ArrayList<>();
     }
 
-    public void queueTransformation(String figureId, TransformationOperation operation) {
-        if (figureId == null || figureId.isBlank()) {
-            throw new IllegalArgumentException("Selecione uma figura valida para enfileirar a transformacao.");
+    public void queueTransformation(double[][] transformationMatrix) {
+        if (transformationMatrix == null || transformationMatrix.length != 3 || transformationMatrix[0].length != 3) {
+            throw new IllegalArgumentException("A matriz de transformacao deve ser 3x3.");
         }
 
-        Objects.requireNonNull(operation, "A transformacao nao pode ser nula.");
-
-        pendingTransformations
-                .computeIfAbsent(figureId, ignored -> new ArrayList<>())
-                .add(operation);
+        pendingTransformationMatrices.add(transformationMatrix);
     }
-
-    public int getPendingCount(String figureId) {
-        if (figureId == null || figureId.isBlank()) {
-            return 0;
+    
+    public void applyQueuedTransformations(Square square) {
+        if (square == null) {
+            throw new IllegalArgumentException("O quadrado selecionado nao foi encontrado.");
         }
 
-        return pendingTransformations.getOrDefault(figureId, List.of()).size();
-    }
-
-    public void applyQueuedTransformations(BaseFigure figure) {
-        if (figure == null) {
-            throw new IllegalArgumentException("A figura selecionada nao foi encontrada.");
+        if (pendingTransformationMatrices.isEmpty()) {
+            throw new IllegalStateException("Nao ha transformacoes pendentes para o quadrado selecionado.");
         }
 
-        String figureId = figure.getID();
-        List<TransformationOperation> operations = pendingTransformations.get(figureId);
+        Point2D focalPoint = getFirstPointAsFocalPoint(square);
+        double[][] composedMatrix = buildComposedMatrixFromRightToLeft(focalPoint);
 
-        if (operations == null || operations.isEmpty()) {
-            throw new IllegalStateException("Nao ha transformacoes pendentes para a figura selecionada.");
-        }
+        square.getVertex(point -> {
+            double[][] pointHomogeneous = new double[][] {
+                    { point.getX(), point.getY(), 1 }
+            };
 
-        List<TransformationOperation> operationsSnapshot = new ArrayList<>(operations);
+            double[][] result = Matrix.multiply(pointHomogeneous, composedMatrix);
 
-        Point2D focalPoint = getFirstPointAsFocalPoint(figure);
-
-        figure.getVertex(point -> {
-            Point2D transformedPoint = new Point2D(
-                    point.getX() - focalPoint.getX(),
-                    point.getY() - focalPoint.getY()
-            );
-
-            for (TransformationOperation operation : operationsSnapshot) {
-                transformedPoint = operation.apply(transformedPoint);
-            }
-
-            transformedPoint = new Point2D(
-                    transformedPoint.getX() + focalPoint.getX(),
-                    transformedPoint.getY() + focalPoint.getY()
-            );
-
+            Point2D transformedPoint = new Point2D(result[0][0], result[0][1]);
             point.updatePoint(transformedPoint);
         });
 
-        pendingTransformations.remove(figureId);
+        clearAllQueuedTransformations();
     }
 
-    private Point2D getFirstPointAsFocalPoint(BaseFigure figure) {
+    private double[][] buildComposedMatrixFromRightToLeft(Point2D focalPoint) {
+        List<double[][]> multiplicationOrder = new ArrayList<>();
+
+        multiplicationOrder.add(Translation.getMatrixTranslation(-focalPoint.getX(), -focalPoint.getY()));
+        multiplicationOrder.addAll(pendingTransformationMatrices);
+        multiplicationOrder.add(Translation.getMatrixTranslation(focalPoint.getX(), focalPoint.getY()));
+
+        double[][] composedMatrix = getIdentityMatrix3x3();
+
+        for (double[][] matrix : multiplicationOrder) {
+            composedMatrix = Matrix.multiply(composedMatrix, matrix);
+        }
+
+        return composedMatrix;
+    }
+
+    private double[][] getIdentityMatrix3x3() {
+        return new double[][] {
+                { 1, 0, 0 },
+                { 0, 1, 0 },
+                { 0, 0, 1 }
+        };
+    }
+
+    private Point2D getFirstPointAsFocalPoint(Square square) {
         final Point2D[] firstPoint = {null};
 
-        figure.getVertex(point -> {
+        square.getVertex(point -> {
             if (firstPoint[0] == null) {
                 firstPoint[0] = new Point2D(point.getX(), point.getY());
             }
@@ -90,16 +90,8 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
         return firstPoint[0];
     }
 
-    public void clearQueuedTransformations(String figureId) {
-        if (figureId == null || figureId.isBlank()) {
-            return;
-        }
-
-        pendingTransformations.remove(figureId);
-    }
-
     public void clearAllQueuedTransformations() {
-        pendingTransformations.clear();
+        pendingTransformationMatrices.clear();
     }
 
     @Override
@@ -115,8 +107,4 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
         return this;
     }
 
-    @FunctionalInterface
-    public interface TransformationOperation {
-        Point2D apply(Point2D point);
-    }
 }

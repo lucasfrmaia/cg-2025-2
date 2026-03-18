@@ -1,6 +1,7 @@
 package project_cg.inputsPanel.transformations2dinputs;
 
 import project_cg.geometry.figures.BaseFigure;
+import project_cg.geometry.figures.Square;
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import utils.ShapePanel;
 import view.mainScreen.MainScreen;
@@ -27,9 +28,9 @@ public class ApplyQueuedTransformationsInputs extends ShapePanel {
     @Override
     protected void onCalculate() {
         MainScreen mainScreen = MainScreenSingleton.getMainScreen();
-        BaseFigure figure = getSingleTransformationFigure(mainScreen);
+        Square square = getSingleTransformationSquare(mainScreen);
 
-        if (figure == null) {
+        if (square == null) {
             JOptionPane.showMessageDialog(this, "Desenhe o quadrado de referencia antes de aplicar as transformacoes.");
             return;
         }
@@ -37,7 +38,7 @@ public class ApplyQueuedTransformationsInputs extends ShapePanel {
         QueuedTransformationsPlane plane = getQueuedPlane(mainScreen);
 
         try {
-            plane.applyQueuedTransformations(figure);
+            plane.applyQueuedTransformations(square);
             mainScreen.updateFigures();
             JOptionPane.showMessageDialog(this, "Transformacoes acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException | IllegalArgumentException ex) {
@@ -45,12 +46,17 @@ public class ApplyQueuedTransformationsInputs extends ShapePanel {
         }
     }
 
-    private BaseFigure getSingleTransformationFigure(MainScreen mainScreen) {
-        if (mainScreen.geometricFiguresHandler.getFigures().isEmpty()) {
+    private Square getSingleTransformationSquare(MainScreen mainScreen) {
+        if (mainScreen.geometricFiguresHandler.getFigures().size() != 1) {
             return null;
         }
 
-        return mainScreen.geometricFiguresHandler.getFigures().get(0);
+        BaseFigure figure = mainScreen.geometricFiguresHandler.getFigures().get(0);
+        if (!(figure instanceof Square)) {
+            return null;
+        }
+
+        return (Square) figure;
     }
 
     private QueuedTransformationsPlane getQueuedPlane(MainScreen mainScreen) {

@@ -60,6 +60,13 @@ public class Square extends BaseFigure {
         }
     }
 
+    public void printSquare() {
+        System.out.println("Vertices do quadrado:");
+        for (int i = 0; i < 4; i++) {
+            System.out.printf("Vertice %d: %s%n", i + 1, vertices[i]);
+        }
+    }
+
     @Override
     public String getID() {
         return this.id;

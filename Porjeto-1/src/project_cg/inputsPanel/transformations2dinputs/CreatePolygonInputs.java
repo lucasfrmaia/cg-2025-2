@@ -30,10 +30,10 @@ public class CreatePolygonInputs extends ShapePanel {
 
     @Override
     protected void initializeInputs() {
-        pointsInput1 = new JTextField(16);
-        pointsInput2 = new JTextField(16);
-        pointsInput3 = new JTextField(16);
-        pointsInput4 = new JTextField(16);
+        pointsInput1 = new JTextField("20 20");
+        pointsInput2 = new JTextField("20 100");
+        pointsInput3 = new JTextField("100 100");
+        pointsInput4 = new JTextField("100 20");
 
         addInputField("P1 (x y):", pointsInput1);
         addInputField("P2 (x y):", pointsInput2);
