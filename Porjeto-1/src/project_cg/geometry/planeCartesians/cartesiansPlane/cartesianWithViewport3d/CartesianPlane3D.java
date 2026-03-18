@@ -31,7 +31,7 @@ public class CartesianPlane3D extends BaseJPanel {
 
         pendingTransformations = new ArrayList<>();
         
-        viewport3D = new Viewport3D(800, 50, 400, 400, this); // Posição e tamanho da viewport
+        viewport3D = new Viewport3D(800, 50, 250, 250, this); // Posição e tamanho da viewport
     }
 
     @Override

@@ -19,4 +19,8 @@ public interface LineClippingPlane {
     int getViewportWidthValue();
 
     int getViewportHeightValue();
+
+    void setHideClippedSegments(boolean hideClippedSegments);
+
+    boolean isHideClippedSegments();
 }

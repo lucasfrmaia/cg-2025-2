@@ -21,6 +21,7 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
     private final List<LineSegment> originalLines;
     private final List<LineSegment> clippedLines;
     private final Random random;
+    private boolean hideClippedSegments;
 
     private int viewportWidth;
     private int viewportHeight;
@@ -33,6 +34,7 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
         this.originalLines = new ArrayList<>();
         this.clippedLines = new ArrayList<>();
         this.random = new Random();
+        this.hideClippedSegments = false;
 
         setViewportSize(DEFAULT_VIEWPORT_WIDTH, DEFAULT_VIEWPORT_HEIGHT);
         generateRandomLines(DEFAULT_RANDOM_LINES);
@@ -130,6 +132,17 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
     }
 
     @Override
+    public void setHideClippedSegments(boolean hideClippedSegments) {
+        this.hideClippedSegments = hideClippedSegments;
+        redrawScene();
+    }
+
+    @Override
+    public boolean isHideClippedSegments() {
+        return hideClippedSegments;
+    }
+
+    @Override
     public void clear() {
         originalLines.clear();
         clippedLines.clear();
@@ -164,8 +177,16 @@ public class RecorteSutherlandHodgmanLinePlane extends CartesianPlane2D implemen
     private void redrawScene() {
         drawCartesianPlane();
         drawViewportWindowCenteredAtOrigin();
-        drawSegments(originalLines, Color.RED.getRGB());
-        drawSegments(clippedLines, Color.GREEN.getRGB());
+
+        if (clippedLines.isEmpty()) {
+            drawSegments(originalLines, Color.RED.getRGB());
+        } else if (hideClippedSegments) {
+            drawSegments(clippedLines, Color.RED.getRGB());
+        } else {
+            drawSegments(originalLines, Color.RED.getRGB());
+            drawSegments(clippedLines, Color.GREEN.getRGB());
+        }
+
         repaint();
     }
 

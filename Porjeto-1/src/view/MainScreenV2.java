@@ -14,6 +14,7 @@ import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import project_cg.inputsPanel.conicSectionsInputs.ConicSectionsInputs;
 import project_cg.inputsPanel.recorteInputs.ApplyAlgorithmInputs;
+import project_cg.inputsPanel.recorteInputs.ClipVisualizationModeInput;
 import project_cg.inputsPanel.recorteInputs.DrawCustomLineInput;
 import project_cg.inputsPanel.recorteInputs.DrawLinesInputs;
 import project_cg.inputsPanel.recorteInputs.SizeWindowInput;
@@ -125,11 +126,13 @@ public class MainScreenV2 {
         dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Definir tamanho da viewport", new SizeWindowInput());
         dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
         dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Desenhar reta customizada", new DrawCustomLineInput());
+        dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Modo de visualizacao do recorte", new ClipVisualizationModeInput());
         dataOptions.addOption("Recorte de Linhas Cohen-Sutherland", "Aplicar recorte de Cohen-Sutherland", new ApplyAlgorithmInputs());
 
         dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Definir tamanho da viewport", new SizeWindowInput());
         dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Gerar linhas aleatorias dentro e fora da viewport", new DrawLinesInputs());
         dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Desenhar reta customizada", new DrawCustomLineInput());
+        dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Modo de visualizacao do recorte", new ClipVisualizationModeInput());
         dataOptions.addOption("Recorte de Linhas Sutherland-Hodgman", "Aplicar recorte de Sutherland-Hodgman", new ApplyAlgorithmInputs());
 
         dataOptions.addOption("Plano 3D", "Iniciar Janela 3D", new StartCartesianPlaneInputs());
@@ -391,7 +394,6 @@ public class MainScreenV2 {
             plane.applyQueuedTransformations(square);
             mainScreen.updateFigures();
             updateQueuedTransformationsSummary();
-            JOptionPane.showMessageDialog(mainScreen, "Transformacoes acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException | IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(mainScreen, ex.getMessage());
         }
@@ -416,7 +418,6 @@ public class MainScreenV2 {
         try {
             plane3D.applyQueuedTransformations();
             updateQueuedTransformationsSummary();
-            JOptionPane.showMessageDialog(mainScreen, "Transformacoes 3D acumuladas aplicadas com sucesso.");
         } catch (IllegalStateException ex) {
             JOptionPane.showMessageDialog(mainScreen, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
