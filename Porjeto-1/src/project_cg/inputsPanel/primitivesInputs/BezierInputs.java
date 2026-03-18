@@ -1,6 +1,6 @@
 package project_cg.inputsPanel.primitivesInputs;
 
-import project_cg.drivers.bezierAlgorithm.Bezier;
+import project_cg.geometry.bezierAlgorithm.Bezier;
 import project_cg.geometry.figures.BezierCurve;
 import project_cg.geometry.points.Point2D;
 import utils.ShapePanel;

@@ -1,12 +1,12 @@
 package view;
 
-import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
-import project_cg.drivers.tudo3D.transformations3dinputs.Reflection3DInputs;
-import project_cg.drivers.tudo3D.transformations3dinputs.Rotation3DInputs;
-import project_cg.drivers.tudo3D.transformations3dinputs.Scale3DInputs;
-import project_cg.drivers.tudo3D.transformations3dinputs.Shear3DInputs;
-import project_cg.drivers.tudo3D.transformations3dinputs.StartCartesianPlaneInputs;
-import project_cg.drivers.tudo3D.transformations3dinputs.Translation3DInputs;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport3d.CartesianPlane3D;
+import project_cg.inputsPanel.transformations3dinputs.Reflection3DInputs;
+import project_cg.inputsPanel.transformations3dinputs.Rotation3DInputs;
+import project_cg.inputsPanel.transformations3dinputs.Scale3DInputs;
+import project_cg.inputsPanel.transformations3dinputs.Shear3DInputs;
+import project_cg.inputsPanel.transformations3dinputs.StartCartesianPlaneInputs;
+import project_cg.inputsPanel.transformations3dinputs.Translation3DInputs;
 import project_cg.geometry.planeCartesians.cartesiansPlane.CartesianPlane2D;
 import project_cg.geometry.planeCartesians.cartesiansPlane.PixelCartesianPlane;
 import project_cg.geometry.planeCartesians.cartesiansPlane.RecorteSutherlandPlane;

@@ -1,6 +1,6 @@
-package project_cg.drivers.tudo3D.transformations3d;
+package project_cg.transformations3d;
 
-import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
+import project_cg.geometry.points.Point3D;
 import utils.Matrix;
 
 public class Reflection3D {

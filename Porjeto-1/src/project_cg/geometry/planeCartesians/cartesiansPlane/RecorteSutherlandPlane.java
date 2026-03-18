@@ -1,6 +1,6 @@
 package project_cg.geometry.planeCartesians.cartesiansPlane;
 
-import project_cg.drivers.clipping.CohenSutherlandLineClipper;
+import project_cg.geometry.clipping.CohenSutherlandLineClipper;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.MidpointLine;
 import utils.Constants;

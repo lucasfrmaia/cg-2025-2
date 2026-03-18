@@ -59,8 +59,8 @@ public class Viewport2D {
         double normalizedX = (double) (x - worldXMin) / (worldXMax - worldXMin);
         double normalizedY = (double) (y - worldYMin) / (worldYMax - worldYMin);
 
-        int viewportX = (int) (normalizedX * viewportWidth);
-        int viewportY = (int) ((1 - normalizedY) * viewportHeight); // Inverte o eixo Y para a tela
+        int viewportX = (int) Math.round(normalizedX * (viewportWidth - 1));
+        int viewportY = (int) Math.round((1 - normalizedY) * (viewportHeight - 1)); // Inverte o eixo Y para a tela
 
         if (viewportX >= 0 && viewportX < viewportWidth && viewportY >= 0 && viewportY < viewportHeight) {
             return new Point2D(viewportX, viewportY);

@@ -1,4 +1,4 @@
-package project_cg.drivers.clipping;
+package project_cg.geometry.clipping;
 
 import project_cg.geometry.points.Point2D;
 

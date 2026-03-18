@@ -1,10 +1,9 @@
-package project_cg.drivers.tudo3D.geometry3d.planeCartesians3d;
+package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport3d;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
-import project_cg.drivers.viewport3d.Viewport3D;
+import project_cg.geometry.points.Point3D;
 import utils.BaseJPanel;
 
 import java.util.ArrayList;

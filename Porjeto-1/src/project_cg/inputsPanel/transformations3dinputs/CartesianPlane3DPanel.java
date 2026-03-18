@@ -1,8 +1,8 @@
-package project_cg.drivers.tudo3D.transformations3dinputs;
+package project_cg.inputsPanel.transformations3dinputs;
 
 import javax.swing.*;
 
-import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
+import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport3d.CartesianPlane3D;
 
 import java.awt.*;
 

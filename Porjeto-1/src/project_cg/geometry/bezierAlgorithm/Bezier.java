@@ -1,4 +1,4 @@
-package project_cg.drivers.bezierAlgorithm;
+package project_cg.geometry.bezierAlgorithm;
 
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.bases.BasePrimitives;

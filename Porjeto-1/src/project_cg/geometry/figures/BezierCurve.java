@@ -1,6 +1,6 @@
 package project_cg.geometry.figures;
 
-import project_cg.drivers.bezierAlgorithm.Bezier;
+import project_cg.geometry.bezierAlgorithm.Bezier;
 import project_cg.geometry.points.Point2D;
 
 import java.awt.*;

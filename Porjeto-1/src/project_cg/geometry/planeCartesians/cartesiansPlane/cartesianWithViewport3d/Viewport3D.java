@@ -1,8 +1,7 @@
-package project_cg.drivers.viewport3d;
+package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport3d;
 
 import org.lwjgl.opengl.GL11;
-import project_cg.drivers.tudo3D.geometry3d.planeCartesians3d.CartesianPlane3D;
-import project_cg.drivers.tudo3D.geometry3d.points3d.Point3D;
+import project_cg.geometry.points.Point3D;
 
 public class Viewport3D {
     private final int viewportWidth;
