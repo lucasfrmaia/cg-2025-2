@@ -111,70 +111,138 @@ public class MidpointLine extends BaseLine {
 
     // Implementações para cada octante, agora com Point2D
     private void desenhaOctante1(Point2D start, Point2D end) {
-        int x1 = (int) start.x, y1 = (int) start.y, x2 = (int) end.x, y2 = (int) end.y;
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int d = 2 * dy - dx;
+        int x1 = (int) start.x;
+        int y1 = (int) start.y;
+        int x2 = (int) end.x;
+        int y2 = (int) end.y;
+
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+
+        int d = 2 * dy - dx;          // decisão inicial
+        int incE = 2 * dy;            // incremento para E
+        int incNE = 2 * (dy - dx);    // incremento para NE
+
+        int x = x1;
         int y = y1;
 
-        for (int x = x1; x <= x2; x++) {
-            callback.accept(new Point2D(x, y));
-            if (d > 0) {
-                y++;
-                d -= 2 * dx;
+        callback.accept(new Point2D(x, y));
+
+        while (x < x2) {
+            if (d <= 0) {
+                // Escolhe E
+                d += incE;
+                x = x + 1;
+            } else {
+                // Escolhe NE
+                d += incNE;
+                x = x + 1;
+                y = y + 1;
             }
-            d += 2 * dy;
+
+            callback.accept(new Point2D(x, y));
         }
     }
 
     private void desenhaOctante2(Point2D start, Point2D end) {
-        int x1 = (int) start.x, y1 = (int) start.y, x2 = (int) end.x, y2 = (int) end.y;
+        int x1 = (int) start.x;
+        int y1 = (int) start.y;
+        int x2 = (int) end.x;
+        int y2 = (int) end.y;
+
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
-        int d = 2 * dx - dy;
-        int x = x1;
 
-        for (int y = y1; y <= y2; y++) {
-            callback.accept(new Point2D(x, y));
-            if (d > 0) {
-                x++;
-                d -= 2 * dy;
+        int d = 2 * dx - dy;
+        int incN = 2 * dx;
+        int incNE = 2 * (dx - dy);
+
+        int x = x1;
+        int y = y1;
+
+        callback.accept(new Point2D(x, y));
+
+        while (y < y2) {
+            if (d <= 0) {
+                // Escolhe N
+                d += incN;
+                y = y + 1;
+            } else {
+                // Escolhe NE
+                d += incNE;
+                x = x + 1;
+                y = y + 1;
             }
-            d += 2 * dx;
+
+            callback.accept(new Point2D(x, y));
         }
     }
 
     private void desenhaOctante3(Point2D start, Point2D end) {
-        int x1 = (int) start.x, y1 = (int) start.y, x2 = (int) end.x, y2 = (int) end.y;
+        int x1 = (int) start.x;
+        int y1 = (int) start.y;
+        int x2 = (int) end.x;
+        int y2 = (int) end.y;
+
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
-        int d = 2 * dx - dy;
-        int x = x1;
 
-        for (int y = y1; y <= y2; y++) {
-            callback.accept(new Point2D(x, y));
-            if (d > 0) {
-                x--;
-                d -= 2 * dy;
+        int d = 2 * dx - dy;
+        int incN = 2 * dx;
+        int incNW = 2 * (dx - dy);
+
+        int x = x1;
+        int y = y1;
+
+        callback.accept(new Point2D(x, y));
+
+        while (y < y2) {
+            if (d <= 0) {
+                // Escolhe N
+                d += incN;
+                y = y + 1;
+            } else {
+                // Escolhe NW
+                d += incNW;
+                x = x - 1;
+                y = y + 1;
             }
-            d += 2 * dx;
+
+            callback.accept(new Point2D(x, y));
         }
     }
 
     private void desenhaOctante4(Point2D start, Point2D end) {
-        int x1 = (int) start.x, y1 = (int) start.y, x2 = (int) end.x, y2 = (int) end.y;
+        int x1 = (int) start.x;
+        int y1 = (int) start.y;
+        int x2 = (int) end.x;
+        int y2 = (int) end.y;
+
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
+
         int d = 2 * dy - dx;
+        int incW = 2 * dy;
+        int incNW = 2 * (dy - dx);
+
+        int x = x1;
         int y = y1;
 
-        for (int x = x1; x >= x2; x--) {
-            callback.accept(new Point2D(x, y));
-            if (d > 0) {
-                y++;
-                d -= 2 * dx;
+        callback.accept(new Point2D(x, y));
+
+        while (x > x2) {
+            if (d <= 0) {
+                // Escolhe W
+                d += incW;
+                x = x - 1;
+            } else {
+                // Escolhe NW
+                d += incNW;
+                x = x - 1;
+                y = y + 1;
             }
-            d += 2 * dy;
+
+            callback.accept(new Point2D(x, y));
         }
     }
 

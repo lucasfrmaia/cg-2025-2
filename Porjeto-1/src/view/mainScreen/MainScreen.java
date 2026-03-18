@@ -2,11 +2,9 @@ package view.mainScreen;
 
 import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.CartesianPlane2DWithViewport;
 import project_cg.geometry.figures.BaseFigure;
-import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
 import utils.Constants;
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
-import project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport.QueuedTransformationsPlane;
 import utils.JPanelHandler;
 import utils.GeometricFiguresHandler;
 
@@ -106,17 +104,7 @@ public class MainScreen extends JFrame {
         BaseCartesianPlane cartesianPlane1 = JPanelHandler.getCurrentCartesianPlane();
         cartesianPlane1.clear();
 
-        QueuedTransformationsPlane queuedPlane = null;
-        if (cartesianPlane1 instanceof QueuedTransformationsPlane) {
-            queuedPlane = (QueuedTransformationsPlane) cartesianPlane1;
-        }
-
         for(BaseFigure figure : geometricFiguresHandler.getFigures()) {
-            if (queuedPlane != null && figure instanceof Square && queuedPlane.hasClippedSegments()) {
-                queuedPlane.drawClippedSquare(figure.getColor());
-                continue;
-            }
-
             for(Point2D point2D : figure.getPoints()) {
                 cartesianPlane1.setPixel(point2D, figure.getColor());
             }
