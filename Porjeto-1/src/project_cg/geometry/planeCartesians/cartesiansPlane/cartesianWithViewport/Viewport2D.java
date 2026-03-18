@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 
 public class Viewport2D {
 
+    private static final int VIEWPORT_BORDER_COLOR = Color.CYAN.getRGB();
+
     private final int viewportWidth;
     private final int viewportHeight;
     private final int viewportX;
@@ -52,6 +54,24 @@ public class Viewport2D {
                     }
                 }
             }
+        }
+
+        drawViewportBounds();
+    }
+
+    private void drawViewportBounds() {
+        if (viewportWidth <= 0 || viewportHeight <= 0) {
+            return;
+        }
+
+        for (int x = 0; x < viewportWidth; x++) {
+            image.setRGB(x, 0, VIEWPORT_BORDER_COLOR);
+            image.setRGB(x, viewportHeight - 1, VIEWPORT_BORDER_COLOR);
+        }
+
+        for (int y = 0; y < viewportHeight; y++) {
+            image.setRGB(0, y, VIEWPORT_BORDER_COLOR);
+            image.setRGB(viewportWidth - 1, y, VIEWPORT_BORDER_COLOR);
         }
     }
 

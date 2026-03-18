@@ -124,7 +124,6 @@ public class MainScreen extends JFrame {
 
         if (cartesianPlane1 instanceof CartesianPlane2DWithViewport) {
             CartesianPlane2DWithViewport planeWithViewport = (CartesianPlane2DWithViewport) cartesianPlane1;
-            planeWithViewport.drawViewportBounds();
             planeWithViewport.updateViewport();
         }
 

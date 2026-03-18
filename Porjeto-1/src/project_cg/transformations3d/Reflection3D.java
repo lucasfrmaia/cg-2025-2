@@ -108,25 +108,5 @@ public class Reflection3D {
             { 0, 0, 0, 1 }
         };
     }
-    
-    public static void main(String[] args) {
-        Point3D originalPoint = new Point3D(1.0, 2.0, 3.0);
-        System.out.println("Ponto original: " + originalPoint);
 
-        // Reflexão no plano XY
-        Point3D reflectedXY = Reflection3D.reflectInXY(originalPoint);
-        System.out.println("Reflexão no plano XY: " + reflectedXY);
-
-        // Reflexão no plano XZ
-        Point3D reflectedXZ = Reflection3D.reflectInXZ(originalPoint);
-        System.out.println("Reflexão no plano XZ: " + reflectedXZ);
-
-        // Reflexão no plano YZ
-        Point3D reflectedYZ = Reflection3D.reflectInYZ(originalPoint);
-        System.out.println("Reflexão no plano YZ: " + reflectedYZ);
-
-        // Reflexão na origem
-        Point3D reflectedOrigin = Reflection3D.reflectInOrigin(originalPoint);
-        System.out.println("Reflexão na origem: " + reflectedOrigin);
-    }
 }

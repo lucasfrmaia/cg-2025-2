@@ -9,7 +9,6 @@ import utils.ShapePanel;
 
 import javax.swing.*;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class Reflection3DInputs extends ShapePanel {
     private JComboBox<String> reflectionTypeComboBox;
@@ -40,16 +39,15 @@ public class Reflection3DInputs extends ShapePanel {
 
         String reflectionType = (String) reflectionTypeComboBox.getSelectedItem();
 
-        // Seleciona a funcao de reflexao com base na escolha do usuario
-        Function<Point3D, Point3D> reflectionFunction = switch (Objects.requireNonNull(reflectionType)) {
-            case "XY" -> Reflection3D::reflectInXY;
-            case "XZ" -> Reflection3D::reflectInXZ;
-            case "YZ" -> Reflection3D::reflectInYZ;
-            case "Origem" -> Reflection3D::reflectInOrigin;
+        double[][] reflectionMatrix = switch (Objects.requireNonNull(reflectionType)) {
+            case "XY" -> Reflection3D.getReflectionMatrixInXY();
+            case "XZ" -> Reflection3D.getReflectionMatrixInXZ();
+            case "YZ" -> Reflection3D.getReflectionMatrixInYZ();
+            case "Origem" -> Reflection3D.getReflectionMatrixInOrigin();
             default -> null;
         };
 
-        if (reflectionFunction != null) {
+        if (reflectionMatrix != null) {
             Point3D[] vertices = plane3D.getCubeVertices();
 
             if (vertices == null || vertices.length != 8) {
@@ -57,7 +55,7 @@ public class Reflection3DInputs extends ShapePanel {
                 return;
             }
 
-            plane3D.queueTransformation(reflectionFunction::apply);
+            plane3D.queueTransformation(reflectionMatrix);
         } else {
             JOptionPane.showMessageDialog(this, "Tipo de reflexao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
         }

@@ -49,15 +49,14 @@ public class Shear3DInputs extends ShapePanel {
             double shearFactor1 = Double.parseDouble(shearFactor1Input.getText());
             double shearFactor2 = Double.parseDouble(shearFactor2Input.getText());
 
-            // Seleciona a funcao de cisalhamento com base no eixo escolhido
-            ShearFunction shearFunction = switch (Objects.requireNonNull(axis)) {
-                case "X (Y, Z)" -> Shear3D::shearX;
-                case "Y (X, Z)" -> Shear3D::shearY;
-                case "Z (X, Y)" -> Shear3D::shearZ;
+            double[][] shearMatrix = switch (Objects.requireNonNull(axis)) {
+                case "X (Y, Z)" -> Shear3D.getMatrixShearX(shearFactor1, shearFactor2);
+                case "Y (X, Z)" -> Shear3D.getMatrixShearY(shearFactor1, shearFactor2);
+                case "Z (X, Y)" -> Shear3D.getMatrixShearZ(shearFactor1, shearFactor2);
                 default -> null;
             };
 
-            if (shearFunction != null) {
+            if (shearMatrix != null) {
                 // Obtem os vertices do cubo
                 Point3D[] vertices = plane3D.getCubeVertices();
 
@@ -66,7 +65,7 @@ public class Shear3DInputs extends ShapePanel {
                     return;
                 }
 
-                plane3D.queueTransformation(point -> shearFunction.apply(point, shearFactor1, shearFactor2));
+                plane3D.queueTransformation(shearMatrix);
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de cisalhamento invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -75,8 +74,4 @@ public class Shear3DInputs extends ShapePanel {
         }
     }
 
-    @FunctionalInterface
-    private interface ShearFunction {
-        Point3D apply(Point3D point, double factor1, double factor2);
-    }
 }

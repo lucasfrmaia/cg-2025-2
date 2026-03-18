@@ -9,7 +9,6 @@ import utils.ShapePanel;
 
 import javax.swing.*;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 public class Rotation3DInputs extends ShapePanel {
     private JComboBox<String> rotationAxisComboBox;
@@ -45,22 +44,21 @@ public class Rotation3DInputs extends ShapePanel {
             String axis = (String) rotationAxisComboBox.getSelectedItem();
             double angle = Double.parseDouble(angleInput.getText());
 
-            // Seleciona a funcao de rotacao com base no eixo escolhido
-            BiFunction<Point3D, Double, Point3D> rotationFunction = switch (Objects.requireNonNull(axis)) {
-                case "X" -> Rotation3D::rotateX;
-                case "Y" -> Rotation3D::rotateY;
-                case "Z" -> Rotation3D::rotateZ;
+            double[][] rotationMatrix = switch (Objects.requireNonNull(axis)) {
+                case "X" -> Rotation3D.getMatrixRotationX(angle);
+                case "Y" -> Rotation3D.getMatrixRotationY(angle);
+                case "Z" -> Rotation3D.getMatrixRotationZ(angle);
                 default -> null;
             };
 
-            if (rotationFunction != null) {
+            if (rotationMatrix != null) {
                 Point3D[] vertices = plane3D.getCubeVertices();
                 if (vertices == null || vertices.length != 8) {
                     JOptionPane.showMessageDialog(this, "Vertices invalidos ou ausentes.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                plane3D.queueTransformation(point -> rotationFunction.apply(point, angle));
+                plane3D.queueTransformation(rotationMatrix);
             } else {
                 JOptionPane.showMessageDialog(this, "Eixo de rotacao invalido.", "Erro", JOptionPane.ERROR_MESSAGE);
             }

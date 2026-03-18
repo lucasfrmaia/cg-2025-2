@@ -7,19 +7,24 @@ import java.awt.*;
 
 public class ViewportWindow extends JFrame {
 
+    private static final int WINDOW_MARGIN_X = 80;
+    private static final int WINDOW_MARGIN_Y = 60;
+
     private Viewport2D viewport;
     private JPanel viewportPanel;
 
     public ViewportWindow(int width, int height) {
         setTitle("Viewport Window");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(width, height);
         setLayout(new BorderLayout());
         setResizable(false);
         setAlwaysOnTop(true);
 
-        // Inicializa a viewport
-        viewport = new Viewport2D(0, 0, width, height);
+        int panelWidth = width + (WINDOW_MARGIN_X * 2);
+        int panelHeight = height + (WINDOW_MARGIN_Y * 2);
+
+        // Inicializa a viewport centralizada dentro de uma janela maior.
+        viewport = new Viewport2D(WINDOW_MARGIN_X, WINDOW_MARGIN_Y, width, height);
 
         // Configura o painel de exibição da viewport
         viewportPanel = new JPanel() {
@@ -30,8 +35,11 @@ public class ViewportWindow extends JFrame {
             }
         };
 
-        viewportPanel.setPreferredSize(new Dimension(width, height));
+        viewportPanel.setBackground(Color.DARK_GRAY);
+        viewportPanel.setPreferredSize(new Dimension(panelWidth, panelHeight));
         add(viewportPanel, BorderLayout.CENTER);
+
+        pack();
     }
 
     public void updateViewport(JPanel plane, int worldXMin, int worldYMin, int worldXMax, int worldYMax) {

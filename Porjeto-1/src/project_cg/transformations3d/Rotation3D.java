@@ -85,26 +85,5 @@ public class Rotation3D {
             { 0, 0, 0, 1 }
         };
     }
-    
-    public static void main(String[] args) {
-        // Define o ponto original
-        Point3D originalPoint = new Point3D(1.0, 1.0, 1.0);
-        System.out.println("Ponto original: " + originalPoint);
-
-        // Ângulo de rotação
-        double angle = 45.0;
-
-        // Rotaciona em torno do eixo X
-        Point3D rotatedX = Rotation3D.rotateX(originalPoint, angle);
-        System.out.println("Ponto após rotação em torno do eixo X: " + rotatedX);
-
-        // Rotaciona em torno do eixo Y
-        Point3D rotatedY = Rotation3D.rotateY(originalPoint, angle);
-        System.out.println("Ponto após rotação em torno do eixo Y: " + rotatedY);
-
-        // Rotaciona em torno do eixo Z
-        Point3D rotatedZ = Rotation3D.rotateZ(originalPoint, angle);
-        System.out.println("Ponto após rotação em torno do eixo Z: " + rotatedZ);
-    }
 
 }

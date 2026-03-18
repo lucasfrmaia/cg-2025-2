@@ -83,24 +83,6 @@ public class Shear3D {
         };
     }
     
-    public static void main(String[] args) {
-        Point3D originalPoint = new Point3D(2.0, 3.0, 4.0);
-        System.out.println("Ponto original: " + originalPoint);
 
-        // Cisalhamento no eixo X com fatores de cisalhamento para Y e Z
-        double shy = 1.5;
-        double shz = 0.5;
-        Point3D shearedPointX = Shear3D.shearX(originalPoint, shy, shz);
-        System.out.println("Ponto após cisalhamento no eixo X: " + shearedPointX);
-
-        // Cisalhamento no eixo Y com fatores de cisalhamento para X e Z
-        double shx = 1.0;
-        Point3D shearedPointY = Shear3D.shearY(originalPoint, shx, shz);
-        System.out.println("Ponto após cisalhamento no eixo Y: " + shearedPointY);
-
-        // Cisalhamento no eixo Z com fatores de cisalhamento para X e Y
-        Point3D shearedPointZ = Shear3D.shearZ(originalPoint, shx, shy);
-        System.out.println("Ponto após cisalhamento no eixo Z: " + shearedPointZ);
-    }
 }
 

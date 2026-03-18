@@ -31,21 +31,6 @@ public class Scale3D {
         };
     }
     
-    public static void main(String[] args) {
-        // Cria um ponto 3D inicial
-        Point3D originalPoint = new Point3D(2.0, 3.0, 4.0);
-        System.out.println("Ponto original: " + originalPoint);
 
-        // Define os valores de escala
-        double sx = 2.0;
-        double sy = 3.0;
-        double sz = 0.5;
-
-        // Aplica a escala ao ponto
-        Point3D scaledPoint = Scale3D.scalePoint(originalPoint, sx, sy, sz);
-
-        // Exibe o ponto após a escala
-        System.out.println("Ponto após escala: " + scaledPoint);
-    }
 
 }

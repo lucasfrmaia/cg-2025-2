@@ -31,21 +31,5 @@ public class Translation3D {
         };
     }
 
-    // Exemplo de translação
-    public static void main(String[] args) {
-        // Cria um ponto 3D inicial
-        Point3D originalPoint = new Point3D(2.0, 3.0, 4.0);
-        System.out.println("Ponto original: " + originalPoint);
 
-        // Define os valores de translação
-        double tx = 5.0;
-        double ty = -2.0;
-        double tz = 3.0;
-
-        // Aplica a translação ao ponto
-        Point3D translatedPoint = Translation3D.translatePoint(originalPoint, tx, ty, tz);
-
-        // Exibe o ponto após a translação
-        System.out.println("Ponto após translação: " + translatedPoint);
-    }
 }

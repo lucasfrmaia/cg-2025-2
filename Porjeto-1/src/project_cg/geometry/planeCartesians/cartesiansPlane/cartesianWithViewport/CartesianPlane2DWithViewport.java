@@ -4,7 +4,6 @@ import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane2D;
 import project_cg.geometry.planeCartesians.cartesiansPlane.CartesianPlane2D;
 import project_cg.geometry.points.Point2D;
 import project_cg.primitives.MidpointLine;
-import utils.Constants;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -25,7 +24,6 @@ public class CartesianPlane2DWithViewport extends CartesianPlane2D {
 
         this.viewportWindow = new ViewportWindow(viewportWidth, viewportHeight);
         this.drawCartesianPlane();
-        drawViewportBounds();
     }
 
     public void updateViewport() {
@@ -65,7 +63,6 @@ public class CartesianPlane2DWithViewport extends CartesianPlane2D {
     public void clear() {
         this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.drawCartesianPlane();
-        this.drawViewportBounds();
         this.updateViewport();
     }
 
