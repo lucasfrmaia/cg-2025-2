@@ -60,6 +60,8 @@ public class MainScreenV2 {
     private final JPanel inputPanelHolder;
     private final JLabel coordinatesLabel;
     private final JLabel queuedTransformationsLabel;
+    private final JTextArea pointsLogArea;
+    private final JScrollPane pointsLogScroll;
     private final JButton applyQueuedButton;
     private final JButton clearButton;
 
@@ -75,6 +77,8 @@ public class MainScreenV2 {
         this.inputPanelHolder.setLayout(new GridBagLayout());
         this.coordinatesLabel = new JLabel("Coordenadas: Nenhuma");
         this.queuedTransformationsLabel = new JLabel("Transformacoes: Nenhuma");
+        this.pointsLogArea = new JTextArea(8, 24);
+        this.pointsLogScroll = new JScrollPane(pointsLogArea);
         this.applyQueuedButton = new JButton("Aplicar Transformações");
         this.clearButton = new JButton("Limpar");
 
@@ -164,6 +168,13 @@ public class MainScreenV2 {
 
         coordinatesLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 4, 2));
         queuedTransformationsLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 6, 2));
+        pointsLogArea.setEditable(false);
+        pointsLogArea.setLineWrap(true);
+        pointsLogArea.setWrapStyleWord(true);
+        pointsLogArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        pointsLogArea.setText("Log de pontos e composicao indisponivel.");
+        pointsLogScroll.setBorder(BorderFactory.createTitledBorder("Log de Transformacoes"));
+        pointsLogScroll.setPreferredSize(new Dimension(Constants.INPUT_SECTION_WIDTH - 24, 145));
 
         JPanel actionButtons = new JPanel(new GridLayout(1, 2, 8, 0));
         actionButtons.add(applyQueuedButton);
@@ -177,7 +188,8 @@ public class MainScreenV2 {
         footerInfo.add(queuedTransformationsLabel);
 
         footerButtons.add(footerInfo, BorderLayout.NORTH);
-        footerButtons.add(actionButtons, BorderLayout.CENTER);
+        footerButtons.add(pointsLogScroll, BorderLayout.CENTER);
+        footerButtons.add(actionButtons, BorderLayout.SOUTH);
 
         JScrollPane inputsScroll = new JScrollPane(inputPanelHolder);
         inputsScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -351,6 +363,7 @@ public class MainScreenV2 {
             applyQueuedButton.setVisible(true);
             coordinatesLabel.setVisible(true);
             queuedTransformationsLabel.setVisible(true);
+            pointsLogScroll.setVisible(true);
             return;
         }
 
@@ -359,12 +372,14 @@ public class MainScreenV2 {
             applyQueuedButton.setVisible(true);
             coordinatesLabel.setVisible(true);
             queuedTransformationsLabel.setVisible(true);
+            pointsLogScroll.setVisible(true);
             return;
         }
 
         applyQueuedButton.setVisible(false);
         coordinatesLabel.setVisible(false);
         queuedTransformationsLabel.setVisible(false);
+        pointsLogScroll.setVisible(false);
     }
 
     private void applyQueuedTransformationsForCurrentCategory() {
@@ -430,6 +445,7 @@ public class MainScreenV2 {
             QueuedTransformationsPlane plane2D = (QueuedTransformationsPlane) mainScreen.JPanelHandler.getPanelByCategory("Transformações");
             queuedTransformationsLabel.setText("Transformacoes: " + plane2D.getPendingTransformationsSummary());
             coordinatesLabel.setText("Coordenadas: " + getSquareCoordinatesSummary());
+            pointsLogArea.setText(build2DTransformationLog(plane2D));
             return;
         }
 
@@ -437,11 +453,66 @@ public class MainScreenV2 {
             CartesianPlane3D plane3D = (CartesianPlane3D) mainScreen.JPanelHandler.getPanelByCategory("Plano 3D");
             queuedTransformationsLabel.setText("Transformacoes: " + plane3D.getPendingTransformationsSummary());
             coordinatesLabel.setText("Coordenadas: " + getCubeCoordinatesSummary(plane3D));
+            pointsLogArea.setText(build3DTransformationLog(plane3D));
             return;
         }
 
         coordinatesLabel.setText("Coordenadas: Nenhuma");
         queuedTransformationsLabel.setText("Transformacoes: Nenhuma");
+        pointsLogArea.setText("Log de pontos e composicao indisponivel para esta categoria.");
+    }
+
+    private String build2DTransformationLog(QueuedTransformationsPlane plane2D) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[2D] Composicao: ")
+                .append(plane2D.getPendingTransformationsSummary())
+                .append("\n");
+
+        Square square = getSingleTransformationSquare();
+        if (square == null) {
+            builder.append("Quadrado: nao encontrado");
+            return builder.toString();
+        }
+
+        final int[] index = {1};
+        square.getVertex(point -> {
+            builder.append("V")
+                    .append(index[0])
+                    .append(": (")
+                    .append(formatCoordinate(point.getX()))
+                    .append(", ")
+                    .append(formatCoordinate(point.getY()))
+                    .append(")\n");
+            index[0]++;
+        });
+
+        return builder.toString().trim();
+    }
+
+    private String build3DTransformationLog(CartesianPlane3D plane3D) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[3D] Composicao: ")
+                .append(plane3D.getPendingTransformationsSummary())
+                .append("\n");
+
+        if (plane3D == null || plane3D.getCubeVertices() == null || plane3D.getCubeVertices().length == 0) {
+            builder.append("Cubo: nao encontrado");
+            return builder.toString();
+        }
+
+        for (int i = 0; i < plane3D.getCubeVertices().length; i++) {
+            builder.append("P")
+                    .append(i + 1)
+                    .append(": (")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getX()))
+                    .append(", ")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getY()))
+                    .append(", ")
+                    .append(formatCoordinate(plane3D.getCubeVertices()[i].getZ()))
+                    .append(")\n");
+        }
+
+        return builder.toString().trim();
     }
 
     private String getSquareCoordinatesSummary() {
