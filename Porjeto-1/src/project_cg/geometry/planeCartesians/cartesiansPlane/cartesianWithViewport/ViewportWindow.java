@@ -1,6 +1,7 @@
 package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport;
 
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane2D;
+import project_cg.geometry.points.Point2D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +36,8 @@ public class ViewportWindow extends JFrame {
             }
         };
 
-        viewportPanel.setBackground(Color.DARK_GRAY);
+        viewportPanel.setBackground(Color.BLACK);
+        getContentPane().setBackground(Color.BLACK);
         viewportPanel.setPreferredSize(new Dimension(panelWidth, panelHeight));
         add(viewportPanel, BorderLayout.CENTER);
 
@@ -44,6 +46,11 @@ public class ViewportWindow extends JFrame {
 
     public void updateViewport(JPanel plane, int worldXMin, int worldYMin, int worldXMax, int worldYMax) {
         viewport.renderFromCartesian((BaseCartesianPlane2D) plane, worldXMin, worldYMin, worldXMax, worldYMax);
+        viewportPanel.repaint();
+    }
+
+    public void updateViewportWithSegments(java.util.List<Point2D[]> segments, int worldXMin, int worldYMin, int worldXMax, int worldYMax, int rgb) {
+        viewport.renderFromClippedSegments(segments, worldXMin, worldYMin, worldXMax, worldYMax, rgb);
         viewportPanel.repaint();
     }
 

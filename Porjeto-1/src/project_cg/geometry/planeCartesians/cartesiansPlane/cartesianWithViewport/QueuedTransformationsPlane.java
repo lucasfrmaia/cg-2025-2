@@ -1,5 +1,6 @@
 package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewport;
 
+import project_cg.geometry.clipping.SutherlandHodgmanLineClipper;
 import project_cg.geometry.figures.Square;
 import project_cg.geometry.points.Point2D;
 import project_cg.transformations.BaseTransformation2d;
@@ -13,9 +14,11 @@ import java.util.List;
 public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
 
     private final List<BaseTransformation2d> pendingTransformations;
+    private final List<Point2D[]> clippedSquareSegments;
 
     public QueuedTransformationsPlane() {
         this.pendingTransformations = new ArrayList<>();
+        this.clippedSquareSegments = new ArrayList<>();
     }
 
     public void queueTransformation(BaseTransformation2d transformation) {
@@ -54,6 +57,8 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
         for (BaseTransformation2d transformation : pendingTransformations) {
             applyTransformationInQueueOrder(square, transformation);
         }
+
+        updateClippedSegmentsWithSutherlandHodgman(square);
 
         clearAllQueuedTransformations();
     }
@@ -109,13 +114,75 @@ public class QueuedTransformationsPlane extends CartesianPlane2DWithViewport {
     }
 
     @Override
+    public void updateViewport() {
+        if (clippedSquareSegments.isEmpty()) {
+            super.updateViewport();
+            return;
+        }
+
+        viewportWindow.updateViewportWithSegments(
+                clippedSquareSegments,
+                WORLD_X_MIN,
+                WORLD_Y_MIN,
+                WORLD_X_MAX,
+                WORLD_Y_MAX,
+                java.awt.Color.RED.getRGB()
+        );
+    }
+
+    private void updateClippedSegmentsWithSutherlandHodgman(Square square) {
+        clippedSquareSegments.clear();
+
+        List<Point2D> vertices = extractSquareVertices(square);
+        if (vertices.size() < 2) {
+            return;
+        }
+
+        SutherlandHodgmanLineClipper clipper = new SutherlandHodgmanLineClipper(
+                WORLD_X_MIN,
+                WORLD_Y_MIN,
+                WORLD_X_MAX,
+                WORLD_Y_MAX
+        );
+
+        for (int i = 0; i < vertices.size(); i++) {
+            Point2D start = vertices.get(i);
+            Point2D end = vertices.get((i + 1) % vertices.size());
+
+            Point2D[] clipped = clipper.clipLine(
+                    (int) Math.round(start.x),
+                    (int) Math.round(start.y),
+                    (int) Math.round(end.x),
+                    (int) Math.round(end.y)
+            );
+
+            if (clipped != null) {
+                clippedSquareSegments.add(new Point2D[] {
+                        new Point2D(clipped[0].getX(), clipped[0].getY()),
+                        new Point2D(clipped[1].getX(), clipped[1].getY())
+                });
+            }
+        }
+    }
+
+    private List<Point2D> extractSquareVertices(Square square) {
+        List<Point2D> vertices = new ArrayList<>();
+
+        square.getVertex(point -> vertices.add(new Point2D(point.getX(), point.getY())));
+
+        return vertices;
+    }
+
+    @Override
     public void clear() {
+        clippedSquareSegments.clear();
         super.clear();
     }
 
     @Override
     public QueuedTransformationsPlane reset() {
         super.reset();
+        clippedSquareSegments.clear();
         clearAllQueuedTransformations();
         return this;
     }

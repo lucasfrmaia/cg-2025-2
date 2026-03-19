@@ -10,6 +10,9 @@ import javax.swing.*;
 
 public class SizeWindowInput extends ShapePanel {
 
+    private static final int DEFAULT_VIEWPORT_WIDTH = 300;
+    private static final int DEFAULT_VIEWPORT_HEIGHT = 220;
+
     private JTextField heightScreen;
 
     private JTextField widthScreen;
@@ -24,8 +27,11 @@ public class SizeWindowInput extends ShapePanel {
         heightScreen = new JTextField(15);
         widthScreen = new JTextField(15);
 
-        addInputField("Largura da viewport:", widthScreen);
-        addInputField("Altura da viewport:", heightScreen);
+        widthScreen.setText(String.valueOf(DEFAULT_VIEWPORT_WIDTH));
+        heightScreen.setText(String.valueOf(DEFAULT_VIEWPORT_HEIGHT));
+
+        addInputField("Largura da viewport (default 300):", widthScreen);
+        addInputField("Altura da viewport (default 220):", heightScreen);
     }
 
     @Override

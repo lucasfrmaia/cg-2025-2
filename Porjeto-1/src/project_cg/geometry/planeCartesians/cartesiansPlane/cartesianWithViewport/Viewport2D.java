@@ -4,10 +4,12 @@ package project_cg.geometry.planeCartesians.cartesiansPlane.cartesianWithViewpor
 import project_cg.geometry.planeCartesians.bases.BaseCartesianPlane;
 
 import project_cg.geometry.points.Point2D;
+import project_cg.primitives.MidpointLine;
 import utils.Constants;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class Viewport2D {
 
@@ -53,6 +55,27 @@ public class Viewport2D {
                         setPixel(viewportPoint, cartesianRGB);
                     }
                 }
+            }
+        }
+
+        drawViewportBounds();
+    }
+
+    public void renderFromClippedSegments(List<Point2D[]> segments, int worldXMin, int worldYMin, int worldXMax, int worldYMax, int rgb) {
+        clearViewport();
+
+        MidpointLine line = new MidpointLine(point -> setPixel(point, rgb));
+
+        for (Point2D[] segment : segments) {
+            if (segment == null || segment.length != 2 || segment[0] == null || segment[1] == null) {
+                continue;
+            }
+
+            Point2D start = mapToViewport((int) Math.round(segment[0].x), (int) Math.round(segment[0].y), worldXMin, worldYMin, worldXMax, worldYMax);
+            Point2D end = mapToViewport((int) Math.round(segment[1].x), (int) Math.round(segment[1].y), worldXMin, worldYMin, worldXMax, worldYMax);
+
+            if (start != null && end != null) {
+                line.desenhaLinha(start, end);
             }
         }
 
