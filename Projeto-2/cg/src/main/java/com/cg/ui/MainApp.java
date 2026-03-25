@@ -28,8 +28,7 @@ public class MainApp extends JFrame {
         // "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/atual.pgm"
     };
 
-    private final String[] imgNamesDefault = {"Lena", "Airplane"};
-    private final Runnable[] tabActions = new Runnable[5];
+    private final Runnable[] tabActions = new Runnable[6];
 
     public MainApp() {
         setTitle("Processador de Imagens - Projeto CG");
@@ -47,11 +46,12 @@ public class MainApp extends JFrame {
         canvasesPanel.add(canvasProcessed);
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Aritmética e Lógica", createArithmeticsTab());
-        tabbedPane.addTab("Realce e Bordas", createEnhancementTab());
-        tabbedPane.addTab("Suavização", createSmoothingTab());
-        tabbedPane.addTab("Transformações", createIntensityTab());
-        tabbedPane.addTab("Morfismo Temporal", createMorphingTab());
+        tabbedPane.addTab("Req 1: Filtros e Operações", createReq1Tab());
+        tabbedPane.addTab("Req 2: Morfismo", createReq2Tab());
+        tabbedPane.addTab("Req 3: Transformações", createReq3Tab());
+        tabbedPane.addTab("Req 4: Equalização (Histograma)", createReq4Tab());
+        tabbedPane.addTab("Req 5: Morfologia", createReq5Tab());
+        tabbedPane.addTab("Req 6: Geometria", createReq6Tab());
 
         tabbedPane.addChangeListener(e -> {
             clearCanvases();
@@ -64,11 +64,6 @@ public class MainApp extends JFrame {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(tabbedPane, BorderLayout.CENTER);
 
-        JButton downloadBtn = new JButton("Fazer Download da Imagem Processada");
-        downloadBtn.setPreferredSize(new Dimension(0, 40));
-        downloadBtn.addActionListener(e -> saveProcessedImage());
-        bottomPanel.add(downloadBtn, BorderLayout.SOUTH);
-
         add(canvasesPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -80,156 +75,71 @@ public class MainApp extends JFrame {
         }
     }
 
-    private JPanel createArithmeticsTab() {
+    private JPanel createReq1Tab() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
         
-        JComboBox<String> cbImgA = new JComboBox<>(imgNamesDefault);
-        JComboBox<String> cbImgB = new JComboBox<>(imgNamesDefault);
-        cbImgB.setSelectedIndex(1);
-        
-        String[] filters = {"Soma", "Subtração", "Multiplicação", "Divisão", "OR", "AND", "XOR"};
+        String[] filters = {
+            "Soma", "Subtração", "Multiplicação", "Divisão", "OR", "AND", "XOR",
+            "Média", "Mediana", "Passa-Altas", "Aguçamento", "Prewitt", "Sobel", "Roberts", "Alto Reforço"
+        };
         JComboBox<String> cbFilter = new JComboBox<>(filters);
-        
         JCheckBox chkNormalize = new JCheckBox("Normalizar Saída", true);
 
         Runnable updateAction = () -> {
-            loadImg(imgA, canvasA, cbImgA.getSelectedIndex());
-            loadImg(imgB, canvasB, cbImgB.getSelectedIndex());
-            
-            boolean norm = chkNormalize.isSelected();
+            String selected = (String) cbFilter.getSelectedItem();
+            boolean requiresTwo = false;
             ImageFilter filter = null;
             
-            switch ((String) cbFilter.getSelectedItem()) {
-                case "Soma": filter = new ArithmeticFilter(ImageOperations.ADD::apply, norm); break;
-                case "Subtração": filter = new ArithmeticFilter(ImageOperations.SUB::apply, norm); break;
-                case "Multiplicação": filter = new ArithmeticFilter(ImageOperations.MUL::apply, norm); break;
-                case "Divisão": filter = new ArithmeticFilter(ImageOperations.DIVIDE::apply, norm); break;
-                case "OR": filter = new ArithmeticFilter(ImageOperations.OR::apply, norm); break;
-                case "AND": filter = new ArithmeticFilter(ImageOperations.AND::apply, norm); break;
-                case "XOR": filter = new ArithmeticFilter(ImageOperations.XOR::apply, norm); break;
+            if (selected.equals("Média")) {
+                loadImg(imgA, canvasA, 2);
+                clearCanvas(canvasB);
+                filter = new MeanFilter();
+            } else if (selected.equals("Mediana")) {
+                loadImg(imgA, canvasA, 3);
+                clearCanvas(canvasB);
+                filter = new MedianFilter();
+            } else {
+                loadImg(imgA, canvasA, 0);
+                
+                boolean norm = chkNormalize.isSelected();
+                switch (selected) {
+                    case "Soma": filter = new ArithmeticFilter(ImageOperations.ADD::apply, norm); requiresTwo = true; break;
+                    case "Subtração": filter = new ArithmeticFilter(ImageOperations.SUB::apply, norm); requiresTwo = true; break;
+                    case "Multiplicação": filter = new ArithmeticFilter(ImageOperations.MUL::apply, norm); requiresTwo = true; break;
+                    case "Divisão": filter = new ArithmeticFilter(ImageOperations.DIVIDE::apply, norm); requiresTwo = true; break;
+                    case "OR": filter = new ArithmeticFilter(ImageOperations.OR::apply, norm); requiresTwo = true; break;
+                    case "AND": filter = new ArithmeticFilter(ImageOperations.AND::apply, norm); requiresTwo = true; break;
+                    case "XOR": filter = new ArithmeticFilter(ImageOperations.XOR::apply, norm); requiresTwo = true; break;
+                    case "Passa-Altas": filter = new HighPassFilter(); break;
+                    case "Aguçamento": filter = new SharpenFilter(); break;
+                    case "Prewitt": filter = new PrewittFilter(); break;
+                    case "Sobel": filter = new SobelFilter(); break;
+                    case "Roberts": filter = new RobertsFilter(); break;
+                    case "Alto Reforço": filter = new HighBoostFilter(); break;
+                }
+                
+                if (requiresTwo) {
+                    loadImg(imgB, canvasB, 1);
+                } else {
+                    clearCanvas(canvasB);
+                }
             }
-            applyFilter(filter, true);
+            
+            applyFilter(filter, requiresTwo);
         };
 
         tabActions[0] = updateAction;
-
-        cbImgA.addActionListener(e -> updateAction.run());
-        cbImgB.addActionListener(e -> updateAction.run());
         cbFilter.addActionListener(e -> updateAction.run());
         chkNormalize.addActionListener(e -> updateAction.run());
 
-        panel.add(new JLabel("Imagem A:"));
-        panel.add(cbImgA);
-        panel.add(new JLabel("Imagem B:"));
-        panel.add(cbImgB);
-        panel.add(new JLabel("Operação:"));
+        panel.add(new JLabel("Selecione a Operação:"));
         panel.add(cbFilter);
         panel.add(chkNormalize);
 
         return panel;
     }
 
-    private JPanel createEnhancementTab() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        
-        JComboBox<String> cbImgA = new JComboBox<>(imgNamesDefault);
-        String[] filters = {"Passa-Altas", "Aguçamento", "Prewitt", "Sobel", "Roberts", "Alto Reforço"};
-        JComboBox<String> cbFilter = new JComboBox<>(filters);
-
-        Runnable updateAction = () -> {
-            loadImg(imgA, canvasA, cbImgA.getSelectedIndex());
-            clearCanvas(canvasB);
-            
-            ImageFilter filter = null;
-            switch ((String) cbFilter.getSelectedItem()) {
-                case "Passa-Altas": filter = new HighPassFilter(); break;
-                case "Aguçamento": filter = new SharpenFilter(); break;
-                case "Prewitt": filter = new PrewittFilter(); break;
-                case "Sobel": filter = new SobelFilter(); break;
-                case "Roberts": filter = new RobertsFilter(); break;
-                case "Alto Reforço": filter = new HighBoostFilter(); break;
-            }
-            applyFilter(filter, false);
-        };
-
-        tabActions[1] = updateAction;
-
-        cbImgA.addActionListener(e -> updateAction.run());
-        cbFilter.addActionListener(e -> updateAction.run());
-
-        panel.add(new JLabel("Imagem Base:"));
-        panel.add(cbImgA);
-        panel.add(new JLabel("Filtro Espacial:"));
-        panel.add(cbFilter);
-
-        return panel;
-    }
-
-    private JPanel createSmoothingTab() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        
-        String[] filters = {"Média (Requer Gaussiano)", "Mediana (Requer Sal/Pimenta)"};
-        JComboBox<String> cbFilter = new JComboBox<>(filters);
-
-        Runnable updateAction = () -> {
-            clearCanvas(canvasB);
-            ImageFilter filter = null;
-            
-            if (cbFilter.getSelectedIndex() == 0) {
-                loadImg(imgA, canvasA, 2); 
-                filter = new MeanFilter();
-            } else {
-                loadImg(imgA, canvasA, 3); 
-                filter = new MedianFilter();
-            }
-            applyFilter(filter, false);
-        };
-
-        tabActions[2] = updateAction;
-
-        cbFilter.addActionListener(e -> updateAction.run());
-
-        panel.add(new JLabel("Técnica de remoção de ruído:"));
-        panel.add(cbFilter);
-
-        return panel;
-    }
-
-    private JPanel createIntensityTab() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        
-        JComboBox<String> cbImgA = new JComboBox<>(imgNamesDefault);
-        String[] filters = {"Linear", "Logarítmica", "Sigmoide", "Equalização de Histograma"};
-        JComboBox<String> cbFilter = new JComboBox<>(filters);
-
-        Runnable updateAction = () -> {
-            loadImg(imgA, canvasA, cbImgA.getSelectedIndex());
-            clearCanvas(canvasB);
-            
-            ImageFilter filter = null;
-            switch ((String) cbFilter.getSelectedItem()) {
-                case "Linear": filter = new LinearTransformFilter(1.2, 20); break;
-                case "Logarítmica": filter = new LogarithmicFilter(); break;
-                case "Sigmoide": filter = new SigmoidFilter(127.0, 25.0); break;
-                case "Equalização de Histograma": filter = new HistogramEqualizationFilter(); break;
-            }
-            applyFilter(filter, false);
-        };
-
-        tabActions[3] = updateAction;
-
-        cbImgA.addActionListener(e -> updateAction.run());
-        cbFilter.addActionListener(e -> updateAction.run());
-
-        panel.add(new JLabel("Imagem Base:"));
-        panel.add(cbImgA);
-        panel.add(new JLabel("Transformação:"));
-        panel.add(cbFilter);
-
-        return panel;
-    }
-
-    private JPanel createMorphingTab() {
+    private JPanel createReq2Tab() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
         
         JSlider timeSlider = new JSlider(0, 100, 50);
@@ -245,13 +155,81 @@ public class MainApp extends JFrame {
             applyFilter(new MorphingFilter(t), true);
         };
 
-        tabActions[4] = updateAction;
-
+        tabActions[1] = updateAction;
         timeSlider.addChangeListener(e -> updateAction.run());
 
         panel.add(new JLabel("Transição de Tempo (t):"));
         panel.add(timeSlider);
 
+        return panel;
+    }
+
+    private JPanel createReq3Tab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        
+        String[] filters = {"Negativo", "Gama (0.5)", "Logarítmica", "Sigmoide", "Faixa Dinâmica", "Linear"};
+        JComboBox<String> cbFilter = new JComboBox<>(filters);
+
+        Runnable updateAction = () -> {
+            loadImg(imgA, canvasA, 0);
+            clearCanvas(canvasB);
+            
+            ImageFilter filter = null;
+            switch ((String) cbFilter.getSelectedItem()) {
+                case "Negativo": filter = new NegativeFilter(); break;
+                case "Gama (0.5)": filter = new GammaFilter(0.5); break;
+                case "Logarítmica": filter = new LogarithmicFilter(); break;
+                case "Sigmoide": filter = new SigmoidFilter(127.0, 25.0); break;
+                case "Faixa Dinâmica": filter = new DynamicRangeFilter(); break;
+                case "Linear": filter = new LinearTransformFilter(1.2, 20); break;
+            }
+            applyFilter(filter, false);
+        };
+
+        tabActions[2] = updateAction;
+        cbFilter.addActionListener(e -> updateAction.run());
+
+        panel.add(new JLabel("Transformação de Intensidade:"));
+        panel.add(cbFilter);
+
+        return panel;
+    }
+
+    private JPanel createReq4Tab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        JButton btnPlot = new JButton("Visualizar Histogramas");
+
+        Runnable updateAction = () -> {
+            loadImg(imgA, canvasA, 0);
+            clearCanvas(canvasB);
+            applyFilter(new HistogramEqualizationFilter(), false);
+        };
+
+        tabActions[3] = updateAction;
+
+        btnPlot.addActionListener(e -> {
+            if (imgA.data != null && processedImg.data != null) {
+                showHistogramsDialog(imgA, processedImg);
+            }
+        });
+
+        panel.add(new JLabel("Equalização de Histograma (Lena)"));
+        panel.add(btnPlot);
+
+        return panel;
+    }
+
+    private JPanel createReq5Tab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        panel.add(new JLabel("Operadores Morfológicos serão implementados aqui."));
+        tabActions[4] = () -> clearCanvases();
+        return panel;
+    }
+
+    private JPanel createReq6Tab() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        panel.add(new JLabel("Transformações Geométricas serão implementadas aqui."));
+        tabActions[5] = () -> clearCanvases();
         return panel;
     }
 
@@ -290,17 +268,51 @@ public class MainApp extends JFrame {
         }
     }
 
-    private void saveProcessedImage() {
-        if (processedImg.w == 0 || processedImg.data == null) {
-            JOptionPane.showMessageDialog(this, "Nenhuma imagem processada para download.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
+    private void showHistogramsDialog(PGMImage original, PGMImage equalized) {
+        JDialog dialog = new JDialog(this, "Histogramas - Original vs Equalizada", true);
+        dialog.setLayout(new GridLayout(1, 2));
+
+        dialog.add(createHistogramPanel("Histograma Original", original));
+        dialog.add(createHistogramPanel("Histograma Equalizado", equalized));
+
+        dialog.setSize(800, 400);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private JPanel createHistogramPanel(String title, PGMImage img) {
+        int[] hist = new int[256];
+        int maxVal = 0;
+        for (int val : img.data) {
+            hist[val]++;
+            if (hist[val] > maxVal) maxVal = hist[val];
         }
-        JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(new File("output.pgm"));
-        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            ImageUtils.download(chooser.getSelectedFile().getAbsolutePath(), processedImg);
-            JOptionPane.showMessageDialog(this, "Imagem salva com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-        }
+
+        final int finalMaxVal = maxVal;
+
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setColor(Color.WHITE);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+
+                g2d.setColor(Color.BLACK);
+                int padding = 30;
+                int width = getWidth() - 2 * padding;
+                int height = getHeight() - 2 * padding;
+
+                for (int i = 0; i < 256; i++) {
+                    int barHeight = (int) (((double) hist[i] / finalMaxVal) * height);
+                    int x = padding + (int) ((i / 256.0) * width);
+                    int y = getHeight() - padding - barHeight;
+                    g2d.drawLine(x, getHeight() - padding, x, y);
+                }
+            }
+        };
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        return panel;
     }
 
     public static void main(String[] args) {
