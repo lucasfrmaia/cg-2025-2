@@ -1,7 +1,7 @@
 package com.cg.core;
 
-import com.cg.model.ImageModel;
+import com.cg.model.PGMImage;
 
 public interface ImageFilter {
-    ImageModel apply(ImageModel source, ImageModel... additionalSources);
+    PGMImage apply(PGMImage source, PGMImage... additionalSources);
 }

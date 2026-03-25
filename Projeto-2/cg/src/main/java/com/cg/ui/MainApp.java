@@ -1,15 +1,19 @@
 package com.cg.ui;
 
+import com.cg.core.ImageFilter;
 import com.cg.core.ImageOperations;
+import com.cg.core.filters.*;
 import com.cg.model.PGMImage;
 import com.cg.utils.ImageUtils;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class MainApp extends JFrame {
     private final PGMImage imgA = new PGMImage();
     private final PGMImage imgB = new PGMImage();
-    private final PGMImage processedImg = new PGMImage();
+    private PGMImage processedImg = new PGMImage();
 
     private final ImageCanvas canvasA;
     private final ImageCanvas canvasB;
@@ -20,7 +24,25 @@ public class MainApp extends JFrame {
     private final String[] imagePaths = {
         "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/lena.pgm",
         "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/Airplane.pgm",
+        "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/Lenag.pgm",
+        "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/Lenasalp.pgm"
     };
+
+    // Separação estrita dos modos
+    private final String[] imagesMode1 = {"Lena", "Airplane"};
+    private final String[] imagesMode2 = {"Lena (Gaussiano)", "Lena (Sal e Pimenta)"};
+    
+    private final String[] filtersMode1 = {
+        "Soma", "Subtração", "Multiplicação", "Divisão", 
+        "OR", "AND", "XOR", 
+        "Passa-Altas", "Aguçamento", "Prewitt", "Sobel", "Roberts", "Alto Reforço"
+    };
+    private final String[] filtersMode2 = {"Média", "Mediana"};
+
+    private JComboBox<String> imgASelector;
+    private JComboBox<String> imgBSelector;
+    private JComboBox<String> filterSelector;
+    private JComboBox<String> modeSelector;
 
     public MainApp() {
         setTitle("Processador de Imagens");
@@ -36,12 +58,16 @@ public class MainApp extends JFrame {
         canvasesPanel.add(canvasB);
         canvasesPanel.add(canvasProcessed);
 
-        JPanel controlsPanel = new JPanel(new FlowLayout());
+        JPanel topPanel = new JPanel(new FlowLayout());
+        modeSelector = new JComboBox<>(new String[]{"Operações e Realce", "Suavização de Ruído"});
+        topPanel.add(new JLabel("Modo de Processamento:"));
+        topPanel.add(modeSelector);
 
-        String[] imageNames = {"Lena", "Airplane"};
-        JComboBox<String> imgASelector = new JComboBox<>(imageNames);
-        JComboBox<String> imgBSelector = new JComboBox<>(imageNames);
-        JComboBox<ImageOperations> filterSelector = new JComboBox<>(ImageOperations.values());
+        JPanel controlsPanel = new JPanel(new FlowLayout());
+        imgASelector = new JComboBox<>(imagesMode1);
+        imgBSelector = new JComboBox<>(imagesMode1);
+        filterSelector = new JComboBox<>(filtersMode1);
+        
         JCheckBox normalizeSwitch = new JCheckBox("Normalizar", true);
         JButton downloadBtn = new JButton("Download");
 
@@ -54,28 +80,66 @@ public class MainApp extends JFrame {
         controlsPanel.add(normalizeSwitch);
         controlsPanel.add(downloadBtn);
 
+        JPanel bottomPanel = new JPanel(new GridLayout(2, 1));
+        bottomPanel.add(topPanel);
+        bottomPanel.add(controlsPanel);
+
         add(canvasesPanel, BorderLayout.CENTER);
-        add(controlsPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Ação de troca de Modo
+        modeSelector.addActionListener(e -> {
+            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
+            
+            // Troca as opções dos ComboBoxes
+            imgASelector.setModel(new DefaultComboBoxModel<>(isMode1 ? imagesMode1 : imagesMode2));
+            imgBSelector.setModel(new DefaultComboBoxModel<>(isMode1 ? imagesMode1 : imagesMode2));
+            filterSelector.setModel(new DefaultComboBoxModel<>(isMode1 ? filtersMode1 : filtersMode2));
+            
+            // Esconde a Imagem B se for suavização
+            imgBSelector.setEnabled(isMode1);
+            if (!isMode1) {
+                canvasB.setImage(new PGMImage()); // Limpa o canvas B
+                canvasB.repaint();
+            }
+            
+            // Recarrega as imagens de acordo com o novo modo
+            loadImage(0, imgA, canvasA, isMode1);
+            if (isMode1) loadImage(1, imgB, canvasB, true);
+            
+            applyFilter((String) filterSelector.getSelectedItem());
+        });
 
         imgASelector.addActionListener(e -> {
-            int idx = imgASelector.getSelectedIndex();
-            ImageUtils.readImage(imagePaths[idx], imgA);
-            canvasA.setImage(imgA);
-            applyFilter((ImageOperations) filterSelector.getSelectedItem());
+            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
+            loadImage(imgASelector.getSelectedIndex(), imgA, canvasA, isMode1);
+            applyFilter((String) filterSelector.getSelectedItem());
         });
 
         imgBSelector.addActionListener(e -> {
-            int idx = imgBSelector.getSelectedIndex();
-            ImageUtils.readImage(imagePaths[idx], imgB);
-            canvasB.setImage(imgB);
-            applyFilter((ImageOperations) filterSelector.getSelectedItem());
+            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
+            loadImage(imgBSelector.getSelectedIndex(), imgB, canvasB, isMode1);
+            applyFilter((String) filterSelector.getSelectedItem());
         });
 
-        filterSelector.addActionListener(e -> applyFilter((ImageOperations) filterSelector.getSelectedItem()));
+        filterSelector.addActionListener(e -> {
+            String selectedFilter = (String) filterSelector.getSelectedItem();
+            if (selectedFilter == null) return;
+            
+            // Automação para cumprir exatamente o requisito
+            if (modeSelector.getSelectedIndex() == 1) { // Modo Suavização
+                if (selectedFilter.equals("Média")) {
+                    imgASelector.setSelectedIndex(0); // Força lenag.pgm
+                } else if (selectedFilter.equals("Mediana")) {
+                    imgASelector.setSelectedIndex(1); // Força lenasalp.pgm
+                }
+            }
+            applyFilter(selectedFilter);
+        });
         
         normalizeSwitch.addActionListener(e -> {
             doNormalize = normalizeSwitch.isSelected();
-            applyFilter((ImageOperations) filterSelector.getSelectedItem());
+            applyFilter((String) filterSelector.getSelectedItem());
         });
         
         downloadBtn.addActionListener(e -> {
@@ -86,32 +150,68 @@ public class MainApp extends JFrame {
 
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Salvar imagem PGM");
-            chooser.setSelectedFile(new java.io.File("output.pgm"));
+            chooser.setSelectedFile(new File("output.pgm"));
             int userSelection = chooser.showSaveDialog(this);
 
             if (userSelection == JFileChooser.APPROVE_OPTION) {
-                java.io.File fileToSave = chooser.getSelectedFile();
+                File fileToSave = chooser.getSelectedFile();
                 ImageUtils.download(fileToSave.getAbsolutePath(), processedImg);
                 JOptionPane.showMessageDialog(this, "Imagem salva em: " + fileToSave.getAbsolutePath(), "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
-        imgASelector.setSelectedIndex(0);
-        imgBSelector.setSelectedIndex(1);
-
-        applyFilter((ImageOperations) filterSelector.getSelectedItem());
+        // Setup Inicial
+        loadImage(0, imgA, canvasA, true);
+        loadImage(1, imgB, canvasB, true);
+        applyFilter((String) filterSelector.getSelectedItem());
 
         pack();
         setLocationRelativeTo(null);
     }
 
-    private void applyFilter(ImageOperations op) {
-        if (op != null && imgA.data != null && imgB.data != null) {
-            processedImg.type = imgA.type;
-            processedImg.w = imgA.w;
-            processedImg.h = imgA.h;
-            processedImg.data = ImageUtils.composition(imgA.data, imgB.data, imgA.w, imgA.h, op, doNormalize);
-            canvasProcessed.setImage(processedImg);
+    private void loadImage(int selectorIndex, PGMImage targetImg, ImageCanvas targetCanvas, boolean isMode1) {
+        if (selectorIndex < 0) return;
+        int pathIndex = isMode1 ? selectorIndex : selectorIndex + 2;
+        ImageUtils.readImage(imagePaths[pathIndex], targetImg);
+        targetCanvas.setImage(targetImg);
+        targetCanvas.repaint();
+    }
+
+    private void applyFilter(String filterName) {
+        if (imgA.data == null || filterName == null) return;
+
+        ImageFilter filter = null;
+        boolean requiresTwoImages = false;
+
+        switch (filterName) {
+            case "Soma": filter = new ArithmeticFilter(ImageOperations.ADD::apply, doNormalize); requiresTwoImages = true; break;
+            case "Subtração": filter = new ArithmeticFilter(ImageOperations.SUB::apply, doNormalize); requiresTwoImages = true; break;
+            case "Multiplicação": filter = new ArithmeticFilter(ImageOperations.MUL::apply, doNormalize); requiresTwoImages = true; break;
+            case "Divisão": filter = new ArithmeticFilter(ImageOperations.DIVIDE::apply, doNormalize); requiresTwoImages = true; break;
+            case "OR": filter = new ArithmeticFilter(ImageOperations.OR::apply, doNormalize); requiresTwoImages = true; break;
+            case "AND": filter = new ArithmeticFilter(ImageOperations.AND::apply, doNormalize); requiresTwoImages = true; break;
+            case "XOR": filter = new ArithmeticFilter(ImageOperations.XOR::apply, doNormalize); requiresTwoImages = true; break;
+            case "Passa-Altas": filter = new HighPassFilter(); break;
+            case "Aguçamento": filter = new SharpenFilter(); break;
+            case "Prewitt": filter = new PrewittFilter(); break;
+            case "Sobel": filter = new SobelFilter(); break;
+            case "Roberts": filter = new RobertsFilter(); break;
+            case "Alto Reforço": filter = new HighBoostFilter(); break;
+            case "Média": filter = new MeanFilter(); break;
+            case "Mediana": filter = new MedianFilter(); break;
+        }
+
+        if (filter != null) {
+            if (requiresTwoImages && imgB.data != null) {
+                processedImg = filter.apply(imgA, imgB);
+            } else if (!requiresTwoImages) {
+                processedImg = filter.apply(imgA);
+            }
+            
+            if (processedImg != null && processedImg.data != null) {
+                canvasProcessed.setImage(processedImg);
+                canvasProcessed.repaint();
+            }
         }
     }
 

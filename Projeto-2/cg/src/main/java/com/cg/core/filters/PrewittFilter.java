@@ -3,7 +3,7 @@ package com.cg.core.filters;
 import com.cg.core.ImageFilter;
 import com.cg.model.PGMImage;
 
-public class SobelFilter implements ImageFilter {
+public class PrewittFilter implements ImageFilter {
 
     @Override
     public PGMImage apply(PGMImage img, PGMImage... additionalSources) {
@@ -13,8 +13,8 @@ public class SobelFilter implements ImageFilter {
         result.type = img.type;
         result.data = new int[img.w * img.h];
 
-        int[][] gx = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
-        int[][] gy = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+        int[][] gx = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
+        int[][] gy = {{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1}};
 
         for (int y = 1; y < img.h - 1; y++) {
             for (int x = 1; x < img.w - 1; x++) {
