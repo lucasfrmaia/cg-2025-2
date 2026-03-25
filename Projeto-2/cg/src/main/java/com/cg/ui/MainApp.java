@@ -28,7 +28,6 @@ public class MainApp extends JFrame {
         "/home/joaoaguiar/Documentos/CG/cg-2025-2/Projeto-2/cg/imagens/Lenasalp.pgm"
     };
 
-    // Separação estrita dos modos
     private final String[] imagesMode1 = {"Lena", "Airplane"};
     private final String[] imagesMode2 = {"Lena (Gaussiano)", "Lena (Sal e Pimenta)"};
     
@@ -38,6 +37,7 @@ public class MainApp extends JFrame {
         "Passa-Altas", "Aguçamento", "Prewitt", "Sobel", "Roberts", "Alto Reforço"
     };
     private final String[] filtersMode2 = {"Média", "Mediana"};
+    private final String[] filtersMode3 = {"Linear", "Logarítmica", "Sigmoide", "Equalização de Histograma"};
 
     private JComboBox<String> imgASelector;
     private JComboBox<String> imgBSelector;
@@ -59,7 +59,7 @@ public class MainApp extends JFrame {
         canvasesPanel.add(canvasProcessed);
 
         JPanel topPanel = new JPanel(new FlowLayout());
-        modeSelector = new JComboBox<>(new String[]{"Operações e Realce", "Suavização de Ruído"});
+        modeSelector = new JComboBox<>(new String[]{"Operações e Realce", "Suavização de Ruído", "Transformações de Intensidade"});
         topPanel.add(new JLabel("Modo de Processamento:"));
         topPanel.add(modeSelector);
 
@@ -87,38 +87,44 @@ public class MainApp extends JFrame {
         add(canvasesPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Ação de troca de Modo
         modeSelector.addActionListener(e -> {
-            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
+            int mode = modeSelector.getSelectedIndex();
             
-            // Troca as opções dos ComboBoxes
-            imgASelector.setModel(new DefaultComboBoxModel<>(isMode1 ? imagesMode1 : imagesMode2));
-            imgBSelector.setModel(new DefaultComboBoxModel<>(isMode1 ? imagesMode1 : imagesMode2));
-            filterSelector.setModel(new DefaultComboBoxModel<>(isMode1 ? filtersMode1 : filtersMode2));
-            
-            // Esconde a Imagem B se for suavização
-            imgBSelector.setEnabled(isMode1);
-            if (!isMode1) {
-                canvasB.setImage(new PGMImage()); // Limpa o canvas B
+            if (mode == 0) {
+                imgASelector.setModel(new DefaultComboBoxModel<>(imagesMode1));
+                imgBSelector.setModel(new DefaultComboBoxModel<>(imagesMode1));
+                filterSelector.setModel(new DefaultComboBoxModel<>(filtersMode1));
+                imgBSelector.setEnabled(true);
+                loadImage(0, imgA, canvasA, 0);
+                loadImage(1, imgB, canvasB, 0);
+            } else if (mode == 1) {
+                imgASelector.setModel(new DefaultComboBoxModel<>(imagesMode2));
+                imgBSelector.setModel(new DefaultComboBoxModel<>(imagesMode2));
+                filterSelector.setModel(new DefaultComboBoxModel<>(filtersMode2));
+                imgBSelector.setEnabled(false);
+                canvasB.setImage(new PGMImage());
                 canvasB.repaint();
+                loadImage(0, imgA, canvasA, 1);
+            } else {
+                imgASelector.setModel(new DefaultComboBoxModel<>(imagesMode1));
+                imgBSelector.setModel(new DefaultComboBoxModel<>(imagesMode1));
+                filterSelector.setModel(new DefaultComboBoxModel<>(filtersMode3));
+                imgBSelector.setEnabled(false);
+                canvasB.setImage(new PGMImage());
+                canvasB.repaint();
+                loadImage(0, imgA, canvasA, 2);
             }
-            
-            // Recarrega as imagens de acordo com o novo modo
-            loadImage(0, imgA, canvasA, isMode1);
-            if (isMode1) loadImage(1, imgB, canvasB, true);
             
             applyFilter((String) filterSelector.getSelectedItem());
         });
 
         imgASelector.addActionListener(e -> {
-            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
-            loadImage(imgASelector.getSelectedIndex(), imgA, canvasA, isMode1);
+            loadImage(imgASelector.getSelectedIndex(), imgA, canvasA, modeSelector.getSelectedIndex());
             applyFilter((String) filterSelector.getSelectedItem());
         });
 
         imgBSelector.addActionListener(e -> {
-            boolean isMode1 = modeSelector.getSelectedIndex() == 0;
-            loadImage(imgBSelector.getSelectedIndex(), imgB, canvasB, isMode1);
+            loadImage(imgBSelector.getSelectedIndex(), imgB, canvasB, modeSelector.getSelectedIndex());
             applyFilter((String) filterSelector.getSelectedItem());
         });
 
@@ -126,12 +132,11 @@ public class MainApp extends JFrame {
             String selectedFilter = (String) filterSelector.getSelectedItem();
             if (selectedFilter == null) return;
             
-            // Automação para cumprir exatamente o requisito
-            if (modeSelector.getSelectedIndex() == 1) { // Modo Suavização
+            if (modeSelector.getSelectedIndex() == 1) {
                 if (selectedFilter.equals("Média")) {
-                    imgASelector.setSelectedIndex(0); // Força lenag.pgm
+                    imgASelector.setSelectedIndex(0);
                 } else if (selectedFilter.equals("Mediana")) {
-                    imgASelector.setSelectedIndex(1); // Força lenasalp.pgm
+                    imgASelector.setSelectedIndex(1);
                 }
             }
             applyFilter(selectedFilter);
@@ -160,18 +165,17 @@ public class MainApp extends JFrame {
             }
         });
 
-        // Setup Inicial
-        loadImage(0, imgA, canvasA, true);
-        loadImage(1, imgB, canvasB, true);
+        loadImage(0, imgA, canvasA, 0);
+        loadImage(1, imgB, canvasB, 0);
         applyFilter((String) filterSelector.getSelectedItem());
 
         pack();
         setLocationRelativeTo(null);
     }
 
-    private void loadImage(int selectorIndex, PGMImage targetImg, ImageCanvas targetCanvas, boolean isMode1) {
+    private void loadImage(int selectorIndex, PGMImage targetImg, ImageCanvas targetCanvas, int mode) {
         if (selectorIndex < 0) return;
-        int pathIndex = isMode1 ? selectorIndex : selectorIndex + 2;
+        int pathIndex = (mode == 1) ? selectorIndex + 2 : selectorIndex;
         ImageUtils.readImage(imagePaths[pathIndex], targetImg);
         targetCanvas.setImage(targetImg);
         targetCanvas.repaint();
@@ -199,6 +203,10 @@ public class MainApp extends JFrame {
             case "Alto Reforço": filter = new HighBoostFilter(); break;
             case "Média": filter = new MeanFilter(); break;
             case "Mediana": filter = new MedianFilter(); break;
+            case "Linear": filter = new LinearTransformFilter(1.2, 20); break;
+            case "Logarítmica": filter = new LogarithmicFilter(); break;
+            case "Sigmoide": filter = new SigmoidFilter(127.0, 25.0); break;
+            case "Equalização de Histograma": filter = new HistogramEqualizationFilter(); break;
         }
 
         if (filter != null) {
