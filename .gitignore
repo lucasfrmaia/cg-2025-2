@@ -28,3 +28,16 @@ bin/
 ### Mac OS ###
 .DS_Store
 Libs
+
+Projeto-2/livros/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+livros
+*.pdf
