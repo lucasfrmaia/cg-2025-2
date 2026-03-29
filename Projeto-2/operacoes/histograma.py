@@ -2,6 +2,13 @@ from operacoes.base_operacoes import BaseOperacoesImagem
 
 
 class HistogramaImagem(BaseOperacoesImagem):
+    '''
+    Calcula o histograma da imagem em 256 niveis.
+
+    Como calcula:
+    - Inicializa vetor de 256 posicoes com zero.
+    - Incrementa a frequencia correspondente de cada pixel.
+    '''
     def calcular_histograma(self, matriz):
         self.validar_matriz(matriz)
         histograma = [0] * 256
@@ -13,6 +20,14 @@ class HistogramaImagem(BaseOperacoesImagem):
 
         return histograma
 
+    '''
+    Equaliza o histograma para melhorar contraste.
+
+    Como calcula:
+    - Calcula o histograma e a CDF acumulada.
+    - Gera mapa de tons para 0..255.
+    - Aplica o mapa em todos os pixels.
+    '''
     def equalizar_histograma(self, matriz):
         self.validar_matriz(matriz)
 

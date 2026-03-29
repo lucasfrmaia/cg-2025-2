@@ -1,17 +1,45 @@
 class BaseOperacoesImagem:
 
+    '''
+    Limita um valor ao intervalo permitido de intensidade.
+
+    Como calcula:
+    - Arredonda o valor recebido.
+    - Aplica clamp entre minimo e maximo.
+    '''
     def limitar(self, valor, minimo=0, maximo=255):
         return max(minimo, min(maximo, int(round(valor))))
 
+    '''
+    Retorna um pixel da matriz com fundo quando a coordenada sai da imagem.
+
+    Como calcula:
+    - Se (x, y) estiver fora dos limites, retorna o valor de fundo.
+    - Caso contrario, retorna matriz[x][y].
+    '''
     def obter_pixel_com_fundo(self, matriz, x, y, fundo=0):
         if x < 0 or y < 0 or x >= len(matriz) or y >= len(matriz[0]):
             return fundo
         return matriz[x][y]
 
+    '''
+    Verifica se a matriz de imagem eh valida.
+
+    Como calcula:
+    - Confere se a matriz existe.
+    - Confere se existe ao menos uma coluna.
+    '''
     def validar_matriz(self, matriz):
         if not matriz or not matriz[0]:
             raise ValueError("Matriz de imagem invalida.")
 
+    '''
+    Valida se duas imagens possuem dimensoes compativeis.
+
+    Como calcula:
+    - Valida cada matriz separadamente.
+    - Compara altura e largura entre as duas imagens.
+    '''
     def validar_dimensoes(self, matriz_a, matriz_b):
         self.validar_matriz(matriz_a)
         self.validar_matriz(matriz_b)
@@ -19,12 +47,26 @@ class BaseOperacoesImagem:
         if len(matriz_a) != len(matriz_b) or len(matriz_a[0]) != len(matriz_b[0]):
             raise ValueError("As imagens devem possuir as mesmas dimensoes.")
 
+    '''
+    Cria uma nova matriz preenchida com um valor inicial.
+
+    Como calcula:
+    - Cria uma lista de linhas.
+    - Em cada linha, repete o valor na largura solicitada.
+    '''
     def criar_matriz(self, altura, largura, valor=0):
         matriz = []
         for _ in range(altura):
             matriz.append([valor] * largura)
         return matriz
 
+    '''
+    Le pixel com estrategia de borda replicada.
+
+    Como calcula:
+    - Ajusta i e j para o intervalo valido mais proximo.
+    - Retorna o pixel da coordenada ajustada.
+    '''
     def obter_pixel_borda_replicada(self, matriz, i, j):
         altura = len(matriz)
         largura = len(matriz[0])
@@ -40,6 +82,13 @@ class BaseOperacoesImagem:
 
         return matriz[i][j]
 
+    '''
+    Aplica uma transformacao pontual em cada pixel da imagem.
+
+    Como calcula:
+    - Percorre todos os indices (i, j).
+    - Calcula callback(i, j) e limita para 0..255.
+    '''
     def aplicar_por_pixel(self, matriz, callback):
         self.validar_matriz(matriz)
 
@@ -53,6 +102,14 @@ class BaseOperacoesImagem:
 
         return saida
 
+    '''
+    Aplica uma operacao pixel a pixel entre duas imagens.
+
+    Como calcula:
+    - Valida se as dimensoes das imagens sao iguais.
+    - Para cada pixel, executa callback_pixel(a, b, i, j).
+    - Opcionalmente limita o resultado para 0..255.
+    '''
     def aplicar_entre_imagens(self, matriz_a, matriz_b, callback_pixel, limitar_saida=True):
         self.validar_dimensoes(matriz_a, matriz_b)
 
@@ -71,13 +128,33 @@ class BaseOperacoesImagem:
 
 
 class MotorConvolucao:
+    '''
+    Inicializa o motor de convolucao.
+
+    Como calcula:
+    - Usa as operacoes base fornecidas.
+    - Se nao houver, cria uma instancia padrao.
+    '''
     def __init__(self, base_operacoes=None):
         self.base = base_operacoes or BaseOperacoesImagem()
 
+    '''
+    Le pixel com fundo zero para fora da imagem.
+
+    Como calcula:
+    - Delega a leitura para obter_pixel_com_fundo(..., fundo=0).
+    '''
     def _get_pixel(self, matriz, i, j):
-        # 🔥 GARANTE ZERO PADDING EM TUDO
         return self.base.obter_pixel_com_fundo(matriz, i, j, fundo=0)
 
+    '''
+    Aplica convolucao 2D com kernel arbitrario.
+
+    Como calcula:
+    - Soma produtos da vizinhanca pelos pesos do kernel.
+    - Aplica fator e deslocamento.
+    - Aplica callback posicional opcional e limita a saida.
+    '''
     def aplicar(self, matriz, kernel, fator=1.0, deslocamento=0.0, callback_pos=None, limitar_saida=True):
         self.base.validar_matriz(matriz)
 
@@ -113,6 +190,14 @@ class MotorConvolucao:
 
         return saida
 
+    '''
+    Aplica operacao por janela local em cada pixel.
+
+    Como calcula:
+    - Coleta os vizinhos na janela centrada em (i, j).
+    - Executa callback_janela(vizinhos, i, j).
+    - Arredonda e limita para 0..255.
+    '''
     def aplicar_janela(self, matriz, callback_janela, tamanho_janela=3):
         self.base.validar_matriz(matriz)
 

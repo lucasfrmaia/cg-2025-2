@@ -2,6 +2,13 @@ from operacoes.base_operacoes import BaseOperacoesImagem
 
 
 class BaseMorfologiaImagem(BaseOperacoesImagem):
+    '''
+    Converte imagem em tons de cinza para binaria.
+
+    Como calcula:
+    - Pixel >= limiar vira 255.
+    - Pixel < limiar vira 0.
+    '''
     def binarizar(self, matriz, limiar=127):
         self.validar_matriz(matriz)
         return [
@@ -9,6 +16,14 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
             for linha in matriz
         ]
 
+    '''
+    Gera elemento estruturante quadrado.
+
+    Como calcula:
+    - Garante tamanho impar.
+    - Restringe o tamanho ao maximo de 3x3.
+    - Retorna matriz preenchida com 1.
+    '''
     def gerar_elemento_estruturante_quadrado(self, tamanho=20):
         if tamanho < 1:
             raise ValueError("tamanho deve ser >= 1")
@@ -21,6 +36,14 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
         return [[1] * tamanho for _ in range(tamanho)]
 
+    '''
+    Interpreta texto do elemento estruturante.
+
+    Como calcula:
+    - Separa linhas e colunas por delimitadores.
+    - Converte tokens para mascara binaria.
+    - Define origem por +1 ou pelo centro.
+    '''
     def parsear_elemento_estruturante(self, texto):
         texto = (texto or "").replace("[", " ").replace("]", " ").strip()
         if not texto:
@@ -81,6 +104,13 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
         return mascara, origem
 
+    '''
+    Normaliza elemento estruturante textual ou matricial.
+
+    Como calcula:
+    - Se for string, usa o parser textual.
+    - Se for lista, valida formato e detecta origem.
+    '''
     def _normalizar_elemento_estruturante(self, elemento_estruturante):
         if isinstance(elemento_estruturante, str):
             return self.parsear_elemento_estruturante(elemento_estruturante)
@@ -123,6 +153,13 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
         return mascara, origem
 
+    '''
+    Aplica operacao local usando o elemento estruturante.
+
+    Como calcula:
+    - Coleta vizinhos onde a mascara eh ativa.
+    - Aplica callback da vizinhanca para gerar o pixel de saida.
+    '''
     def _aplicar_elemento(self, matriz, elemento_estruturante, valor_borda, callback_vizinhanca):
         self.validar_matriz(matriz)
 
@@ -151,6 +188,13 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
         return saida
 
+    '''
+    Subtrai duas matrizes pixel a pixel.
+
+    Como calcula:
+    - Para cada posicao, calcula a - b.
+    - Mantem a operacao sem limitacao automatica no motor.
+    '''
     def _subtrair_matrizes(self, matriz_a, matriz_b):
         return self.aplicar_entre_imagens(
             matriz_a,
@@ -161,6 +205,13 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
 
 class MorfologiaBinariaImagem(BaseMorfologiaImagem):
+    '''
+    Converte matriz binaria para conjunto de coordenadas ativas.
+
+    Como calcula:
+    - Percorre os pixels.
+    - Adiciona (i, j) quando o valor for diferente de zero.
+    '''
     def _matriz_binaria_para_conjunto(self, matriz_binaria):
         self.validar_matriz(matriz_binaria)
 
@@ -172,6 +223,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
         return ativos
 
+    '''
+    Converte conjunto de coordenadas em matriz binaria.
+
+    Como calcula:
+    - Inicializa matriz com zeros.
+    - Marca 255 nas coordenadas validas do conjunto.
+    '''
     def _conjunto_para_matriz_binaria(self, conjunto, altura, largura):
         saida = self.criar_matriz(altura, largura, 0)
         for i, j in conjunto:
@@ -179,11 +237,25 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
                 saida[i][j] = 255
         return saida
 
+    '''
+    Calcula fator de escala do elemento estruturante.
+
+    Como calcula:
+    - Usa a menor dimensao da imagem como referencia.
+    - Limita o fator entre 1 e 7.
+    '''
     def _calcular_fator_escala_elemento(self, altura, largura):
         menor_dimensao = min(altura, largura)
         fator = max(1, menor_dimensao // 80)
         return min(7, fator)
 
+    '''
+    Escala a mascara do elemento estruturante.
+
+    Como calcula:
+    - Replica cada celula ativa em blocos fator x fator.
+    - Recalcula a origem no elemento escalado.
+    '''
     def _escalar_mascara_elemento(self, mascara, origem, fator):
         if fator == 1:
             return mascara, origem
@@ -209,6 +281,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         origem_esc = (oi * fator + (fator // 2), oj * fator + (fator // 2))
         return mascara_esc, origem_esc
 
+    '''
+    Gera offsets dos pontos ativos do elemento estruturante.
+
+    Como calcula:
+    - Normaliza e escala o elemento.
+    - Converte celulas ativas em deslocamentos relativos a origem.
+    '''
     def _obter_offsets_elemento_estruturante(self, elemento_estruturante, altura, largura):
         mascara, origem = self._normalizar_elemento_estruturante(elemento_estruturante)
         fator_escala = self._calcular_fator_escala_elemento(altura, largura)
@@ -223,6 +302,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
         return offsets
 
+    '''
+    Executa dilatacao binaria sobre conjuntos.
+
+    Como calcula:
+    - Para cada ponto ativo de A, soma todos os offsets de B.
+    - Mantem somente coordenadas dentro da imagem.
+    '''
     def _dilatacao_binaria_conjunto(self, conjunto_a, offsets_b, altura, largura):
         resultado = set()
 
@@ -235,6 +321,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
         return resultado
 
+    '''
+    Executa erosao binaria sobre conjuntos.
+
+    Como calcula:
+    - Testa cada pixel candidato.
+    - Mantem o ponto apenas se todos os offsets estiverem ativos.
+    '''
     def _erosao_binaria_conjunto(self, conjunto_a, offsets_b, altura, largura):
         resultado = set()
 
@@ -259,6 +352,14 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
         return resultado
 
+    '''
+    Realiza dilatacao binaria da imagem.
+
+    Como calcula:
+    - Converte matriz para conjunto de ativos.
+    - Aplica dilatacao por offsets do elemento.
+    - Converte o resultado de volta para matriz.
+    '''
     def dilatacao_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -271,6 +372,14 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         
         return self._conjunto_para_matriz_binaria(resultado, altura, largura)
 
+    '''
+    Realiza erosao binaria da imagem.
+
+    Como calcula:
+    - Converte matriz para conjunto de ativos.
+    - Aplica erosao por offsets do elemento.
+    - Converte o resultado de volta para matriz.
+    '''
     def erosao_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -282,6 +391,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         resultado = self._erosao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
         return self._conjunto_para_matriz_binaria(resultado, altura, largura)
 
+    '''
+    Realiza abertura binaria.
+
+    Como calcula:
+    - Aplica erosao.
+    - Em seguida aplica dilatacao no resultado.
+    '''
     def abertura_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -294,6 +410,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         aberta = self._dilatacao_binaria_conjunto(erodida, offsets_b, altura, largura)
         return self._conjunto_para_matriz_binaria(aberta, altura, largura)
 
+    '''
+    Realiza fechamento binario.
+
+    Como calcula:
+    - Aplica dilatacao.
+    - Em seguida aplica erosao no resultado.
+    '''
     def fechamento_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -306,6 +429,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         fechada = self._erosao_binaria_conjunto(dilatada, offsets_b, altura, largura)
         return self._conjunto_para_matriz_binaria(fechada, altura, largura)
 
+    '''
+    Calcula gradiente morfologico binario.
+
+    Como calcula:
+    - Calcula dilatada e erodida.
+    - Retorna diferenca de conjuntos: dilatada - erodida.
+    '''
     def gradiente_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -319,6 +449,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         gradiente = dilatada.difference(erodida)
         return self._conjunto_para_matriz_binaria(gradiente, altura, largura)
 
+    '''
+    Calcula contorno externo binario.
+
+    Como calcula:
+    - Calcula a imagem dilatada.
+    - Retorna diferenca: dilatada - original.
+    '''
     def contorno_externo_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -331,6 +468,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         contorno = dilatada.difference(conjunto_a)
         return self._conjunto_para_matriz_binaria(contorno, altura, largura)
 
+    '''
+    Calcula contorno interno binario.
+
+    Como calcula:
+    - Calcula a imagem erodida.
+    - Retorna diferenca: original - erodida.
+    '''
     def contorno_interno_binaria(self, matriz_binaria, elemento_estruturante):
         self.validar_matriz(matriz_binaria)
         altura = len(matriz_binaria)
@@ -347,6 +491,13 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 class MorfologiaCinzaImagem(BaseMorfologiaImagem):
     RAIO_ELEMENTO_CIRCULAR = 2
 
+    '''
+    Gera elemento estruturante circular flat em tons de cinza.
+
+    Como calcula:
+    - Usa equacao de circulo discreta para ativar celulas.
+    - Define a origem no centro da mascara.
+    '''
     def _gerar_elemento_estruturante_circular_flat(self):
         raio = self.RAIO_ELEMENTO_CIRCULAR
         tamanho = 2 * raio + 1
@@ -362,6 +513,13 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
 
         return mascara, (centro, centro)
 
+    '''
+    Retorna versao textual do elemento circular flat.
+
+    Como calcula:
+    - Percorre a mascara circular.
+    - Marca a origem com +1.
+    '''
     def obter_texto_elemento_estruturante_circular_flat(self):
         mascara, (ci, cj) = self._gerar_elemento_estruturante_circular_flat()
         linhas = []
@@ -375,6 +533,13 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             linhas.append(" ".join(valores))
         return "\n".join(linhas)
 
+    '''
+    Aplica operador local com elemento circular flat.
+
+    Como calcula:
+    - Coleta vizinhos ativos da mascara circular.
+    - Aplica callback para gerar pixel de saida.
+    '''
     def _aplicar_elemento_circular_flat(self, matriz, valor_borda, callback_vizinhanca):
         self.validar_matriz(matriz)
 
@@ -403,29 +568,76 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
 
         return saida
 
+    '''
+    Executa dilatacao em tons de cinza.
+
+    Como calcula:
+    - Usa maximo da vizinhanca circular ativa.
+    '''
     def dilatacao_cinza(self, matriz, _elemento_estruturante=None):
         return self._aplicar_elemento_circular_flat(matriz, 0, lambda vizinhos: max(vizinhos))
 
+    '''
+    Executa erosao em tons de cinza.
+
+    Como calcula:
+    - Usa minimo da vizinhanca circular ativa.
+    '''
     def erosao_cinza(self, matriz, _elemento_estruturante=None):
         return self._aplicar_elemento_circular_flat(matriz, 255, lambda vizinhos: min(vizinhos))
 
+    '''
+    Executa abertura em tons de cinza.
+
+    Como calcula:
+    - Aplica erosao.
+    - Em seguida aplica dilatacao.
+    '''
     def abertura_cinza(self, matriz, _elemento_estruturante=None):
         erodida = self.erosao_cinza(matriz)
         return self.dilatacao_cinza(erodida)
 
+    '''
+    Executa fechamento em tons de cinza.
+
+    Como calcula:
+    - Aplica dilatacao.
+    - Em seguida aplica erosao.
+    '''
     def fechamento_cinza(self, matriz, _elemento_estruturante=None):
         dilatada = self.dilatacao_cinza(matriz)
         return self.erosao_cinza(dilatada)
 
+    '''
+    Calcula gradiente morfologico em tons de cinza.
+
+    Como calcula:
+    - Calcula dilatada e erodida.
+    - Retorna subtracao: dilatada - erodida.
+    '''
     def gradiente_cinza(self, matriz, _elemento_estruturante=None):
         dilatada = self.dilatacao_cinza(matriz)
         erodida = self.erosao_cinza(matriz)
         return self._subtrair_matrizes(dilatada, erodida)
 
+    '''
+    Calcula contorno externo em tons de cinza.
+
+    Como calcula:
+    - Calcula a imagem dilatada.
+    - Retorna subtracao: dilatada - original.
+    '''
     def contorno_externo_cinza(self, matriz, _elemento_estruturante=None):
         dilatada = self.dilatacao_cinza(matriz)
         return self._subtrair_matrizes(dilatada, matriz)
 
+    '''
+    Calcula contorno interno em tons de cinza.
+
+    Como calcula:
+    - Calcula a imagem erodida.
+    - Retorna subtracao: original - erodida.
+    '''
     def contorno_interno_cinza(self, matriz, _elemento_estruturante=None):
         erodida = self.erosao_cinza(matriz)
         return self._subtrair_matrizes(matriz, erodida)

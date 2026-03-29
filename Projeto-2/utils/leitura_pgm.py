@@ -1,5 +1,12 @@
+'''
+Le um arquivo PGM P2 e devolve uma matriz normalizada em 8 bits.
+
+Como calcula:
+- Ignora comentarios e monta os tokens do arquivo.
+- Valida cabecalho e quantidade de pixels.
+- Normaliza os valores para o intervalo 0..255.
+'''
 def ler_pgm(caminho_arquivo):
-    """Le um arquivo PGM (P2/ASCII) e retorna a matriz em escala 0..255."""
     tokens = []
 
     with open(caminho_arquivo, "r", encoding="utf-8") as arquivo:
@@ -21,7 +28,7 @@ def ler_pgm(caminho_arquivo):
         raise ValueError("Arquivo PGM invalido: cabecalho incompleto.")
 
     if tokens[0] != "P2":
-        raise ValueError("Formato invalido. Apenas PGM P2 (ASCII) e suportado.")
+        raise ValueError("Formato invalido. Apenas PGM P2 (ASCII) eh suportado.")
 
     try:
         largura = int(tokens[1])
@@ -55,7 +62,6 @@ def ler_pgm(caminho_arquivo):
             if valor_lido > maximo_original:
                 valor_lido = maximo_original
 
-            # Normaliza tudo para 8 bits, simplificando as operacoes seguintes.
             valor_8bits = round((valor_lido / maximo_original) * 255)
             linha_pixels.append(valor_8bits)
 

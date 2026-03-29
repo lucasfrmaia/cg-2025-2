@@ -4,13 +4,23 @@ from operacoes.base_operacoes import BaseOperacoesImagem, MotorConvolucao
 
 class FiltrosImagem(BaseOperacoesImagem):
 
+    '''
+    Inicializa a classe de filtros espaciais.
+
+    Como calcula:
+    - Instancia o motor de convolucao com as operacoes base da classe.
+    '''
     def __init__(self):
         super().__init__()
         self.motor = MotorConvolucao(self)
 
-    # =========================
-    # FILTRO DA MÉDIA (3x3)
-    # =========================
+    '''
+    Suaviza a imagem usando o filtro da media.
+
+    Como calcula:
+    - Aplica kernel 3x3 de uns.
+    - Multiplica o acumulado por 1/9.
+    '''
     def filtro_media(self, matriz):
         kernel = [
             [1, 1, 1],
@@ -22,9 +32,13 @@ class FiltrosImagem(BaseOperacoesImagem):
         
         return self.motor.aplicar(matriz, kernel, fator=fator)
 
-    # =========================
-    # FILTRO DA MEDIANA
-    # =========================
+    '''
+    Remove ruido impulsivo com filtro da mediana.
+
+    Como calcula:
+    - Coleta vizinhos da janela 3x3.
+    - Ordena os valores e escolhe o elemento central.
+    '''
     def filtro_mediana(self, matriz):
         def mediana(vizinhos, _i, _j):
             v = sorted(vizinhos)
@@ -33,9 +47,12 @@ class FiltrosImagem(BaseOperacoesImagem):
 
         return self.motor.aplicar_janela(matriz, mediana)
 
-    # =========================
-    # PASSA-ALTA BÁSICO
-    # =========================
+    '''
+    Realca componentes de alta frequencia.
+
+    Como calcula:
+    - Convolui com kernel passa-alta laplaciano cruzado.
+    '''
     def filtro_passa_alta(self, matriz):
         kernel = [
             [0, -1, 0],
@@ -44,9 +61,13 @@ class FiltrosImagem(BaseOperacoesImagem):
         ]
         return self.motor.aplicar(matriz, kernel)
 
-    # =========================
-    # ROBERTS
-    # =========================
+    '''
+    Detecta bordas com operador de Roberts.
+
+    Como calcula:
+    - Calcula gx e gy por diferencas locais.
+    - Combina gradientes via |gx| + |gy|.
+    '''
     def filtro_roberts(self, matriz):
         self.validar_matriz(matriz)
 
@@ -59,16 +80,20 @@ class FiltrosImagem(BaseOperacoesImagem):
                 z8 = self.obter_pixel_borda_replicada(matriz, i + 1, j)
                 z6 = self.obter_pixel_borda_replicada(matriz, i, j + 1)
 
-                gx = z5 - z8   # direção x
-                gy = z5 - z6   # direção y
+                gx = z5 - z8
+                gy = z5 - z6
 
                 saida[i][j] = self.limitar(abs(gx) + abs(gy))
 
         return saida
 
-    # =========================
-    # ROBERTS CRUZADO
-    # =========================
+    '''
+    Detecta bordas com Roberts cruzado.
+
+    Como calcula:
+    - Usa diferencas diagonais para gx e gy.
+    - Combina gradientes via |gx| + |gy|.
+    '''
     def filtro_roberts_cruzado(self, matriz):
         self.validar_matriz(matriz)
 
@@ -89,9 +114,13 @@ class FiltrosImagem(BaseOperacoesImagem):
 
         return saida
 
-    # =========================
-    # PREWITT (CORRIGIDO)
-    # =========================
+    '''
+    Detecta bordas com operador de Prewitt.
+
+    Como calcula:
+    - Convolui com kx e ky.
+    - Combina gradientes via |gx| + |gy|.
+    '''
     def filtro_prewitt(self, matriz):
         kx = [
             [-1, -1, -1],
@@ -107,9 +136,13 @@ class FiltrosImagem(BaseOperacoesImagem):
 
         return self._gradiente(matriz, kx, ky)
 
-    # =========================
-    # SOBEL (CORRETO)
-    # =========================
+    '''
+    Detecta bordas com operador de Sobel.
+
+    Como calcula:
+    - Convolui com kx e ky do Sobel.
+    - Calcula magnitude por raiz de gx^2 + gy^2.
+    '''
     def filtro_sobel(self, matriz):
         kx = [
             [-1, -2, -1],
@@ -125,9 +158,13 @@ class FiltrosImagem(BaseOperacoesImagem):
 
         return self._gradiente(matriz, kx, ky, usar_raiz=True)
 
-    # =========================
-    # FUNÇÃO AUXILIAR GRADIENTE
-    # =========================
+    '''
+    Combina os gradientes horizontal e vertical.
+
+    Como calcula:
+    - Calcula gx e gy por convolucao.
+    - Usa |gx| + |gy| ou sqrt(gx^2 + gy^2).
+    '''
     def _gradiente(self, matriz, kx, ky, usar_raiz=False):
         gx = self.motor.aplicar(matriz, kx, limitar_saida=False)
         gy = self.motor.aplicar(matriz, ky, limitar_saida=False)
@@ -146,9 +183,14 @@ class FiltrosImagem(BaseOperacoesImagem):
 
         return saida
 
-    # =========================
-    # ALTO REFORÇO (HIGH BOOST)
-    # =========================
+    '''
+    Aplica filtro de alto reforco (high-boost).
+
+    Como calcula:
+    - Gera uma versao suavizada pela media.
+    - Calcula mascara = original - suavizada.
+    - Retorna original + A * mascara.
+    '''
     def filtro_alto_reforco(self, matriz, A=1.5):
         self.validar_matriz(matriz)
 

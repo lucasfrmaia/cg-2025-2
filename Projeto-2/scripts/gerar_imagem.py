@@ -1,5 +1,12 @@
 import numpy as np
 
+'''
+Salva uma matriz numpy no formato PGM ASCII (P2).
+
+Como calcula:
+- Escreve cabecalho P2 com largura, altura e maximo 255.
+- Escreve os pixels linha a linha.
+'''
 def salvar_pgm(nome_arquivo, matriz):
     altura, largura = matriz.shape
 
@@ -12,10 +19,13 @@ def salvar_pgm(nome_arquivo, matriz):
             f.write(" ".join(map(str, linha)) + "\n")
 
 
+'''
+Retorna uma forma base binaria para gerar imagem de exemplo.
+
+Como calcula:
+- Cria um array fixo de 0 e 1 representando a forma.
+'''
 def gerar_forma_base():
-    """
-    Forma baseada na imagem que você enviou
-    """
     return np.array([
         [0,0,0,0,1,0,0],
         [0,0,1,1,1,1,0],
@@ -25,10 +35,14 @@ def gerar_forma_base():
     ])
 
 
+'''
+Escala uma forma binaria usando vizinho mais proximo.
+
+Como calcula:
+- Para cada pixel de saida, projeta para coordenada de origem.
+- Copia o valor da forma original.
+'''
 def escalar_forma(forma, nova_altura, nova_largura):
-    """
-    Escala a forma usando nearest neighbor (simples e ideal pra binário)
-    """
     altura, largura = forma.shape
     resultado = np.zeros((nova_altura, nova_largura), dtype=int)
 
@@ -41,18 +55,24 @@ def escalar_forma(forma, nova_altura, nova_largura):
     return resultado
 
 
+'''
+Gera a imagem binaria final com a forma centralizada.
+
+Como calcula:
+- Escala a forma para aproximadamente 70% da imagem.
+- Calcula deslocamentos de centralizacao.
+- Copia pixels ativos para valor 255.
+'''
 def gerar_imagem_final(largura=100, altura=100):
     img = np.zeros((altura, largura), dtype=int)
 
     forma = gerar_forma_base()
 
-    # Escala para ~70% da imagem
     nova_altura = int(altura * 0.7)
     nova_largura = int(largura * 0.7)
 
     forma_escalada = escalar_forma(forma, nova_altura, nova_largura)
 
-    # Centralizar
     y_inicio = (altura - nova_altura) // 2
     x_inicio = (largura - nova_largura) // 2
 

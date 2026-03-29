@@ -3,7 +3,14 @@ from operacoes.base_operacoes import BaseOperacoesImagem
 
 
 class TransformacoesGeometricasImagem(BaseOperacoesImagem):
-    def escala(self, matriz, fator_x=1.0, fator_y=None):
+    '''
+    Redimensiona a imagem por fatores em X e Y.
+
+    Como calcula:
+    - Calcula novo tamanho com os fatores.
+    - Para cada pixel de saida, busca origem por vizinho mais proximo.
+    '''
+    def escala(self, matriz, fator_x=1.0, fator_y=None, valor_fundo=0):
         self.validar_matriz(matriz)
 
         if fator_y is None:
@@ -16,24 +23,30 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
         largura = len(matriz[0])
         nova_largura = max(1, int(round(largura * fator_x)))
         nova_altura = max(1, int(round(altura * fator_y)))
-        saida = self.criar_matriz(nova_altura, nova_largura, 0)
+        saida = self.criar_matriz(nova_altura, nova_largura, valor_fundo)
 
         for i in range(nova_altura):
             for j in range(nova_largura):
                 origem_i = int(i / fator_y)
                 origem_j = int(j / fator_x)
 
-                if origem_i >= altura:
-                    origem_i = altura - 1
-                if origem_j >= largura:
-                    origem_j = largura - 1
-
-                saida[i][j] = matriz[origem_i][origem_j]
+                if 0 <= origem_i < altura and 0 <= origem_j < largura:
+                    saida[i][j] = matriz[origem_i][origem_j]
 
         return saida
 
+    '''
+    Translada a imagem no plano cartesiano da matriz.
+
+    Como calcula:
+    - Para cada destino (i, j), calcula origem (i - dy, j - dx).
+    - Se a origem sair da imagem, usa valor de fundo.
+    '''
     def translacao(self, matriz, deslocamento_x=0, deslocamento_y=0, valor_fundo=0):
         self.validar_matriz(matriz)
+
+        deslocamento_x = int(round(deslocamento_x))
+        deslocamento_y = int(round(deslocamento_y))
 
         altura = len(matriz)
         largura = len(matriz[0])
@@ -41,13 +54,22 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
 
         for i in range(altura):
             for j in range(largura):
-                novo_i = i + deslocamento_y
-                novo_j = j + deslocamento_x
-                if 0 <= novo_i < altura and 0 <= novo_j < largura:
-                    saida[novo_i][novo_j] = matriz[i][j]
+                origem_i = i - deslocamento_y
+                origem_j = j - deslocamento_x
+
+                if 0 <= origem_i < altura and 0 <= origem_j < largura:
+                    saida[i][j] = matriz[origem_i][origem_j]
 
         return saida
 
+    '''
+    Rotaciona a imagem e ajusta o quadro de saida.
+
+    Como calcula:
+    - Converte o angulo para radianos e calcula cos/sen.
+    - Estima novo tamanho pelos cantos rotacionados.
+    - Usa transformacao inversa para buscar os pixels de origem.
+    '''
     def rotacao(self, matriz, angulo_graus=0.0, valor_fundo=0):
         self.validar_matriz(matriz)
 
@@ -103,6 +125,14 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
 
         return saida
 
+    '''
+    Reflete a imagem em horizontal, vertical ou diagonal.
+
+    Como calcula:
+    - Horizontal: inverte colunas.
+    - Vertical: inverte linhas.
+    - Diagonal: transpõe linhas e colunas.
+    '''
     def reflexao(self, matriz, modo="horizontal"):
         self.validar_matriz(matriz)
 
@@ -131,10 +161,21 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
 
         raise ValueError("Modo de reflexao invalido. Use horizontal, vertical ou diagonal.")
 
+    '''
+    Aplica cisalhamento nos eixos X e Y.
+
+    Como calcula:
+    - Aplica matriz de shear com fatores informados.
+    - Calcula novo quadro pelos cantos transformados.
+    - Usa transformacao inversa para amostrar a imagem original.
+    '''
     def cisalhamento(self, matriz, fator_x=0.0, fator_y=0.0, valor_fundo=0):
         self.validar_matriz(matriz)
 
-        determinante = 1.0 - (fator_x * fator_y)
+        shear_x = fator_x
+        shear_y = fator_y
+
+        determinante = 1.0 - (shear_x * shear_y)
         if abs(determinante) < 1e-8:
             raise ValueError("Combinacao de fatores gera transformacao nao invertivel.")
 
@@ -151,8 +192,8 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
         x_transformado = []
         y_transformado = []
         for x, y in cantos:
-            xt = x + fator_x * y
-            yt = y + fator_y * x
+            xt = x - shear_x * y
+            yt = y - shear_y * x
             x_transformado.append(xt)
             y_transformado.append(yt)
 
@@ -170,8 +211,8 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
                 xt = j + min_x
                 yt = i + min_y
 
-                x_origem = (xt - fator_x * yt) / determinante
-                y_origem = (yt - fator_y * xt) / determinante
+                x_origem = (xt + shear_x * yt) / determinante
+                y_origem = (yt + shear_y * xt) / determinante
 
                 origem_j = int(round(x_origem))
                 origem_i = int(round(y_origem))
