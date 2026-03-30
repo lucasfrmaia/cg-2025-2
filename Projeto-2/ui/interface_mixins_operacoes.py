@@ -354,6 +354,14 @@ class InterfaceOperacoesMixin:
             "Morfologia cinza - Contorno interno",
             lambda a, _b, _p: retorno(self._executar_morfologia_cinza(a, "contorno_interno")),
         )
+        operacoes["Morfologia cinza - Top-hat"] = DefinicaoOperacao(
+            "Morfologia cinza - Top-hat",
+            lambda a, _b, _p: retorno(self._executar_morfologia_cinza(a, "top_hat")),
+        )
+        operacoes["Morfologia cinza - Bottom-hat"] = DefinicaoOperacao(
+            "Morfologia cinza - Bottom-hat",
+            lambda a, _b, _p: retorno(self._executar_morfologia_cinza(a, "bottom_hat")),
+        )
 
         operacoes["Geometrica - Escala"] = DefinicaoOperacao(
             "Geometrica - Escala",
@@ -384,7 +392,7 @@ class InterfaceOperacoesMixin:
                     "rotulo": "Tipo de reflexao",
                     "padrao": "horizontal",
                     "tipo": "select",
-                    "opcoes": ["horizontal", "vertical", "diagonal"],
+                    "opcoes": ["horizontal", "vertical"],
                 }
             ],
         )
@@ -464,6 +472,8 @@ class InterfaceOperacoesMixin:
                         "Morfologia cinza - Gradiente",
                         "Morfologia cinza - Contorno externo",
                         "Morfologia cinza - Contorno interno",
+                        "Morfologia cinza - Top-hat",
+                        "Morfologia cinza - Bottom-hat",
                     ],
                 },
             },
@@ -524,5 +534,9 @@ class InterfaceOperacoesMixin:
             return self.morfologia_cinza.contorno_externo_cinza(matriz)
         if tipo == "contorno_interno":
             return self.morfologia_cinza.contorno_interno_cinza(matriz)
+        if tipo == "top_hat":
+            return self.morfologia_cinza.top_hat_cinza(matriz)
+        if tipo == "bottom_hat":
+            return self.morfologia_cinza.bottom_hat_cinza(matriz)
 
         raise ValueError("Operacao morfologica em tons de cinza invalida.")

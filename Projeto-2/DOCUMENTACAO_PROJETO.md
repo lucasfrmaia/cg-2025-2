@@ -804,13 +804,12 @@ Como calcula:
 
 O que faz:
 
-- Espelha imagem em horizontal, vertical ou diagonal.
+- Espelha imagem em horizontal ou vertical.
 
 Como calcula:
 
 - Horizontal: inverte colunas.
 - Vertical: inverte linhas.
-- Diagonal: transpõe matriz.
 
 ### `cisalhamento(matriz, fator_x=0.0, fator_y=0.0, valor_fundo=0)`
 

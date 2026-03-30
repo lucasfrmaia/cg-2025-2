@@ -4,12 +4,6 @@ from operacoes.base_operacoes import BaseOperacoesImagem, MotorConvolucao
 
 class FiltrosImagem(BaseOperacoesImagem):
 
-    '''
-    Inicializa a classe de filtros espaciais.
-
-    Como calcula:
-    - Instancia o motor de convolucao com as operacoes base da classe.
-    '''
     def __init__(self):
         super().__init__()
         self.motor = MotorConvolucao(self)

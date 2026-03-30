@@ -155,7 +155,7 @@ class MotorConvolucao:
     - Aplica fator e deslocamento.
     - Aplica callback posicional opcional e limita a saida.
     '''
-    def aplicar(self, matriz, kernel, fator=1.0, deslocamento=0.0, callback_pos=None, limitar_saida=True):
+    def aplicar(self, matriz, kernel, fator=1.0, callback_pos=None, limitar_saida=True):
         self.base.validar_matriz(matriz)
 
         h, w = len(matriz), len(matriz[0])
@@ -176,7 +176,7 @@ class MotorConvolucao:
                         pixel = self._get_pixel(matriz, ii, jj)
                         acc += pixel * kernel[ki][kj]
 
-                valor = acc * fator + deslocamento
+                valor = acc * fator
 
                 if callback_pos:
                     valor = callback_pos(valor, i, j)

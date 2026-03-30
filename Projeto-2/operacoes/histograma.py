@@ -1,5 +1,5 @@
 from operacoes.base_operacoes import BaseOperacoesImagem
-
+import math
 
 class HistogramaImagem(BaseOperacoesImagem):
     '''
@@ -40,11 +40,7 @@ class HistogramaImagem(BaseOperacoesImagem):
             acumulado += hist_original[i]
             cdf[i] = acumulado
 
-        cdf_min = 0
-        for valor in cdf:
-            if valor > 0:
-                cdf_min = valor
-                break
+        cdf_min = min(cdf)
 
         mapa = [0] * 256
         denominador = total_pixels - cdf_min
@@ -66,4 +62,5 @@ class HistogramaImagem(BaseOperacoesImagem):
                 matriz_equalizada[i][j] = mapa[matriz[i][j]]
 
         hist_equalizado = self.calcular_histograma(matriz_equalizada)
+        
         return matriz_equalizada, hist_original, hist_equalizado, mapa

@@ -17,13 +17,14 @@ class MorfismoImagem(BaseOperacoesImagem):
         if t > 1:
             t = 1.0
 
-        altura = len(matriz_a)
-        largura = len(matriz_a[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def morfismo_formula(pixelA, pixelB, i, j):
+            return (1.0 - t) * pixelA + t * pixelB  
 
-        for i in range(altura):
-            for j in range(largura):
-                valor = (1.0 - t) * matriz_a[i][j] + t * matriz_b[i][j]
-                saida[i][j] = self.limitar(int(round(valor)))
+        return self.aplicar_entre_imagens(
+            matriz_a,
+            matriz_b,
+            morfismo_formula,
+            limitar_saida=True
+        )
 
-        return saida
+      

@@ -641,3 +641,25 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
     def contorno_interno_cinza(self, matriz, _elemento_estruturante=None):
         erodida = self.erosao_cinza(matriz)
         return self._subtrair_matrizes(matriz, erodida)
+
+    '''
+    Calcula top-hat em tons de cinza.
+
+    Como calcula:
+    - Calcula a abertura da imagem.
+    - Retorna subtracao: original - abertura.
+    '''
+    def top_hat_cinza(self, matriz, _elemento_estruturante=None):
+        aberta = self.abertura_cinza(matriz)
+        return self._subtrair_matrizes(matriz, aberta)
+
+    '''
+    Calcula bottom-hat em tons de cinza.
+
+    Como calcula:
+    - Calcula o fechamento da imagem.
+    - Retorna subtracao: fechamento - original.
+    '''
+    def bottom_hat_cinza(self, matriz, _elemento_estruturante=None):
+        fechada = self.fechamento_cinza(matriz)
+        return self._subtrair_matrizes(fechada, matriz)

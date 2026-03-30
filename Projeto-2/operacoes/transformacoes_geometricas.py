@@ -126,12 +126,11 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
         return saida
 
     '''
-    Reflete a imagem em horizontal, vertical ou diagonal.
+    Reflete a imagem em horizontal ou vertical.
 
     Como calcula:
     - Horizontal: inverte colunas.
     - Vertical: inverte linhas.
-    - Diagonal: transpõe linhas e colunas.
     '''
     def reflexao(self, matriz, modo="horizontal"):
         self.validar_matriz(matriz)
@@ -152,14 +151,7 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
                     saida[altura - 1 - i][j] = matriz[i][j]
             return saida
 
-        if modo == "diagonal":
-            nova = self.criar_matriz(largura, altura, 0)
-            for i in range(altura):
-                for j in range(largura):
-                    nova[j][i] = matriz[i][j]
-            return nova
-
-        raise ValueError("Modo de reflexao invalido. Use horizontal, vertical ou diagonal.")
+        raise ValueError("Modo de reflexao invalido. Use horizontal ou vertical.")
 
     '''
     Aplica cisalhamento nos eixos X e Y.
