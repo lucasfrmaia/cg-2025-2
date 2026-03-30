@@ -3,12 +3,12 @@ from PIL import Image
 # =========================
 # CONFIGURAÇÃO (paths fixos)
 # =========================
-CAMINHO_ENTRADA = "C:/Users/lucas/IdeaProjects/CG - 2025.2/Projeto-2/imagens/pessoa/Screenshot_23.png"
-CAMINHO_SAIDA = "C:/Users/lucas/IdeaProjects/CG - 2025.2/Projeto-2/imagens/pessoa/adulto.pgm"
+CAMINHO_ENTRADA = "scripts/Screenshot_2.png"
+CAMINHO_SAIDA = "scripts/Screenshot_2.ogm"
 
 # Tamanho padrão (todas as imagens terão esse tamanho)
-LARGURA_PADRAO = 256
-ALTURA_PADRAO = 256
+LARGURA_PADRAO = 101
+ALTURA_PADRAO = 101
 
 def salvar_pgm_ascii(imagem_path, output_path):
     # Abre e converte para grayscale

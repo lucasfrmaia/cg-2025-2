@@ -79,24 +79,41 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
         return self.aplicar_por_pixel(matriz, formula)
 
     '''
-    Ajusta a faixa dinamica entre r_min e r_max.
+    Ajusta a faixa dinamica para um valor alvo.
 
     Como calcula:
-    - Mapeia r <= r_min para 0 e r >= r_max para 255.
-    - Interpola linearmente valores dentro do intervalo.
+    - Calcula f_min e f_max da imagem.
+    - Reescala cada pixel para o intervalo [0, target].
     '''
-    def faixa_dinamica(self, matriz, r_min=0.0, r_max=255.0):
+    def faixa_dinamica(self, matriz, target=255.0):
         self.validar_matriz(matriz)
-        if r_max <= r_min:
-            raise ValueError("r_max deve ser maior que r_min.")
+
+        altura = len(matriz)
+        largura = len(matriz[0])
+
+        # Determina os extremos reais da imagem para normalizacao.
+        f_min = float('inf')
+        f_max = float('-inf')
+
+        for i in range(altura):
+            for j in range(largura):
+                valor = matriz[i][j]
+
+                if valor < f_min:
+                    f_min = valor
+                if valor > f_max:
+                    f_max = valor
 
         def formula(i, j):
             r = matriz[i][j]
-            if r <= r_min:
+
+            # Caso degenerado (imagem constante)
+            if f_max == f_min:
                 return 0
-            if r >= r_max:
-                return 255
-            return ((r - r_min) / (r_max - r_min)) * 255.0
+
+            s = ((r - f_min) / (f_max - f_min)) * target
+
+            return s
 
         return self.aplicar_por_pixel(matriz, formula)
 

@@ -38,7 +38,6 @@ class InterfaceOperacoesMixin:
                 "a": ["crianca.pgm", "pessoa/crianca.pgm"],
                 "b": ["pessoa/jovem.pgm", "jovem.pgm"],
             },
-            "Intensidade - Linear": {"a": ["lena.pgm"]},
             "Histograma - Equalizar": {"a": ["lena.pgm"]},
         }
 
@@ -70,6 +69,27 @@ class InterfaceOperacoesMixin:
             "Filtro - Alto reforco",
         ]:
             mapeamento[nome] = {"a": ["lena.pgm"]}
+
+        for nome in [
+            "Intensidade - Negativo",
+            "Intensidade - Gamma",
+            "Intensidade - Logaritmo",
+            "Intensidade - Transferencia geral",
+            "Intensidade - Faixa dinamica",
+            "Intensidade - Linear",
+        ]:
+            mapeamento[nome] = {"a": ["lena.pgm"]}
+
+        for nome in [
+            "Geometrica - Escala",
+            "Geometrica - Translacao",
+            "Geometrica - Rotacao",
+            "Geometrica - Reflexao",
+            "Geometrica - Cisalhamento",
+        ]:
+            mapeamento[nome] = {"a": ["lena.pgm"]}
+
+        mapeamento["Geometrica - Cisalhamento Arnold"] = {"a": ["gato.pgm", "lena.pgm"]}
 
         return mapeamento
 
@@ -268,10 +288,9 @@ class InterfaceOperacoesMixin:
         )
         operacoes["Intensidade - Faixa dinamica"] = DefinicaoOperacao(
             "Intensidade - Faixa dinamica",
-            lambda a, _b, p: retorno(self.intensidade.faixa_dinamica(a, p[0], p[1])),
+            lambda a, _b, p: retorno(self.intensidade.faixa_dinamica(a, p[0])),
             parametros=[
-                {"rotulo": "r_min", "padrao": "50", "tipo": float},
-                {"rotulo": "r_max", "padrao": "200", "tipo": float},
+                {"rotulo": "Target", "padrao": "255", "tipo": float},
             ],
         )
         operacoes["Intensidade - Linear"] = DefinicaoOperacao(

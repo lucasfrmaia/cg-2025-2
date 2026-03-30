@@ -91,6 +91,7 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
 
         x_rot = []
         y_rot = []
+
         for x, y in cantos:
             xr = x * cos_a - y * sin_a
             yr = x * sin_a + y * cos_a
@@ -239,8 +240,8 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
             for i in range(altura):
                 for j in range(largura):
                     if i < n and j < n:
-                        origem_j = (2 * j - i) % n
-                        origem_i = (-j + i) % n
+                        origem_j = (2 * j + i) % n
+                        origem_i = (j + i) % n
                         nova_imagem[i][j] = imagem_atual[origem_i][origem_j]
                     else:
                         nova_imagem[i][j] = imagem_atual[i][j]
