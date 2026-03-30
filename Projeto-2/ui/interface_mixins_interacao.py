@@ -77,19 +77,28 @@ class InterfaceInteracaoMixin:
             rotulo = self.rotulos_parametros[indice]
             entrada = self.entradas_parametros[indice]
             combo = self.combos_parametros[indice]
+            checkbox = self.checkboxes_parametros[indice]
+            var_checkbox = self.vars_checkbox_parametros[indice]
 
             if indice < len(parametros):
                 rotulo.configure(text=parametros[indice]["rotulo"])
                 meta = parametros[indice]
                 if meta["tipo"] == "select":
                     self._configurar_entrada(entrada, "", habilitada=False, mostrar=False)
+                    self._configurar_checkbox(checkbox, var_checkbox, False, habilitada=False)
                     self._configurar_combo(combo, meta.get("opcoes", []), meta["padrao"], habilitada=True)
+                elif meta["tipo"] == "checkbox":
+                    self._configurar_combo(combo, [], "", habilitada=False)
+                    self._configurar_entrada(entrada, "", habilitada=False, mostrar=False)
+                    self._configurar_checkbox(checkbox, var_checkbox, bool(meta.get("padrao", False)), habilitada=True)
                 else:
                     self._configurar_combo(combo, [], "", habilitada=False)
+                    self._configurar_checkbox(checkbox, var_checkbox, False, habilitada=False)
                     self._configurar_entrada(entrada, meta["padrao"], habilitada=True)
             else:
                 rotulo.configure(text="")
                 self._configurar_combo(combo, [], "", habilitada=False)
+                self._configurar_checkbox(checkbox, var_checkbox, False, habilitada=False)
                 self._configurar_entrada(entrada, "", habilitada=False)
 
         usa_elemento = self._operacao_usa_elemento_estruturante(nome_operacao)
@@ -134,6 +143,12 @@ class InterfaceInteracaoMixin:
             self.rotulos_parametros[indice].configure(text="")
             self._configurar_entrada(self.entradas_parametros[indice], "", habilitada=False)
             self._configurar_combo(self.combos_parametros[indice], [], "", habilitada=False)
+            self._configurar_checkbox(
+                self.checkboxes_parametros[indice],
+                self.vars_checkbox_parametros[indice],
+                False,
+                habilitada=False,
+            )
 
     def _operacao_usa_elemento_estruturante(self, nome_operacao):
         return nome_operacao.startswith("Morfologia binaria")
@@ -352,6 +367,15 @@ class InterfaceInteracaoMixin:
             combo.configure(state="disabled")
             combo.grid_remove()
 
+    def _configurar_checkbox(self, checkbox, variavel, valor, habilitada):
+        variavel.set(bool(valor))
+        if habilitada:
+            checkbox.configure(state="normal")
+            checkbox.grid()
+        else:
+            checkbox.configure(state="disabled")
+            checkbox.grid_remove()
+
     def _organizar_paineis_imagem(self, mostrar_b):
         self.painel_a["frame"].grid_forget()
         self.painel_b["frame"].grid_forget()
@@ -426,6 +450,8 @@ class InterfaceInteracaoMixin:
             if tipo == "select":
                 combo = self.combos_parametros[indice]
                 valor = combo.get().strip() or str(meta["padrao"])
+            elif tipo == "checkbox":
+                valor = bool(self.vars_checkbox_parametros[indice].get())
             else:
                 entrada = self.entradas_parametros[indice]
                 texto = entrada.get().strip()

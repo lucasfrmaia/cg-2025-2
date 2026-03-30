@@ -46,6 +46,8 @@ class AplicacaoPDI(
 
         self.entradas_parametros = []
         self.combos_parametros = []
+        self.checkboxes_parametros = []
+        self.vars_checkbox_parametros = []
         self.rotulos_parametros = []
         self.var_slider_morfismo = tk.DoubleVar(value=0.5)
         self.frame_slider_morfismo = None

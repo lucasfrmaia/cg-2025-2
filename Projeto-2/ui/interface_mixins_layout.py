@@ -102,15 +102,21 @@ class InterfaceLayoutMixin:
             rotulo = ttk.Label(quadro, text=f"Parametro {indice + 1}")
             entrada = ttk.Entry(quadro, width=18)
             combo = ttk.Combobox(quadro, state="readonly", width=18)
+            var_checkbox = tk.BooleanVar(value=False)
+            checkbox = ttk.Checkbutton(quadro, variable=var_checkbox)
 
             rotulo.grid(row=0, column=coluna_base, padx=6, pady=6, sticky="w")
             entrada.grid(row=0, column=coluna_base + 1, padx=6, pady=6, sticky="w")
             combo.grid(row=0, column=coluna_base + 1, padx=6, pady=6, sticky="w")
+            checkbox.grid(row=0, column=coluna_base + 1, padx=6, pady=6, sticky="w")
             combo.grid_remove()
+            checkbox.grid_remove()
 
             self.rotulos_parametros.append(rotulo)
             self.entradas_parametros.append(entrada)
             self.combos_parametros.append(combo)
+            self.checkboxes_parametros.append(checkbox)
+            self.vars_checkbox_parametros.append(var_checkbox)
 
         self.frame_elemento_estruturante = ttk.Frame(quadro)
         ttk.Label(

@@ -133,6 +133,11 @@ class InterfaceOperacoesMixin:
         def copia_matriz(matriz):
             return [linha[:] for linha in matriz]
 
+        def normalizar_opcional(matriz, normalizar):
+            if normalizar:
+                return self.aritmetica.normalizar_matriz(matriz)
+            return matriz
+
         operacoes = {}
 
         operacoes["Filtro - Media"] = DefinicaoOperacao(
@@ -173,38 +178,59 @@ class InterfaceOperacoesMixin:
 
         operacoes["Aritmetica - Soma"] = DefinicaoOperacao(
             "Aritmetica - Soma",
-            lambda a, b, _p: retorno(self.aritmetica.soma(a, b)),
+            lambda a, b, p: retorno(self.aritmetica.soma(a, b, p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": True, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
         operacoes["Aritmetica - Subtracao"] = DefinicaoOperacao(
             "Aritmetica - Subtracao",
-            lambda a, b, _p: retorno(self.aritmetica.subtracao(a, b)),
+            lambda a, b, p: retorno(self.aritmetica.subtracao(a, b, p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": True, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
         operacoes["Aritmetica - Multiplicacao"] = DefinicaoOperacao(
             "Aritmetica - Multiplicacao",
-            lambda a, b, _p: retorno(self.aritmetica.multiplicacao(a, b)),
+            lambda a, b, p: retorno(self.aritmetica.multiplicacao(a, b, p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": True, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
         operacoes["Aritmetica - Divisao"] = DefinicaoOperacao(
             "Aritmetica - Divisao",
-            lambda a, b, _p: retorno(self.aritmetica.divisao(a, b)),
+            lambda a, b, p: retorno(self.aritmetica.divisao(a, b, p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": True, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
 
         operacoes["Logica - AND"] = DefinicaoOperacao(
             "Logica - AND",
-            lambda a, b, _p: retorno(self.logica.operacao_and(a, b)),
+            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_and(a, b), p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
         operacoes["Logica - OR"] = DefinicaoOperacao(
             "Logica - OR",
-            lambda a, b, _p: retorno(self.logica.operacao_or(a, b)),
+            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_or(a, b), p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
         operacoes["Logica - XOR"] = DefinicaoOperacao(
             "Logica - XOR",
-            lambda a, b, _p: retorno(self.logica.operacao_xor(a, b)),
+            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_xor(a, b), p[0])),
+            parametros=[
+                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
+            ],
             requer_segunda=True,
         )
 
@@ -404,6 +430,13 @@ class InterfaceOperacoesMixin:
                 {"rotulo": "Fator Y", "padrao": "0.0", "tipo": float},
             ],
         )
+        operacoes["Geometrica - Cisalhamento Arnold"] = DefinicaoOperacao(
+            "Geometrica - Cisalhamento Arnold",
+            lambda a, _b, p: retorno(self.geometria.cisalhamento_arnold(a, p[0])),
+            parametros=[
+                {"rotulo": "Iteracoes (X)", "padrao": "1", "tipo": int},
+            ],
+        )
 
         return operacoes
 
@@ -485,6 +518,7 @@ class InterfaceOperacoesMixin:
                     "Geometrica - Rotacao",
                     "Geometrica - Reflexao",
                     "Geometrica - Cisalhamento",
+                    "Geometrica - Cisalhamento Arnold",
                 ],
             },
         }

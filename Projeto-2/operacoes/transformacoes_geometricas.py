@@ -213,3 +213,38 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
                     saida[i][j] = matriz[origem_i][origem_j]
 
         return saida
+
+    '''
+    Aplica o mapeamento tipo Gato de Arnold no maior quadrado N x N valido.
+
+    Como calcula:
+    - Define N como a menor dimensao da imagem.
+    - Usa fator_x como numero de iteracoes (>= 1).
+    - Em cada iteracao aplica mapeamento inverso dentro de N x N.
+    - Fora da regiao N x N, preserva os pixels originais.
+    '''
+    def cisalhamento_arnold(self, matriz, fator_x=1.0, valor_fundo=0):
+        self.validar_matriz(matriz)
+
+        altura = len(matriz)
+        largura = len(matriz[0])
+        n = min(altura, largura)
+        iteracoes = max(1, int(fator_x))
+
+        imagem_atual = [linha[:] for linha in matriz]
+
+        for _ in range(iteracoes):
+            nova_imagem = self.criar_matriz(altura, largura, valor_fundo)
+
+            for i in range(altura):
+                for j in range(largura):
+                    if i < n and j < n:
+                        origem_j = (2 * j - i) % n
+                        origem_i = (-j + i) % n
+                        nova_imagem[i][j] = imagem_atual[origem_i][origem_j]
+                    else:
+                        nova_imagem[i][j] = imagem_atual[i][j]
+
+            imagem_atual = [linha[:] for linha in nova_imagem]
+
+        return imagem_atual

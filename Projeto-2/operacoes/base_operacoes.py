@@ -126,6 +126,34 @@ class BaseOperacoesImagem:
 
         return saida
 
+    '''
+    Normaliza os valores de uma matriz para uma nova faixa.
+
+    Como calcula:
+    - Encontra minimo e maximo da matriz.
+    - Se todos os valores forem iguais, retorna matriz zerada.
+    - Caso contrario, aplica escala linear para [novo_min, novo_max].
+    '''
+    def normalizar_matriz(self, matriz, novo_min=0, novo_max=255):
+        self.validar_matriz(matriz)
+
+        minimo = min(min(linha) for linha in matriz)
+        maximo = max(max(linha) for linha in matriz)
+
+        if minimo == maximo:
+            return self.criar_matriz(len(matriz), len(matriz[0]), self.limitar(novo_min, novo_min, novo_max))
+
+        faixa_origem = maximo - minimo
+        faixa_destino = novo_max - novo_min
+
+        return [
+            [
+                self.limitar(((valor - minimo) / faixa_origem) * faixa_destino + novo_min, novo_min, novo_max)
+                for valor in linha
+            ]
+            for linha in matriz
+        ]
+
 
 class MotorConvolucao:
     '''
