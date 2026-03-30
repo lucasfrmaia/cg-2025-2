@@ -46,7 +46,7 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
         self.validar_matriz(matriz)
 
         def formula(i, j):
-            return a * math.log(matriz[i][j] + 1)
+            return a * math.log(matriz[i][j] + 1, 10)
 
         return self.aplicar_por_pixel(matriz, formula)
 

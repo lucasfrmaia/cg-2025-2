@@ -49,10 +49,11 @@ class FiltrosImagem(BaseOperacoesImagem):
     '''
     def filtro_passa_alta(self, matriz):
         kernel = [
-            [0, -1, 0],
-            [-1, 4, -1],
-            [0, -1, 0],
+            [-1, -1, -1],
+            [-1,  8, -1],
+            [-1, -1, -1],
         ]
+        
         return self.motor.aplicar(matriz, kernel)
 
     '''
