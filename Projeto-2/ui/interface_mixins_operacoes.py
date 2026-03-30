@@ -258,12 +258,12 @@ class InterfaceOperacoesMixin:
             lambda a, _b, p: retorno(self.intensidade.transformacao_logaritmica(a, p[0])),
             parametros=[{"rotulo": "Constante a", "padrao": "45.0", "tipo": float}],
         )
-        operacoes["Intensidade - Janela"] = DefinicaoOperacao(
-            "Intensidade - Janela",
-            lambda a, _b, p: retorno(self.intensidade.funcao_janela(a, p[0], p[1])),
+        operacoes["Intensidade - Transferencia geral"] = DefinicaoOperacao(
+            "Intensidade - Transferencia geral",
+            lambda a, _b, p: retorno(self.intensidade.funcao_transferencia_geral(a, p[0], p[1])),
             parametros=[
                 {"rotulo": "Centro w", "padrao": "128", "tipo": float},
-                {"rotulo": "Largura a", "padrao": "80", "tipo": float},
+                {"rotulo": "Sigma", "padrao": "20", "tipo": float},
             ],
         )
         operacoes["Intensidade - Faixa dinamica"] = DefinicaoOperacao(
@@ -476,7 +476,7 @@ class InterfaceOperacoesMixin:
                     "Intensidade - Negativo",
                     "Intensidade - Gamma",
                     "Intensidade - Logaritmo",
-                    "Intensidade - Janela",
+                    "Intensidade - Transferencia geral",
                     "Intensidade - Faixa dinamica",
                     "Intensidade - Linear",
                 ],

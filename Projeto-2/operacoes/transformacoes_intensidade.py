@@ -12,15 +12,10 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
     def negativo(self, matriz):
         self.validar_matriz(matriz)
 
-        altura = len(matriz)
-        largura = len(matriz[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def formula(i, j):
+            return 255 - matriz[i][j]
 
-        for i in range(altura):
-            for j in range(largura):
-                saida[i][j] = 255 - matriz[i][j]
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)
 
     '''
     Aplica transformacao gamma.
@@ -33,17 +28,12 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
     def transformacao_gamma(self, matriz, c=1.0, gamma=1.0):
         self.validar_matriz(matriz)
 
-        altura = len(matriz)
-        largura = len(matriz[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def formula(i, j):
+            r = matriz[i][j] / 255.0
+            s = c * (r ** gamma)
+            return s * 255.0
 
-        for i in range(altura):
-            for j in range(largura):
-                r = matriz[i][j] / 255.0
-                s = c * (r ** gamma)
-                saida[i][j] = self.limitar(int(round(s * 255.0)))
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)
 
     '''
     Aplica transformacao logaritmica nos tons de cinza.
@@ -55,50 +45,38 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
     def transformacao_logaritmica(self, matriz, a=45.0):
         self.validar_matriz(matriz)
 
-        altura = len(matriz)
-        largura = len(matriz[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def formula(i, j):
+            return a * math.log(matriz[i][j] + 1)
 
-        for i in range(altura):
-            for j in range(largura):
-                s = a * math.log(matriz[i][j] + 1)
-                saida[i][j] = self.limitar(int(round(s)))
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)
 
     '''
-    Aplica funcao janela linear centrada em w.
+    Aplica funcao de transferencia geral centrada em w.
 
     Como calcula:
-    - Define minimo = w - largura/2 e maximo = w + largura/2.
-    - Mapeia abaixo do minimo para 0 e acima do maximo para 255.
-    - Interpola linearmente dentro da janela.
+    - Para cada pixel r, usa a funcao sigmoide deslocada.
+    - Formula: s(r) = 255 - 1 / (1 + e^(-((r - w) / sigma))).
     '''
-    def funcao_janela(self, matriz, w=128.0, largura=80.0):
+    def funcao_transferencia_geral(self, matriz, w=128.0, sigma=20.0):
         self.validar_matriz(matriz)
-        if largura <= 0:
-            raise ValueError("A largura da janela deve ser maior que zero.")
+        if sigma == 0:
+            raise ValueError("sigma deve ser diferente de zero.")
 
-        minimo = w - (largura / 2.0)
-        maximo = w + (largura / 2.0)
+        def formula(i, j):
+            r = matriz[i][j]
+            expoente = -((r - w) / sigma)
+            
+            if expoente > 60:
+                expoente = 60
+            if expoente < -60:
+                expoente = -60
 
-        altura = len(matriz)
-        largura_m = len(matriz[0])
-        saida = self.criar_matriz(altura, largura_m, 0)
+            # Esse math.ex faz e ^ expoente
+            denominador = 1.0 + math.exp(expoente)
+            
+            return 255.0 / denominador
 
-        for i in range(altura):
-            for j in range(largura_m):
-                r = matriz[i][j]
-                if r <= minimo:
-                    s = 0
-                elif r >= maximo:
-                    s = 255
-                else:
-                    s = ((r - minimo) / largura) * 255.0
-
-                saida[i][j] = self.limitar(int(round(s)))
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)
 
     '''
     Ajusta a faixa dinamica entre r_min e r_max.
@@ -112,23 +90,15 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
         if r_max <= r_min:
             raise ValueError("r_max deve ser maior que r_min.")
 
-        altura = len(matriz)
-        largura = len(matriz[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def formula(i, j):
+            r = matriz[i][j]
+            if r <= r_min:
+                return 0
+            if r >= r_max:
+                return 255
+            return ((r - r_min) / (r_max - r_min)) * 255.0
 
-        for i in range(altura):
-            for j in range(largura):
-                r = matriz[i][j]
-                if r <= r_min:
-                    s = 0
-                elif r >= r_max:
-                    s = 255
-                else:
-                    s = ((r - r_min) / (r_max - r_min)) * 255.0
-
-                saida[i][j] = self.limitar(int(round(s)))
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)
 
     '''
     Aplica transformacao linear de intensidade.
@@ -140,13 +110,7 @@ class TransformacoesIntensidadeImagem(BaseOperacoesImagem):
     def linear(self, matriz, alpha=1.0, beta=0.0):
         self.validar_matriz(matriz)
 
-        altura = len(matriz)
-        largura = len(matriz[0])
-        saida = self.criar_matriz(altura, largura, 0)
+        def formula(i, j):
+            return alpha * matriz[i][j] + beta
 
-        for i in range(altura):
-            for j in range(largura):
-                s = alpha * matriz[i][j] + beta
-                saida[i][j] = self.limitar(int(round(s)))
-
-        return saida
+        return self.aplicar_por_pixel(matriz, formula)

@@ -40,7 +40,7 @@ class HistogramaImagem(BaseOperacoesImagem):
             acumulado += hist_original[i]
             cdf[i] = acumulado
 
-        cdf_min = min(cdf)
+        cdf_min = next(x for x in cdf if x > 0)
 
         mapa = [0] * 256
         denominador = total_pixels - cdf_min
