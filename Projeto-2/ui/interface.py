@@ -13,8 +13,8 @@ class AplicacaoPDI(
     InterfaceInteracaoMixin,
     InterfaceRenderizacaoMixin,
 ):
-    LARGURA_PAINEL_IMAGEM = 250
-    ALTURA_PAINEL_IMAGEM = 250
+    LARGURA_PAINEL_IMAGEM = 350
+    ALTURA_PAINEL_IMAGEM = 350
 
     LARGURA_PAINEL_MATRIZ = 10
     ALTURA_PAINEL_MATRIZ = 10
