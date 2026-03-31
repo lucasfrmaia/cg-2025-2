@@ -321,6 +321,7 @@ class InterfaceOperacoesMixin:
         )
 
         opcoes_elemento_binario = ["quadrado 3x3", "quadrado 5x5"]
+        opcoes_mascara_hit_or_miss = list(self.morfologia_binaria.MASCARAS_HIT_OR_MISS.keys())
         operacoes["Morfologia binaria - Dilatacao"] = DefinicaoOperacao(
             "Morfologia binaria - Dilatacao",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "dilatacao")),
@@ -434,16 +435,10 @@ class InterfaceOperacoesMixin:
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "hit_or_miss")),
             parametros=[
                 {
-                    "rotulo": "Elemento J1",
-                    "padrao": "quadrado 3x3",
+                    "rotulo": "Mascara",
+                    "padrao": opcoes_mascara_hit_or_miss[0],
                     "tipo": "select",
-                    "opcoes": opcoes_elemento_binario,
-                },
-                {
-                    "rotulo": "Elemento K2",
-                    "padrao": "quadrado 3x3",
-                    "tipo": "select",
-                    "opcoes": opcoes_elemento_binario,
+                    "opcoes": opcoes_mascara_hit_or_miss,
                 },
             ],
         )
@@ -632,7 +627,6 @@ class InterfaceOperacoesMixin:
 
     def _executar_morfologia_binaria(self, matriz, parametros, tipo):
         elemento = parametros[0] if parametros else "quadrado 3x3"
-        elemento_k2 = parametros[1] if len(parametros) > 1 else elemento
 
         if tipo == "dilatacao":
             return self.morfologia_binaria.dilatacao_binaria(matriz, elemento)
@@ -653,7 +647,7 @@ class InterfaceOperacoesMixin:
         if tipo == "bottom_hat":
             return self.morfologia_binaria.bottom_hat_binaria(matriz, elemento)
         if tipo == "hit_or_miss":
-            return self.morfologia_binaria.hit_or_miss_binaria(matriz, elemento, elemento_k2)
+            return self.morfologia_binaria.hit_or_miss_binaria(matriz, elemento)
 
         raise ValueError("Operacao morfologica binaria invalida.")
 

@@ -192,6 +192,23 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 class MorfologiaBinariaImagem(BaseMorfologiaImagem):
     _SELETORES_3X3 = {"quadrado 3x3", "3x3", "3"}
     _SELETORES_5X5 = {"quadrado 5x5", "5x5", "5"}
+    MASCARAS_HIT_OR_MISS = {
+        "Ponto isolado": [
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 0, 0],
+        ],
+        "Canto superior esquerdo": [
+            [1, 1, -1],
+            [1, 0, -1],
+            [-1, -1, -1],
+        ],
+        "Cruz": [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 1, 0],
+        ],
+    }
 
     def _normalizar_entrada_binaria(self, matriz):
         self.validar_matriz(matriz)
@@ -246,6 +263,36 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
                     offsets.add((ei - oi, ej - oj))
 
         return offsets
+
+    def _normalizar_mascara_hit_or_miss(self, mascara):
+        if isinstance(mascara, str):
+            mascara = self.MASCARAS_HIT_OR_MISS.get(mascara, None)
+
+        if not mascara or not mascara[0]:
+            raise ValueError("Mascara hit-or-miss invalida.")
+
+        largura = len(mascara[0])
+        resultado = []
+        for linha in mascara:
+            if len(linha) != largura:
+                raise ValueError("Mascara hit-or-miss invalida: linhas com tamanhos diferentes.")
+
+            linha_normalizada = []
+            for valor in linha:
+                if valor in (1, "1", True):
+                    linha_normalizada.append(1)
+                elif valor in (0, "0", False):
+                    linha_normalizada.append(0)
+                elif valor in (-1, "-1"):
+                    linha_normalizada.append(-1)
+                else:
+                    raise ValueError("Mascara hit-or-miss aceita apenas 1, 0 e -1.")
+            resultado.append(linha_normalizada)
+
+        if not any(valor == 1 for linha in resultado for valor in linha):
+            raise ValueError("Mascara hit-or-miss precisa ter ao menos um pixel de frente (1).")
+
+        return resultado
 
     def _dilatacao_binaria_conjunto(self, conjunto_a, offsets_b, altura, largura):
         resultado = set()
@@ -356,26 +403,45 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
         fechada = self.fechamento_binaria(matriz_normalizada, elemento_estruturante)
         return self._subtrair_matrizes(fechada, matriz_normalizada)
 
-    def hit_or_miss_binaria(self, matriz_binaria, elemento_j1, elemento_k2):
+    def hit_or_miss_binaria(self, matriz_binaria, mascara):
         matriz_normalizada = self._normalizar_entrada_binaria(matriz_binaria)
-
-        erodida_j1 = self.erosao_binaria(matriz_normalizada, elemento_j1)
-
         altura = len(matriz_normalizada)
         largura = len(matriz_normalizada[0])
-        complemento_matriz = [
-            [255 if matriz_normalizada[i][j] == 0 else 0 for j in range(largura)]
-            for i in range(altura)
-        ]
+        mascara_normalizada = self._normalizar_mascara_hit_or_miss(mascara)
 
-        erodida_k2 = self.erosao_binaria(complemento_matriz, elemento_k2)
+        mh = len(mascara_normalizada)
+        mw = len(mascara_normalizada[0])
+        oi = mh // 2
+        oj = mw // 2
 
-        conjunto_j1 = self._matriz_binaria_para_conjunto(erodida_j1)
-        conjunto_k2 = self._matriz_binaria_para_conjunto(erodida_k2)
+        saida = self.criar_matriz(altura, largura, 0)
+        for i in range(altura):
+            for j in range(largura):
+                corresponde = True
+                for mi in range(mh):
+                    for mj in range(mw):
+                        esperado = mascara_normalizada[mi][mj]
+                        if esperado == -1:
+                            continue
 
-        intersecao = conjunto_j1.intersection(conjunto_k2)
+                        ii = i + (mi - oi)
+                        jj = j + (mj - oj)
+                        valor = self.obter_pixel_com_fundo(matriz_normalizada, ii, jj, 0)
+                        ativo = valor != 0
 
-        return self._conjunto_para_matriz_binaria(intersecao, altura, largura)
+                        if esperado == 1 and not ativo:
+                            corresponde = False
+                            break
+                        if esperado == 0 and ativo:
+                            corresponde = False
+                            break
+                    if not corresponde:
+                        break
+
+                if corresponde:
+                    saida[i][j] = 255
+
+        return saida
 
 
 class MorfologiaCinzaImagem(BaseMorfologiaImagem):
