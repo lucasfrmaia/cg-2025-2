@@ -61,6 +61,10 @@ class AplicacaoPDI(
         self.questao_var = tk.StringVar()
         self.subsessao_var = tk.StringVar()
         self.operacao_var = tk.StringVar()
+        self._subsessao_por_questao = {}
+        self._operacao_por_contexto = {}
+        self._parametros_por_operacao_contexto = {}
+        self._contexto_ativo = ""
 
         self.entradas_parametros = []
         self.combos_parametros = []
@@ -71,6 +75,7 @@ class AplicacaoPDI(
         self.frame_slider_morfismo = None
         self.slider_morfismo = None
         self.botao_animacao_morfismo = None
+        self.botao_limpar_contexto = None
         self.rotulo_valor_slider_morfismo = None
         self._job_animacao_morfismo = None
         self._valor_morfismo_alvo = 0.5

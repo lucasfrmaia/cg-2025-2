@@ -110,7 +110,15 @@ class InterfaceLayoutMixin:
             command=self.aplicar_operacao,
             style="App.TButton",
         )
-        self.botao_aplicar.grid(row=1, column=2, columnspan=2, padx=6, pady=6, sticky="ew")
+        self.botao_aplicar.grid(row=1, column=2, padx=6, pady=6, sticky="ew")
+
+        self.botao_limpar_contexto = ttk.Button(
+            quadro,
+            text="Limpar modulo/submodulo",
+            command=self._limpar_contexto_atual,
+            style="Secondary.TButton",
+        )
+        self.botao_limpar_contexto.grid(row=1, column=3, padx=6, pady=6, sticky="ew")
 
         self.rotulo_descricao_sessao = ttk.Label(quadro, text="", style="Hint.TLabel", justify="left", wraplength=1040)
         self.rotulo_descricao_sessao.grid(row=2, column=0, columnspan=4, padx=6, pady=(2, 4), sticky="w")

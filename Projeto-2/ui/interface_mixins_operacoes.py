@@ -101,12 +101,29 @@ class InterfaceOperacoesMixin:
                 return str(caminho)
         return None
 
+    def _contexto_morfologia_binaria_ativo(self):
+        nome_questao = self.questao_var.get() if hasattr(self, "questao_var") else ""
+        nome_subsessao = self.subsessao_var.get() if hasattr(self, "subsessao_var") else ""
+        nome_operacao = self.operacao_var.get() if hasattr(self, "operacao_var") else ""
+
+        return (
+            nome_questao == "Modulo 5 - Morfologia"
+            and (
+                nome_subsessao == "Morfologia binaria"
+                or nome_operacao.startswith("Morfologia binaria")
+            )
+        )
+
     def _carregar_imagem_por_caminho(self, caminho, chave):
         try:
             matriz, maximo = ler_pgm(caminho)
         except Exception as erro:
             messagebox.showerror("Erro de leitura", str(erro))
             return False
+
+        if self._contexto_morfologia_binaria_ativo():
+            matriz = self.morfologia_binaria.binarizar(matriz)
+            maximo = 255
 
         altura = len(matriz)
         largura = len(matriz[0])
@@ -125,19 +142,19 @@ class InterfaceOperacoesMixin:
 
         raise ValueError("Painel de imagem invalido.")
 
-    def _aplicar_imagens_padrao_operacao(self, nome_operacao):
+    def _aplicar_imagens_padrao_operacao(self, nome_operacao, apenas_ausentes=True):
         padroes = self.imagens_padrao_por_operacao.get(nome_operacao)
         if not padroes:
             return
 
         candidatos_a = padroes.get("a", [])
-        if candidatos_a:
+        if candidatos_a and (not apenas_ausentes or self.matriz_a is None):
             caminho_a = self._resolver_caminho_imagem_padrao(candidatos_a)
             if caminho_a:
                 self._carregar_imagem_por_caminho(caminho_a, "A")
 
         candidatos_b = padroes.get("b", [])
-        if candidatos_b:
+        if candidatos_b and (not apenas_ausentes or self.matriz_b is None):
             caminho_b = self._resolver_caminho_imagem_padrao(candidatos_b)
             if caminho_b:
                 self._carregar_imagem_por_caminho(caminho_b, "B")
@@ -152,11 +169,6 @@ class InterfaceOperacoesMixin:
 
         def copia_matriz(matriz):
             return [linha[:] for linha in matriz]
-
-        def normalizar_opcional(matriz, normalizar):
-            if normalizar:
-                return self.aritmetica.normalizar_matriz(matriz)
-            return matriz
 
         operacoes = {}
 
@@ -231,26 +243,17 @@ class InterfaceOperacoesMixin:
 
         operacoes["Logica - AND"] = DefinicaoOperacao(
             "Logica - AND",
-            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_and(a, b), p[0])),
-            parametros=[
-                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
-            ],
+            lambda a, b, _p: retorno(self.logica.operacao_and(a, b)),
             requer_segunda=True,
         )
         operacoes["Logica - OR"] = DefinicaoOperacao(
             "Logica - OR",
-            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_or(a, b), p[0])),
-            parametros=[
-                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
-            ],
+            lambda a, b, _p: retorno(self.logica.operacao_or(a, b)),
             requer_segunda=True,
         )
         operacoes["Logica - XOR"] = DefinicaoOperacao(
             "Logica - XOR",
-            lambda a, b, p: retorno(normalizar_opcional(self.logica.operacao_xor(a, b), p[0])),
-            parametros=[
-                {"rotulo": "Normalizar resultado (0..255)", "padrao": False, "tipo": "checkbox"},
-            ],
+            lambda a, b, _p: retorno(self.logica.operacao_xor(a, b)),
             requer_segunda=True,
         )
 
@@ -313,54 +316,131 @@ class InterfaceOperacoesMixin:
             exibe_histograma=True,
         )
 
-        k_padrao = str(self.morfologia_binaria.ITERACOES_K)
+        opcoes_elemento_binario = ["quadrado 3x3", "quadrado 5x5"]
         operacoes["Morfologia binaria - Dilatacao"] = DefinicaoOperacao(
             "Morfologia binaria - Dilatacao",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "dilatacao")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Erosao"] = DefinicaoOperacao(
             "Morfologia binaria - Erosao",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "erosao")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Abertura"] = DefinicaoOperacao(
             "Morfologia binaria - Abertura",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "abertura")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Fechamento"] = DefinicaoOperacao(
             "Morfologia binaria - Fechamento",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "fechamento")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Gradiente"] = DefinicaoOperacao(
             "Morfologia binaria - Gradiente",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "gradiente")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Contorno externo"] = DefinicaoOperacao(
             "Morfologia binaria - Contorno externo",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "contorno_externo")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
         operacoes["Morfologia binaria - Contorno interno"] = DefinicaoOperacao(
             "Morfologia binaria - Contorno interno",
             lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "contorno_interno")),
             parametros=[
-                {"rotulo": "Iteracoes K", "padrao": k_padrao, "tipo": int},
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
+            ],
+        )
+        operacoes["Morfologia binaria - Top-hat"] = DefinicaoOperacao(
+            "Morfologia binaria - Top-hat",
+            lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "top_hat")),
+            parametros=[
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
+            ],
+        )
+        operacoes["Morfologia binaria - Bottom-hat"] = DefinicaoOperacao(
+            "Morfologia binaria - Bottom-hat",
+            lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "bottom_hat")),
+            parametros=[
+                {
+                    "rotulo": "Elemento estruturante",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
+            ],
+        )
+        operacoes["Morfologia binaria - Hit-or-miss"] = DefinicaoOperacao(
+            "Morfologia binaria - Hit-or-miss",
+            lambda a, _b, p: retorno(self._executar_morfologia_binaria(a, p, "hit_or_miss")),
+            parametros=[
+                {
+                    "rotulo": "Elemento J1",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
+                {
+                    "rotulo": "Elemento K2",
+                    "padrao": "quadrado 3x3",
+                    "tipo": "select",
+                    "opcoes": opcoes_elemento_binario,
+                },
             ],
         )
 
@@ -508,6 +588,9 @@ class InterfaceOperacoesMixin:
                         "Morfologia binaria - Gradiente",
                         "Morfologia binaria - Contorno externo",
                         "Morfologia binaria - Contorno interno",
+                        "Morfologia binaria - Top-hat",
+                        "Morfologia binaria - Bottom-hat",
+                        "Morfologia binaria - Hit-or-miss",
                     ],
                     "Morfologia em tons de cinza": [
                         "Morfologia cinza - Dilatacao",
@@ -544,23 +627,29 @@ class InterfaceOperacoesMixin:
         }
 
     def _executar_morfologia_binaria(self, matriz, parametros, tipo):
-        iteracoes = parametros[0] if parametros else self.morfologia_binaria.ITERACOES_K
-        elemento = parametros[1] if len(parametros) > 1 else "1 1 1; 1 +1 1; 1 1 1"
+        elemento = parametros[0] if parametros else "quadrado 3x3"
+        elemento_k2 = parametros[1] if len(parametros) > 1 else elemento
 
         if tipo == "dilatacao":
-            return self.morfologia_binaria.dilatacao_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.dilatacao_binaria(matriz, elemento)
         if tipo == "erosao":
-            return self.morfologia_binaria.erosao_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.erosao_binaria(matriz, elemento)
         if tipo == "abertura":
-            return self.morfologia_binaria.abertura_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.abertura_binaria(matriz, elemento)
         if tipo == "fechamento":
-            return self.morfologia_binaria.fechamento_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.fechamento_binaria(matriz, elemento)
         if tipo == "gradiente":
-            return self.morfologia_binaria.gradiente_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.gradiente_binaria(matriz, elemento)
         if tipo == "contorno_externo":
-            return self.morfologia_binaria.contorno_externo_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.contorno_externo_binaria(matriz, elemento)
         if tipo == "contorno_interno":
-            return self.morfologia_binaria.contorno_interno_binaria(matriz, elemento, iteracoes)
+            return self.morfologia_binaria.contorno_interno_binaria(matriz, elemento)
+        if tipo == "top_hat":
+            return self.morfologia_binaria.top_hat_binaria(matriz, elemento)
+        if tipo == "bottom_hat":
+            return self.morfologia_binaria.bottom_hat_binaria(matriz, elemento)
+        if tipo == "hit_or_miss":
+            return self.morfologia_binaria.hit_or_miss_binaria(matriz, elemento, elemento_k2)
 
         raise ValueError("Operacao morfologica binaria invalida.")
 

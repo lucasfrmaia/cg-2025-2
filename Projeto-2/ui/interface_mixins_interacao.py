@@ -3,27 +3,122 @@ from tkinter import filedialog, messagebox
 
 
 class InterfaceInteracaoMixin:
+    def _obter_chave_contexto(self, nome_questao=None, nome_subsessao=None):
+        questao = nome_questao if nome_questao is not None else self.questao_var.get()
+        subsessao = nome_subsessao if nome_subsessao is not None else self.subsessao_var.get()
+        if not questao:
+            return ""
+        return f"{questao}::{subsessao or ''}"
+
+    def _salvar_parametros_operacao_atual(self, contexto=None, nome_operacao=None):
+        contexto = contexto if contexto is not None else (self._contexto_ativo or self._obter_chave_contexto())
+        nome_operacao = nome_operacao if nome_operacao is not None else self.operacao_var.get()
+
+        if not contexto or not nome_operacao:
+            return
+
+        definicao = self.definicoes.get(nome_operacao)
+        if definicao is None:
+            return
+
+        valores = []
+        for indice, meta in enumerate(definicao.parametros):
+            tipo = meta["tipo"]
+            if tipo == "select":
+                valores.append(self.combos_parametros[indice].get().strip())
+            elif tipo == "checkbox":
+                valores.append(bool(self.vars_checkbox_parametros[indice].get()))
+            else:
+                valores.append(self.entradas_parametros[indice].get())
+
+        self._parametros_por_operacao_contexto[(contexto, nome_operacao)] = valores
+
+    def _restaurar_parametros_operacao(self, contexto=None, nome_operacao=None):
+        contexto = contexto if contexto is not None else self._obter_chave_contexto()
+        nome_operacao = nome_operacao if nome_operacao is not None else self.operacao_var.get()
+
+        valores = self._parametros_por_operacao_contexto.get((contexto, nome_operacao))
+        if not valores:
+            return
+
+        definicao = self.definicoes.get(nome_operacao)
+        if definicao is None:
+            return
+
+        for indice, meta in enumerate(definicao.parametros):
+            if indice >= len(valores):
+                break
+
+            valor = valores[indice]
+            tipo = meta["tipo"]
+            if tipo == "select":
+                combo = self.combos_parametros[indice]
+                opcoes = [str(opcao) for opcao in combo.cget("values")]
+                valor_texto = str(valor)
+                if valor_texto in opcoes:
+                    combo.set(valor_texto)
+            elif tipo == "checkbox":
+                self.vars_checkbox_parametros[indice].set(bool(valor))
+            else:
+                entrada = self.entradas_parametros[indice]
+                if str(entrada.cget("state")) != "disabled":
+                    entrada.delete(0, tk.END)
+                    entrada.insert(0, str(valor))
+
+    def _salvar_estado_contexto_ativo(self):
+        contexto = self._contexto_ativo
+        if not contexto:
+            return
+
+        nome_operacao = self.operacao_var.get()
+        if nome_operacao:
+            self._operacao_por_contexto[contexto] = nome_operacao
+            self._salvar_parametros_operacao_atual(contexto=contexto, nome_operacao=nome_operacao)
+
     def _inicializar_estado(self):
         questoes = list(self.sessoes.keys())
         self.combo_questao.configure(values=questoes)
         if questoes:
             self.questao_var.set(questoes[0])
 
-        self._atualizar_sessao_ativa()
+        self._atualizar_sessao_ativa(forcar_imagens_padrao=True)
 
     def _ao_mudar_questao(self, _evento=None):
-        self._resetar_estado_inicial_tela()
-        self._atualizar_sessao_ativa()
+        self._salvar_estado_contexto_ativo()
+        self._atualizar_sessao_ativa(forcar_imagens_padrao=True)
 
     def _ao_mudar_subsessao(self, _evento=None):
+        self._salvar_estado_contexto_ativo()
+        self._subsessao_por_questao[self.questao_var.get()] = self.subsessao_var.get()
+
+        contexto_destino = self._obter_chave_contexto()
+        self._operacao_por_contexto.pop(contexto_destino, None)
+        chaves_parametros = [
+            chave
+            for chave in self._parametros_por_operacao_contexto
+            if chave[0] == contexto_destino
+        ]
+        for chave in chaves_parametros:
+            self._parametros_por_operacao_contexto.pop(chave, None)
+
         self._resetar_estado_inicial_tela()
-        self._atualizar_operacoes_sessao()
+        self._atualizar_operacoes_sessao(
+            forcar_operacao_inicial=True,
+            forcar_imagens_padrao=True,
+        )
 
     def _ao_mudar_operacao(self, _evento=None):
+        contexto = self._obter_chave_contexto()
+        operacao_anterior = self._operacao_por_contexto.get(contexto, "")
+        if operacao_anterior:
+            self._salvar_parametros_operacao_atual(contexto=contexto, nome_operacao=operacao_anterior)
+        if contexto:
+            self._operacao_por_contexto[contexto] = self.operacao_var.get()
         self._atualizar_parametros_operacao()
-        self._aplicar_imagens_padrao_operacao(self.operacao_var.get())
+        self._restaurar_parametros_operacao(contexto=contexto, nome_operacao=self.operacao_var.get())
+        self._aplicar_imagens_padrao_operacao(self.operacao_var.get(), apenas_ausentes=True)
 
-    def _atualizar_sessao_ativa(self):
+    def _atualizar_sessao_ativa(self, forcar_imagens_padrao=False):
         nome_questao = self.questao_var.get()
         dados = self.sessoes[nome_questao]
 
@@ -32,7 +127,12 @@ class InterfaceInteracaoMixin:
         if "sub_sessoes" in dados:
             nomes_sub = list(dados["sub_sessoes"].keys())
             self.combo_subsessao.configure(values=nomes_sub, state="readonly")
-            self.subsessao_var.set(nomes_sub[0])
+            subsessao_salva = self._subsessao_por_questao.get(nome_questao, "")
+            if subsessao_salva in nomes_sub:
+                self.subsessao_var.set(subsessao_salva)
+            else:
+                self.subsessao_var.set(nomes_sub[0])
+            self._subsessao_por_questao[nome_questao] = self.subsessao_var.get()
             self.rotulo_subsessao.grid()
             self.combo_subsessao.grid()
         else:
@@ -42,7 +142,7 @@ class InterfaceInteracaoMixin:
             self.rotulo_subsessao.grid_remove()
             self.combo_subsessao.grid_remove()
 
-        self._atualizar_operacoes_sessao()
+        self._atualizar_operacoes_sessao(forcar_imagens_padrao=forcar_imagens_padrao)
 
     def _obter_operacoes_sessao_atual(self):
         dados = self.sessoes[self.questao_var.get()]
@@ -52,17 +152,50 @@ class InterfaceInteracaoMixin:
 
         return dados["operacoes"]
 
-    def _atualizar_operacoes_sessao(self):
+    def _atualizar_operacoes_sessao(self, forcar_operacao_inicial=False, forcar_imagens_padrao=False):
         operacoes = self._obter_operacoes_sessao_atual()
         self.combo_operacao.configure(values=operacoes)
 
+        contexto = self._obter_chave_contexto()
+        self._contexto_ativo = contexto
+
         if operacoes:
-            self.operacao_var.set(operacoes[0])
+            if forcar_operacao_inicial:
+                operacao = operacoes[0]
+            else:
+                operacao = self._operacao_por_contexto.get(contexto, operacoes[0])
+                if operacao not in operacoes:
+                    operacao = operacoes[0]
+
+            self.operacao_var.set(operacao)
+            self._operacao_por_contexto[contexto] = operacao
         else:
             self.operacao_var.set("")
 
         self._atualizar_parametros_operacao()
-        self._aplicar_imagens_padrao_operacao(self.operacao_var.get())
+        self._restaurar_parametros_operacao(contexto=contexto, nome_operacao=self.operacao_var.get())
+        self._aplicar_imagens_padrao_operacao(
+            self.operacao_var.get(),
+            apenas_ausentes=not (forcar_operacao_inicial or forcar_imagens_padrao),
+        )
+
+    def _limpar_contexto_atual(self):
+        contexto = self._obter_chave_contexto()
+        if not contexto:
+            return
+
+        self._operacao_por_contexto.pop(contexto, None)
+
+        chaves_parametros = [
+            chave
+            for chave in self._parametros_por_operacao_contexto
+            if chave[0] == contexto
+        ]
+        for chave in chaves_parametros:
+            self._parametros_por_operacao_contexto.pop(chave, None)
+
+        self._resetar_estado_inicial_tela()
+        self._atualizar_operacoes_sessao(forcar_operacao_inicial=True)
 
     def _atualizar_parametros_operacao(self):
         nome_operacao = self.operacao_var.get()
@@ -105,10 +238,6 @@ class InterfaceInteracaoMixin:
         self._mostrar_elemento_estruturante(usa_elemento)
         usa_elemento_cinza_fixo = self._operacao_usa_elemento_cinza_fixo(nome_operacao)
         self._mostrar_elemento_cinza_fixo(usa_elemento_cinza_fixo)
-        if usa_elemento:
-            if nome_operacao.startswith("Morfologia binaria"):
-                self.rotulos_parametros[1].configure(text="")
-                self._configurar_entrada(self.entradas_parametros[1], "", habilitada=False)
 
         morfismo_ativo = nome_operacao == "Morfismo (interpolacao)"
         self._mostrar_slider_morfismo(morfismo_ativo)
@@ -152,7 +281,7 @@ class InterfaceInteracaoMixin:
             )
 
     def _operacao_usa_elemento_estruturante(self, nome_operacao):
-        return nome_operacao.startswith("Morfologia binaria")
+        return False
 
     def _operacao_usa_elemento_cinza_fixo(self, nome_operacao):
         return nome_operacao.startswith("Morfologia cinza")
@@ -499,20 +628,6 @@ class InterfaceInteracaoMixin:
                     raise ValueError(f"Parametro invalido: {meta['rotulo']}") from erro
 
             valores.append(valor)
-
-        nome_operacao = self.operacao_var.get()
-        if self._operacao_usa_elemento_estruturante(nome_operacao):
-            elemento = self._ler_elemento_estruturante_como_texto()
-            if nome_operacao.startswith("Morfologia binaria"):
-                if len(valores) >= 2:
-                    valores[1] = elemento
-                else:
-                    valores.append(elemento)
-            else:
-                if valores:
-                    valores[0] = elemento
-                else:
-                    valores.append(elemento)
 
         return valores
 

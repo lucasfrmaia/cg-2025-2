@@ -120,8 +120,10 @@ class BaseOperacoesImagem:
         for i in range(altura):
             for j in range(largura):
                 valor = callback_pixel(matriz_a[i][j], matriz_b[i][j], i, j)
+
                 if limitar_saida:
                     valor = self.limitar(valor)
+                    
                 saida[i][j] = int(round(valor))
 
         return saida
