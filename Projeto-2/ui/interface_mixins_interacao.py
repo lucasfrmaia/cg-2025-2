@@ -1,4 +1,5 @@
 import tkinter as tk
+import time
 from tkinter import filedialog, messagebox
 
 
@@ -10,23 +11,71 @@ class InterfaceInteracaoMixin:
         self._pontos_morfismo = {"A": [], "B": []}
         self._arraste_ponto_morfismo = None
 
-    def _inicializar_pontos_morfismo_painel(self, chave_painel, matriz):
+    def _inicializar_pontos_morfismo_painel(self, chave_painel, matriz, preservar=False):
         if chave_painel not in {"A", "B"}:
             return
 
         if not matriz or not matriz[0]:
             return
 
-        altura = len(matriz)
-        largura = len(matriz[0])
+        if not preservar:
+            self._pontos_morfismo[chave_painel] = []
+            return
 
-        self._pontos_morfismo[chave_painel] = [
-            [0.0, 0.0],
-            [float(largura - 1), 0.0],
-            [float(largura - 1), float(altura - 1)],
-            [0.0, float(altura - 1)],
-            [float((largura - 1) / 2.0), float((altura - 1) / 2.0)],
-        ]
+        altura = float(len(matriz))
+        largura = float(len(matriz[0]))
+
+        pontos_ajustados = []
+        for x, y in self._pontos_morfismo.get(chave_painel, []):
+            x = max(0.0, min(largura - 1.0, float(x)))
+            y = max(0.0, min(altura - 1.0, float(y)))
+            pontos_ajustados.append([x, y])
+
+        self._pontos_morfismo[chave_painel] = pontos_ajustados
+
+    def _estado_pontos_morfismo_valido(self):
+        pontos_a = self._pontos_morfismo.get("A", [])
+        pontos_b = self._pontos_morfismo.get("B", [])
+        return len(pontos_a) >= 3 and len(pontos_a) == len(pontos_b)
+
+    def _gerar_triangulos_morfismo(self, total_pontos):
+        if total_pontos < 3:
+            return []
+        return [(0, indice, indice + 1) for indice in range(1, total_pontos - 1)]
+
+    def _limpar_pontos_morfismo(self):
+        self._cancelar_animacao_morfismo()
+        self._resetar_pontos_morfismo()
+
+        if self.matriz_a is not None:
+            self._desenhar_imagem(self.painel_a["canvas"], self.matriz_a, "A")
+        if self.matriz_b is not None:
+            self._desenhar_imagem(self.painel_b["canvas"], self.matriz_b, "B")
+
+        self.matriz_resultado = None
+        self._limpar_painel(self.painel_resultado, "")
+        self.info_c.configure(text="Imagem C (resultado): sera gerada apos executar a operacao")
+
+    def _indice_ponto_morfismo_proximo(self, chave_painel, painel, x_img, y_img):
+        pontos = self._pontos_morfismo.get(chave_painel, [])
+        if not pontos:
+            return None
+
+        melhor_indice = None
+        melhor_distancia = float("inf")
+
+        for indice, (px, py) in enumerate(pontos):
+            cx, cy = self._coordenada_imagem_para_canvas(painel, px, py)
+            ex, ey = self._coordenada_imagem_para_canvas(painel, x_img, y_img)
+            distancia = ((cx - ex) ** 2 + (cy - ey) ** 2) ** 0.5
+
+            if distancia < melhor_distancia:
+                melhor_distancia = distancia
+                melhor_indice = indice
+
+        if melhor_distancia <= self._raio_ponto_morfismo_tela + 4:
+            return melhor_indice
+        return None
 
     def _obter_triangulos_morfismo_backend(self):
         if not self._morfismo_ativo():
@@ -35,15 +84,18 @@ class InterfaceInteracaoMixin:
         if self.matriz_a is None or self.matriz_b is None:
             return None
 
-        if len(self._pontos_morfismo.get("A", [])) != 5:
-            self._inicializar_pontos_morfismo_painel("A", self.matriz_a)
-        if len(self._pontos_morfismo.get("B", [])) != 5:
-            self._inicializar_pontos_morfismo_painel("B", self.matriz_b)
+        if not self._estado_pontos_morfismo_valido():
+            return None
+
+        total_pontos = len(self._pontos_morfismo["A"])
+        triangulos = self._gerar_triangulos_morfismo(total_pontos)
+        if not triangulos:
+            return None
 
         return {
             "vertices_a": [tuple(ponto) for ponto in self._pontos_morfismo["A"]],
             "vertices_b": [tuple(ponto) for ponto in self._pontos_morfismo["B"]],
-            "triangulos": list(self._triangulos_morfismo),
+            "triangulos": triangulos,
         }
 
     def _ao_press_canvas_morfismo(self, evento, chave_painel):
@@ -57,24 +109,23 @@ class InterfaceInteracaoMixin:
             return
 
         matriz = painel["matriz"]
-        if len(self._pontos_morfismo.get(chave_painel, [])) != 5:
-            self._inicializar_pontos_morfismo_painel(chave_painel, matriz)
+        self._inicializar_pontos_morfismo_painel(chave_painel, matriz, preservar=True)
 
         coords = self._coordenada_canvas_para_imagem(painel, evento.x, evento.y)
         if coords is None:
             return
 
         x_img, y_img = coords
-        indice_mais_proximo = 0
-        menor_distancia = float("inf")
+        indice_mais_proximo = self._indice_ponto_morfismo_proximo(
+            chave_painel,
+            painel,
+            x_img,
+            y_img,
+        )
 
-        for indice, (px, py) in enumerate(self._pontos_morfismo[chave_painel]):
-            dx = px - x_img
-            dy = py - y_img
-            distancia = dx * dx + dy * dy
-            if distancia < menor_distancia:
-                menor_distancia = distancia
-                indice_mais_proximo = indice
+        if indice_mais_proximo is None:
+            self._pontos_morfismo[chave_painel].append([x_img, y_img])
+            indice_mais_proximo = len(self._pontos_morfismo[chave_painel]) - 1
 
         self._arraste_ponto_morfismo = {
             "chave": chave_painel,
@@ -116,13 +167,15 @@ class InterfaceInteracaoMixin:
         x_img = max(0.0, min(float(largura - 1), float(x_img)))
         y_img = max(0.0, min(float(altura - 1), float(y_img)))
 
-        if len(self._pontos_morfismo.get(chave_painel, [])) != 5:
-            self._inicializar_pontos_morfismo_painel(chave_painel, matriz)
+        self._inicializar_pontos_morfismo_painel(chave_painel, matriz, preservar=True)
+
+        if indice < 0 or indice >= len(self._pontos_morfismo[chave_painel]):
+            return
 
         self._pontos_morfismo[chave_painel][indice] = [x_img, y_img]
         self._desenhar_imagem(painel["canvas"], matriz, chave_painel)
 
-        if self.matriz_resultado is not None or (self.matriz_a is not None and self.matriz_b is not None):
+        if self._estado_pontos_morfismo_valido():
             self._executar_morfismo_em_tempo_real(self._valor_morfismo_renderizado)
 
     def _obter_chave_contexto(self, nome_questao=None, nome_subsessao=None):
@@ -242,11 +295,13 @@ class InterfaceInteracaoMixin:
 
         if self._morfismo_ativo():
             if self.matriz_a is not None:
-                self._inicializar_pontos_morfismo_painel("A", self.matriz_a)
+                self._inicializar_pontos_morfismo_painel("A", self.matriz_a, preservar=True)
                 self._desenhar_imagem(self.painel_a["canvas"], self.matriz_a, "A")
             if self.matriz_b is not None:
-                self._inicializar_pontos_morfismo_painel("B", self.matriz_b)
+                self._inicializar_pontos_morfismo_painel("B", self.matriz_b, preservar=True)
                 self._desenhar_imagem(self.painel_b["canvas"], self.matriz_b, "B")
+        else:
+            self._arraste_ponto_morfismo = None
 
     def _atualizar_sessao_ativa(self, forcar_imagens_padrao=False):
         nome_questao = self.questao_var.get()
@@ -552,6 +607,7 @@ class InterfaceInteracaoMixin:
 
     def _cancelar_animacao_morfismo(self):
         self._animacao_morfismo_ativa = False
+        self._inicio_animacao_morfismo_ts = None
         if self._job_animacao_morfismo is not None:
             self.janela.after_cancel(self._job_animacao_morfismo)
             self._job_animacao_morfismo = None
@@ -563,6 +619,10 @@ class InterfaceInteracaoMixin:
                 self._intervalo_animacao_morfismo_ms,
                 self._animar_morfismo_frame,
             )
+
+    def _suavizar_progresso_morfismo(self, progresso):
+        progresso = max(0.0, min(1.0, float(progresso)))
+        return progresso * progresso * (3.0 - 2.0 * progresso)
 
     def _animar_morfismo_frame(self):
         self._job_animacao_morfismo = None
@@ -578,10 +638,13 @@ class InterfaceInteracaoMixin:
             self._cancelar_animacao_morfismo()
             return
 
-        proximo_t = self._valor_morfismo_renderizado + self._passo_animacao_morfismo
-        finalizar_animacao = proximo_t >= 1.0
-        if finalizar_animacao:
-            proximo_t = 1.0
+        if self._inicio_animacao_morfismo_ts is None:
+            self._inicio_animacao_morfismo_ts = time.perf_counter()
+
+        tempo_decorrido_ms = (time.perf_counter() - self._inicio_animacao_morfismo_ts) * 1000.0
+        progresso = tempo_decorrido_ms / max(1.0, float(self._duracao_animacao_morfismo_ms))
+        finalizar_animacao = progresso >= 1.0
+        proximo_t = self._suavizar_progresso_morfismo(min(1.0, progresso))
 
         self._valor_morfismo_renderizado = proximo_t
         self._sincronizar_slider_morfismo(proximo_t, aplicar=False)
@@ -608,6 +671,7 @@ class InterfaceInteracaoMixin:
 
         self._animacao_morfismo_ativa = True
         self._direcao_animacao_morfismo = 1
+        self._inicio_animacao_morfismo_ts = time.perf_counter()
         self._sincronizar_slider_morfismo(0.0, aplicar=False)
         self._executar_morfismo_em_tempo_real(0.0)
         self._atualizar_estado_botao_animacao_morfismo()

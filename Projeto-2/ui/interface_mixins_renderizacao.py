@@ -131,14 +131,11 @@ class InterfaceRenderizacaoMixin:
             return
 
         pontos = self._pontos_morfismo.get(chave, [])
-        if len(pontos) != 5:
-            self._inicializar_pontos_morfismo_painel(chave, painel["matriz"])
-            pontos = self._pontos_morfismo.get(chave, [])
-
-        if len(pontos) != 5:
+        if not pontos:
             return
 
-        for a, b, c in self._triangulos_morfismo:
+        triangulos = self._gerar_triangulos_morfismo(len(pontos))
+        for a, b, c in triangulos:
             px1, py1 = self._coordenada_imagem_para_canvas(painel, pontos[a][0], pontos[a][1])
             px2, py2 = self._coordenada_imagem_para_canvas(painel, pontos[b][0], pontos[b][1])
             px3, py3 = self._coordenada_imagem_para_canvas(painel, pontos[c][0], pontos[c][1])
@@ -148,7 +145,7 @@ class InterfaceRenderizacaoMixin:
 
         for indice, (x_img, y_img) in enumerate(pontos):
             px, py = self._coordenada_imagem_para_canvas(painel, x_img, y_img)
-            raio = 6
+            raio = self._raio_ponto_morfismo_tela
             canvas.create_oval(
                 px - raio,
                 py - raio,

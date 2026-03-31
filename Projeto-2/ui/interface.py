@@ -81,17 +81,15 @@ class AplicacaoPDI(
         self._valor_morfismo_alvo = 0.5
         self._valor_morfismo_renderizado = 0.5
         self._passo_animacao_morfismo = 0.03
-        self._intervalo_animacao_morfismo_ms = 33
+        self._intervalo_animacao_morfismo_ms = 16
         self._animacao_morfismo_ativa = False
         self._direcao_animacao_morfismo = 1
+        self._duracao_animacao_morfismo_ms = 1800
+        self._inicio_animacao_morfismo_ts = None
         self._pontos_morfismo = {"A": [], "B": []}
-        self._triangulos_morfismo = [
-            (0, 1, 4),
-            (1, 2, 4),
-            (2, 3, 4),
-            (3, 0, 4),
-        ]
         self._arraste_ponto_morfismo = None
+        self._raio_ponto_morfismo_tela = 8
+        self.botao_limpar_pontos_morfismo = None
         self.frame_elemento_estruturante = None
         self.entradas_elemento_estruturante = []
         self.frame_elemento_cinza_fixo = None

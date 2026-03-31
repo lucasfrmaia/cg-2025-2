@@ -102,12 +102,9 @@ class MorfismoImagem(BaseOperacoesImagem):
                 triangulos.append((i0, i1, i2))
 
         if not triangulos:
-            if total_vertices >= 5:
-                triangulos = [(0, 1, 4), (1, 2, 4), (2, 3, 4), (3, 0, 4)]
-            else:
-                triangulos = []
-                for indice in range(1, total_vertices - 1):
-                    triangulos.append((0, indice, indice + 1))
+            triangulos = []
+            for indice in range(1, total_vertices - 1):
+                triangulos.append((0, indice, indice + 1))
 
         if not triangulos:
             return vertices_a_padrao, vertices_b_padrao, triangulos_padrao

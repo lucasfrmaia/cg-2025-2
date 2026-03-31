@@ -246,8 +246,16 @@ class InterfaceLayoutMixin:
         )
         self.botao_animacao_morfismo.grid(row=0, column=1, padx=4, pady=(6, 6), sticky="w")
 
+        self.botao_limpar_pontos_morfismo = ttk.Button(
+            self.frame_slider_morfismo,
+            text="Limpar pontos",
+            command=self._limpar_pontos_morfismo,
+            style="Secondary.TButton",
+        )
+        self.botao_limpar_pontos_morfismo.grid(row=0, column=2, padx=4, pady=(6, 6), sticky="w")
+
         self.rotulo_valor_slider_morfismo = ttk.Label(self.frame_slider_morfismo, text="t = 0.50", style="Hint.TLabel")
-        self.rotulo_valor_slider_morfismo.grid(row=0, column=2, padx=(4, 6), pady=(6, 6), sticky="w")
+        self.rotulo_valor_slider_morfismo.grid(row=0, column=3, padx=(4, 6), pady=(6, 6), sticky="w")
 
         self.frame_slider_morfismo.grid(row=5, column=0, columnspan=2, sticky="ew")
         self.frame_slider_morfismo.grid_remove()
