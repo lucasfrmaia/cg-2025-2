@@ -480,6 +480,115 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             linhas.append(" ".join(valores))
         return "\n".join(linhas)
 
+    def _normalizar_elemento_estruturante_cinza(self, elemento_estruturante):
+        def normalizar_token(valor):
+            marca_origem = False
+
+            if isinstance(valor, str):
+                token = valor.strip()
+                if not token:
+                    raise ValueError("Elemento estruturante em tons de cinza invalido.")
+
+                if token.startswith("+"):
+                    marca_origem = True
+                    token = token[1:].strip()
+                    if not token:
+                        raise ValueError("Origem invalida no elemento estruturante em tons de cinza.")
+
+                token = token.replace(",", ".")
+                try:
+                    numero = float(token)
+                except ValueError as erro:
+                    raise ValueError("Use apenas valores numericos no elemento estruturante em tons de cinza.") from erro
+            else:
+                try:
+                    numero = float(valor)
+                except (TypeError, ValueError) as erro:
+                    raise ValueError("Use apenas valores numericos no elemento estruturante em tons de cinza.") from erro
+
+            if numero < 0:
+                raise ValueError("Elemento estruturante em tons de cinza aceita apenas valores >= 0.")
+
+            return int(numero), marca_origem
+
+        if isinstance(elemento_estruturante, str):
+            texto = elemento_estruturante.replace("[", " ").replace("]", " ").strip()
+            if not texto:
+                texto = self.obter_texto_elemento_estruturante()
+
+            if ";" in texto:
+                linhas_brutas = [parte.strip() for parte in texto.split(";")]
+            else:
+                linhas_brutas = [parte.strip() for parte in texto.splitlines()]
+
+            linhas = [linha for linha in linhas_brutas if linha]
+            if not linhas:
+                raise ValueError("Elemento estruturante em tons de cinza invalido.")
+            if len(linhas) > 5:
+                raise ValueError("Elemento estruturante em tons de cinza deve ter no maximo 5 linhas.")
+
+            matriz = []
+            origem = None
+            largura = None
+
+            for i, linha in enumerate(linhas):
+                tokens = linha.replace(",", " ").split()
+                if not tokens:
+                    continue
+                if len(tokens) > 5:
+                    raise ValueError("Elemento estruturante em tons de cinza deve ter no maximo 5 colunas.")
+
+                if largura is None:
+                    largura = len(tokens)
+                elif len(tokens) != largura:
+                    raise ValueError("Todas as linhas do elemento estruturante em tons de cinza devem ter o mesmo tamanho.")
+
+                linha_mascara = []
+                for j, token in enumerate(tokens):
+                    numero, marca_origem = normalizar_token(token)
+                    if marca_origem:
+                        if origem is not None:
+                            raise ValueError("Use apenas um +valor para definir a origem.")
+                        origem = (i, j)
+                    linha_mascara.append(numero)
+
+                matriz.append(linha_mascara)
+        else:
+            if not elemento_estruturante or not elemento_estruturante[0]:
+                raise ValueError("Elemento estruturante em tons de cinza invalido.")
+            if len(elemento_estruturante) > 5 or len(elemento_estruturante[0]) > 5:
+                raise ValueError("Elemento estruturante em tons de cinza deve ter no maximo 5x5.")
+
+            matriz = []
+            origem = None
+            largura = len(elemento_estruturante[0])
+
+            for i, linha in enumerate(elemento_estruturante):
+                if len(linha) != largura:
+                    raise ValueError("Elemento estruturante em tons de cinza invalido: linhas com tamanhos diferentes.")
+
+                linha_mascara = []
+                for j, valor in enumerate(linha):
+                    numero, marca_origem = normalizar_token(valor)
+                    if marca_origem:
+                        if origem is not None:
+                            raise ValueError("Use apenas um +valor para definir a origem.")
+                        origem = (i, j)
+                    linha_mascara.append(numero)
+
+                matriz.append(linha_mascara)
+
+        if not matriz or not matriz[0]:
+            raise ValueError("Elemento estruturante em tons de cinza invalido.")
+
+        if not any(valor > 0 for linha in matriz for valor in linha):
+            raise ValueError("Defina ao menos um valor > 0 no elemento estruturante em tons de cinza.")
+
+        if origem is None:
+            origem = (len(matriz) // 2, len(matriz[0]) // 2)
+
+        return matriz, origem
+
     def _resolver_elemento_estruturante_cinza(self, elemento_estruturante):
         if elemento_estruturante is None:
             return self.obter_texto_elemento_estruturante()
@@ -489,9 +598,42 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
 
         return elemento_estruturante
 
-    def _aplicar_elemento_cinza(self, matriz, valor_borda, callback_vizinhanca, elemento_estruturante=None):
+    def _aplicar_elemento_cinza(
+        self,
+        matriz,
+        valor_borda,
+        callback_vizinhanca,
+        ajustar_com_peso,
+        elemento_estruturante=None,
+    ):
+        self.validar_matriz(matriz)
+        altura = len(matriz)
+        largura = len(matriz[0])
+
         elemento = self._resolver_elemento_estruturante_cinza(elemento_estruturante)
-        return self._aplicar_elemento(matriz, elemento, valor_borda, callback_vizinhanca)
+        mascara, origem = self._normalizar_elemento_estruturante_cinza(elemento)
+        eh = len(mascara)
+        ew = len(mascara[0])
+        oi, oj = origem
+        saida = self.criar_matriz(altura, largura, 0)
+
+        for i in range(altura):
+            for j in range(largura):
+                vizinhos = []
+                for ei in range(eh):
+                    for ej in range(ew):
+                        peso = float(mascara[ei][ej])
+                        if peso <= 0.0:
+                            continue
+
+                        ii = i + (ei - oi)
+                        jj = j + (ej - oj)
+                        valor = self.obter_pixel_com_fundo(matriz, ii, jj, valor_borda)
+                        vizinhos.append(ajustar_com_peso(valor, peso))
+
+                saida[i][j] = self.limitar(callback_vizinhanca(vizinhos))
+
+        return saida
 
     # =========================================================================
     # Operações em Tom de Cinza
@@ -505,6 +647,7 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             matriz,
             0,
             lambda vizinhos: max(vizinhos),
+            lambda valor, peso: valor + peso,
             elemento_estruturante,
         )
 
@@ -514,6 +657,7 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             matriz,
             255,
             lambda vizinhos: min(vizinhos),
+            lambda valor, peso: valor - peso,
             elemento_estruturante,
         )
 

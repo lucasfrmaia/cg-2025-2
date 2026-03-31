@@ -208,7 +208,7 @@ class InterfaceLayoutMixin:
         self.frame_elemento_cinza_fixo = ttk.Frame(quadro)
         ttk.Label(
             self.frame_elemento_cinza_fixo,
-            text="Elemento estruturante (tons de cinza, editavel; use 0, 1 e +1):",
+            text="Elemento estruturante (tons de cinza, editavel; use 0 e valores > 0; +valor marca origem):",
             style="Hint.TLabel",
         ).grid(row=0, column=0, padx=6, pady=(4, 4), sticky="w")
 
