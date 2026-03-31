@@ -61,7 +61,11 @@ class InterfaceRenderizacaoMixin:
             inicio = f"{linha + 1}.{inicio_coluna}"
             fim = f"{linha + 1}.{inicio_coluna + 3}"
             widget.tag_add("pixel_selecionado", inicio, fim)
-            widget.tag_configure("pixel_selecionado", background="#f7d774")
+            widget.tag_configure(
+                "pixel_selecionado",
+                background=self.cores_ui["alerta"],
+                foreground="#1f2a37",
+            )
 
     def _desenhar_imagem(self, canvas, matriz, chave):
         if not matriz or not matriz[0]:
@@ -88,7 +92,8 @@ class InterfaceRenderizacaoMixin:
 
         canvas.delete("all")
         canvas.update_idletasks()
-        x_origem = 6
+        canvas_largura = max(1, int(canvas.winfo_width()))
+        x_origem = max(6, (canvas_largura - largura) // 2)
         y_centro = int(canvas.winfo_height()) // 2
         canvas.create_image(x_origem, y_centro, image=imagem, anchor="w")
 
@@ -153,22 +158,57 @@ class InterfaceRenderizacaoMixin:
         x_final = largura - margem_direita
         y_topo = margem_topo
 
-        canvas.create_line(x_inicial, y_base, x_final, y_base, width=1)
-        canvas.create_line(x_inicial, y_base, x_inicial, y_topo, width=1)
+        canvas.create_rectangle(
+            x_inicial,
+            y_topo,
+            x_final,
+            y_base,
+            outline=self.cores_ui["borda"],
+            width=1,
+        )
+        canvas.create_line(x_inicial, y_base, x_final, y_base, width=1, fill=self.cores_ui["texto_secundario"])
+        canvas.create_line(x_inicial, y_base, x_inicial, y_topo, width=1, fill=self.cores_ui["texto_secundario"])
 
         for x_valor in [0, 64, 128, 192, 255]:
             x_pos = x_inicial + (x_valor / 255.0) * largura_grafico
-            canvas.create_line(x_pos, y_base, x_pos, y_base + 5)
-            canvas.create_text(x_pos, y_base + 18, text=str(x_valor), anchor="n")
+            canvas.create_line(x_pos, y_base, x_pos, y_base + 5, fill=self.cores_ui["texto_secundario"])
+            canvas.create_text(
+                x_pos,
+                y_base + 18,
+                text=str(x_valor),
+                anchor="n",
+                fill=self.cores_ui["texto_secundario"],
+                font=("Segoe UI", 8),
+            )
 
         for fracao in [0.0, 0.25, 0.5, 0.75, 1.0]:
             y_pos = y_base - (fracao * altura_grafico)
             valor_y = int(round(valor_maximo * fracao))
-            canvas.create_line(x_inicial - 5, y_pos, x_inicial, y_pos)
-            canvas.create_text(x_inicial - 8, y_pos, text=str(valor_y), anchor="e")
+            canvas.create_line(x_inicial - 5, y_pos, x_inicial, y_pos, fill=self.cores_ui["texto_secundario"])
+            canvas.create_text(
+                x_inicial - 8,
+                y_pos,
+                text=str(valor_y),
+                anchor="e",
+                fill=self.cores_ui["texto_secundario"],
+                font=("Segoe UI", 8),
+            )
 
-        canvas.create_text((x_inicial + x_final) / 2, altura - 10, text="Nivel de cinza (x)")
-        canvas.create_text(16, (y_topo + y_base) / 2, text="Frequencia (y)", angle=90)
+        canvas.create_text(
+            (x_inicial + x_final) / 2,
+            altura - 10,
+            text="Nivel de cinza (x)",
+            fill=self.cores_ui["texto_secundario"],
+            font=("Segoe UI", 8),
+        )
+        canvas.create_text(
+            16,
+            (y_topo + y_base) / 2,
+            text="Frequencia (y)",
+            angle=90,
+            fill=self.cores_ui["texto_secundario"],
+            font=("Segoe UI", 8),
+        )
 
         passo_x = largura_grafico / 256.0
         for i in range(256):
@@ -180,4 +220,4 @@ class InterfaceRenderizacaoMixin:
             y0 = y_base - altura_barra
             y1 = y_base
 
-            canvas.create_rectangle(x0, y0, x1, y1, outline="", fill="#1f77b4")
+            canvas.create_rectangle(x0, y0, x1, y1, outline="", fill=self.cores_ui["destaque"])

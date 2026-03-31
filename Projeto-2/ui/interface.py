@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkfont
 from pathlib import Path
 
 from ui.interface_mixins_interacao import InterfaceInteracaoMixin
@@ -13,11 +15,11 @@ class AplicacaoPDI(
     InterfaceInteracaoMixin,
     InterfaceRenderizacaoMixin,
 ):
-    LARGURA_PAINEL_IMAGEM = 350
-    ALTURA_PAINEL_IMAGEM = 350
+    LARGURA_PAINEL_IMAGEM = 300
+    ALTURA_PAINEL_IMAGEM = 280
 
-    LARGURA_PAINEL_MATRIZ = 10
-    ALTURA_PAINEL_MATRIZ = 10
+    LARGURA_PAINEL_MATRIZ = 300
+    ALTURA_PAINEL_MATRIZ = 170
 
     LARGURA_MAXIMA_JANELA = 1920
     ALTURA_MAXIMA_JANELA = 1080
@@ -25,10 +27,26 @@ class AplicacaoPDI(
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Processamento Digital de Imagens")
-        self.janela.geometry("1220x760")
-        self.janela.minsize(980, 640)
+        self.janela.geometry("1260x780")
+        self.janela.minsize(920, 620)
         self.janela.maxsize(self.LARGURA_MAXIMA_JANELA, self.ALTURA_MAXIMA_JANELA)
         self._diretorio_base = Path(__file__).resolve().parent.parent
+
+        self.cores_ui = {
+            "bg_app": "#eef3f9",
+            "bg_card": "#ffffff",
+            "bg_canvas": "#f7fafe",
+            "bg_matriz": "#f9fbff",
+            "texto": "#1f2a37",
+            "texto_secundario": "#5a6778",
+            "borda": "#c7d3e3",
+            "destaque": "#0f4c81",
+            "destaque_hover": "#1b5f9a",
+            "destaque_suave": "#dbe8f8",
+            "alerta": "#ffe08a",
+        }
+
+        self._configurar_estilo_visual()
 
         self._criar_operadores()
 
@@ -78,6 +96,97 @@ class AplicacaoPDI(
         self._configurar_area_rolavel()
         self._montar_layout()
         self._inicializar_estado()
+
+    def _configurar_estilo_visual(self):
+        self.janela.configure(bg=self.cores_ui["bg_app"])
+
+        fonte_base = tkfont.nametofont("TkDefaultFont")
+        fonte_base.configure(family="Segoe UI", size=10)
+
+        fonte_texto = tkfont.nametofont("TkTextFont")
+        fonte_texto.configure(family="Consolas", size=10)
+
+        fonte_titulo = tkfont.nametofont("TkHeadingFont")
+        fonte_titulo.configure(family="Segoe UI Semibold", size=11)
+
+        style = ttk.Style(self.janela)
+        try:
+            style.theme_use("clam")
+        except tk.TclError:
+            pass
+
+        style.configure("App.TFrame", background=self.cores_ui["bg_app"])
+        style.configure(
+            "Card.TFrame",
+            background=self.cores_ui["bg_card"],
+            relief="flat",
+        )
+        style.configure(
+            "Card.TLabelframe",
+            background=self.cores_ui["bg_card"],
+            bordercolor=self.cores_ui["borda"],
+            relief="solid",
+            borderwidth=1,
+            padding=8,
+        )
+        style.configure(
+            "Card.TLabelframe.Label",
+            background=self.cores_ui["bg_card"],
+            foreground=self.cores_ui["destaque"],
+            font=("Segoe UI Semibold", 10),
+        )
+        style.configure(
+            "App.TLabel",
+            background=self.cores_ui["bg_card"],
+            foreground=self.cores_ui["texto"],
+            font=("Segoe UI", 10),
+        )
+        style.configure(
+            "Card.TCheckbutton",
+            background=self.cores_ui["bg_card"],
+            foreground=self.cores_ui["texto"],
+            font=("Segoe UI", 10),
+        )
+        style.configure(
+            "Hint.TLabel",
+            background=self.cores_ui["bg_card"],
+            foreground=self.cores_ui["texto_secundario"],
+            font=("Segoe UI", 9),
+        )
+        style.configure(
+            "App.TButton",
+            font=("Segoe UI Semibold", 10),
+            padding=(10, 6),
+            borderwidth=0,
+            foreground="#ffffff",
+            background=self.cores_ui["destaque"],
+        )
+        style.map(
+            "App.TButton",
+            background=[("active", self.cores_ui["destaque_hover"]), ("disabled", "#98a7bb")],
+            foreground=[("disabled", "#eef2f7")],
+        )
+        style.configure(
+            "Secondary.TButton",
+            font=("Segoe UI", 9),
+            padding=(8, 5),
+        )
+        style.configure(
+            "App.TCombobox",
+            padding=(6, 4),
+            fieldbackground="#ffffff",
+            background="#ffffff",
+        )
+        style.configure(
+            "App.Vertical.TScrollbar",
+            arrowsize=12,
+            background="#d9e3f0",
+        )
+        style.configure(
+            "App.Horizontal.TScrollbar",
+            arrowsize=12,
+            background="#d9e3f0",
+        )
 
 def iniciar_aplicacao():
     raiz = tk.Tk()

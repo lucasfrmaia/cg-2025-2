@@ -162,7 +162,7 @@ class InterfaceInteracaoMixin:
             return
 
         if mostrar:
-            self.frame_elemento_estruturante.grid(row=1, column=0, columnspan=6, sticky="w")
+            self.frame_elemento_estruturante.grid(row=3, column=0, columnspan=2, sticky="ew")
         else:
             self.frame_elemento_estruturante.grid_remove()
 
@@ -171,7 +171,7 @@ class InterfaceInteracaoMixin:
             return
 
         if mostrar:
-            self.frame_elemento_cinza_fixo.grid(row=2, column=0, columnspan=6, sticky="w")
+            self.frame_elemento_cinza_fixo.grid(row=4, column=0, columnspan=2, sticky="ew")
         else:
             self.frame_elemento_cinza_fixo.grid_remove()
 
@@ -267,7 +267,7 @@ class InterfaceInteracaoMixin:
             return
 
         if mostrar:
-            self.frame_slider_morfismo.grid(row=3, column=0, columnspan=6, sticky="ew")
+            self.frame_slider_morfismo.grid(row=5, column=0, columnspan=2, sticky="ew")
             self._atualizar_estado_botao_animacao_morfismo()
         else:
             self._cancelar_animacao_morfismo()
@@ -414,19 +414,20 @@ class InterfaceInteracaoMixin:
         self.painel_b["frame"].grid_forget()
         self.painel_resultado["frame"].grid_forget()
 
-        self.container_paineis.grid_columnconfigure(0, weight=0)
-        self.container_paineis.grid_columnconfigure(1, weight=0)
-        self.container_paineis.grid_columnconfigure(2, weight=0)
-        self.container_paineis.grid_rowconfigure(0, weight=0)
+        self.container_paineis.grid_columnconfigure(0, weight=1)
+        self.container_paineis.grid_columnconfigure(1, weight=1)
+        self.container_paineis.grid_columnconfigure(2, weight=1)
+        self.container_paineis.grid_rowconfigure(0, weight=1)
 
         if mostrar_b:
-            self.painel_a["frame"].grid(row=0, column=0, padx=(0, 4), pady=4, sticky="nw")
-            self.painel_b["frame"].grid(row=0, column=1, padx=4, pady=4, sticky="nw")
-            self.painel_resultado["frame"].grid(row=0, column=2, padx=(4, 0), pady=4, sticky="nw")
+            self.painel_a["frame"].grid(row=0, column=0, padx=(0, 4), pady=4, sticky="nsew")
+            self.painel_b["frame"].grid(row=0, column=1, padx=4, pady=4, sticky="nsew")
+            self.painel_resultado["frame"].grid(row=0, column=2, padx=(4, 0), pady=4, sticky="nsew")
             return
 
-        self.painel_a["frame"].grid(row=0, column=0, padx=(0, 4), pady=4, sticky="nw")
-        self.painel_resultado["frame"].grid(row=0, column=1, padx=(4, 0), pady=4, sticky="nw")
+        self.container_paineis.grid_columnconfigure(2, weight=0)
+        self.painel_a["frame"].grid(row=0, column=0, padx=(0, 4), pady=4, sticky="nsew")
+        self.painel_resultado["frame"].grid(row=0, column=1, padx=(4, 0), pady=4, sticky="nsew")
 
     def carregar_imagem_a(self):
         caminho = self._abrir_dialogo_carregamento("Selecionar imagem A")
