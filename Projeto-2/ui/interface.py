@@ -52,12 +52,15 @@ class AplicacaoPDI(
         self.var_slider_morfismo = tk.DoubleVar(value=0.5)
         self.frame_slider_morfismo = None
         self.slider_morfismo = None
+        self.botao_animacao_morfismo = None
         self.rotulo_valor_slider_morfismo = None
         self._job_animacao_morfismo = None
         self._valor_morfismo_alvo = 0.5
         self._valor_morfismo_renderizado = 0.5
-        self._passo_animacao_morfismo = 0.35
-        self._intervalo_animacao_morfismo_ms = 16
+        self._passo_animacao_morfismo = 0.03
+        self._intervalo_animacao_morfismo_ms = 33
+        self._animacao_morfismo_ativa = False
+        self._direcao_animacao_morfismo = 1
         self.frame_elemento_estruturante = None
         self.entradas_elemento_estruturante = []
         self.frame_elemento_cinza_fixo = None

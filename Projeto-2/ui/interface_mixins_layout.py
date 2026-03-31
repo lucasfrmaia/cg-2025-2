@@ -158,7 +158,7 @@ class InterfaceLayoutMixin:
         self.frame_elemento_cinza_fixo.grid_remove()
 
         self.frame_slider_morfismo = ttk.Frame(quadro)
-        ttk.Label(self.frame_slider_morfismo, text="Morfismo em tempo real (t):").grid(
+        ttk.Label(self.frame_slider_morfismo, text="Morfismo dependente do tempo:").grid(
             row=0,
             column=0,
             padx=(6, 4),
@@ -166,19 +166,16 @@ class InterfaceLayoutMixin:
             sticky="w",
         )
 
-        self.slider_morfismo = ttk.Scale(
+        self.botao_animacao_morfismo = ttk.Button(
             self.frame_slider_morfismo,
-            from_=0.0,
-            to=1.0,
-            variable=self.var_slider_morfismo,
-            command=self._ao_mover_slider_morfismo,
+            text="Iniciar animacao",
+            command=self._alternar_animacao_morfismo,
         )
-        self.slider_morfismo.grid(row=0, column=1, padx=4, pady=(0, 6), sticky="ew")
+        self.botao_animacao_morfismo.grid(row=0, column=1, padx=4, pady=(0, 6), sticky="w")
 
-        self.rotulo_valor_slider_morfismo = ttk.Label(self.frame_slider_morfismo, text="0.50")
+        self.rotulo_valor_slider_morfismo = ttk.Label(self.frame_slider_morfismo, text="t = 0.50")
         self.rotulo_valor_slider_morfismo.grid(row=0, column=2, padx=(4, 6), pady=(0, 6), sticky="w")
 
-        self.frame_slider_morfismo.grid_columnconfigure(1, weight=1)
         self.frame_slider_morfismo.grid(row=3, column=0, columnspan=6, sticky="ew")
         self.frame_slider_morfismo.grid_remove()
 

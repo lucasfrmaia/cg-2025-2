@@ -118,6 +118,7 @@ class InterfaceInteracaoMixin:
             except (KeyError, TypeError, ValueError):
                 valor_inicial = 0.5
             self._sincronizar_slider_morfismo(valor_inicial, aplicar=False)
+            self._atualizar_estado_botao_animacao_morfismo()
 
         self.botao_b.configure(state="normal" if definicao.requer_segunda else "disabled")
 
@@ -267,18 +268,16 @@ class InterfaceInteracaoMixin:
 
         if mostrar:
             self.frame_slider_morfismo.grid(row=3, column=0, columnspan=6, sticky="ew")
+            self._atualizar_estado_botao_animacao_morfismo()
         else:
             self._cancelar_animacao_morfismo()
             self.frame_slider_morfismo.grid_remove()
 
     def _sincronizar_slider_morfismo(self, valor, aplicar):
-        if self.slider_morfismo is None:
-            return
-
         valor = max(0.0, min(1.0, float(valor)))
         self._valor_morfismo_alvo = valor
         self.var_slider_morfismo.set(valor)
-        self.rotulo_valor_slider_morfismo.configure(text=f"{valor:.2f}")
+        self.rotulo_valor_slider_morfismo.configure(text=f"t = {valor:.2f}")
 
         if self.entradas_parametros:
             entrada = self.entradas_parametros[0]
@@ -287,17 +286,19 @@ class InterfaceInteracaoMixin:
                 entrada.insert(0, f"{valor:.2f}")
 
         if aplicar:
-            self._iniciar_animacao_morfismo()
+            self._executar_morfismo_em_tempo_real(valor)
         else:
             self._valor_morfismo_renderizado = valor
 
     def _cancelar_animacao_morfismo(self):
+        self._animacao_morfismo_ativa = False
         if self._job_animacao_morfismo is not None:
             self.janela.after_cancel(self._job_animacao_morfismo)
             self._job_animacao_morfismo = None
+        self._atualizar_estado_botao_animacao_morfismo()
 
     def _iniciar_animacao_morfismo(self):
-        if self._job_animacao_morfismo is None:
+        if self._job_animacao_morfismo is None and self._animacao_morfismo_ativa:
             self._job_animacao_morfismo = self.janela.after(
                 self._intervalo_animacao_morfismo_ms,
                 self._animar_morfismo_frame,
@@ -306,31 +307,63 @@ class InterfaceInteracaoMixin:
     def _animar_morfismo_frame(self):
         self._job_animacao_morfismo = None
 
+        if not self._animacao_morfismo_ativa:
+            return
+
         if self.operacao_var.get() != "Morfismo (interpolacao)":
+            self._cancelar_animacao_morfismo()
             return
 
         if self.matriz_a is None or self.matriz_b is None:
+            self._cancelar_animacao_morfismo()
             return
 
-        delta = self._valor_morfismo_alvo - self._valor_morfismo_renderizado
-        if abs(delta) < 0.003:
-            self._valor_morfismo_renderizado = self._valor_morfismo_alvo
+        proximo_t = self._valor_morfismo_renderizado + self._passo_animacao_morfismo
+        finalizar_animacao = proximo_t >= 1.0
+        if finalizar_animacao:
+            proximo_t = 1.0
+
+        self._valor_morfismo_renderizado = proximo_t
+        self._sincronizar_slider_morfismo(proximo_t, aplicar=False)
+        self._executar_morfismo_em_tempo_real(proximo_t)
+
+        if finalizar_animacao:
+            self._cancelar_animacao_morfismo()
+            return
+
+        self._iniciar_animacao_morfismo()
+
+    def _alternar_animacao_morfismo(self):
+        if self.operacao_var.get() != "Morfismo (interpolacao)":
+            messagebox.showwarning("Aviso", "Selecione a operacao Morfismo (interpolacao).")
+            return
+
+        if self._animacao_morfismo_ativa:
+            self._cancelar_animacao_morfismo()
+            return
+
+        if self.matriz_a is None or self.matriz_b is None:
+            messagebox.showwarning("Aviso", "Carregue as imagens A e B para animar o morfismo.")
+            return
+
+        self._animacao_morfismo_ativa = True
+        self._direcao_animacao_morfismo = 1
+        self._sincronizar_slider_morfismo(0.0, aplicar=False)
+        self._executar_morfismo_em_tempo_real(0.0)
+        self._atualizar_estado_botao_animacao_morfismo()
+        self._iniciar_animacao_morfismo()
+
+    def _atualizar_estado_botao_animacao_morfismo(self):
+        if self.botao_animacao_morfismo is None:
+            return
+
+        if self._animacao_morfismo_ativa:
+            self.botao_animacao_morfismo.configure(text="Parar animacao")
         else:
-            self._valor_morfismo_renderizado += delta * self._passo_animacao_morfismo
-
-        self._executar_morfismo_em_tempo_real(self._valor_morfismo_renderizado)
-
-        if abs(self._valor_morfismo_alvo - self._valor_morfismo_renderizado) >= 0.003:
-            self._iniciar_animacao_morfismo()
+            self.botao_animacao_morfismo.configure(text="Iniciar animacao")
 
     def _ao_mover_slider_morfismo(self, valor=None):
-        if self.operacao_var.get() != "Morfismo (interpolacao)":
-            return
-
-        if valor is None:
-            valor = self.var_slider_morfismo.get()
-
-        self._sincronizar_slider_morfismo(valor, aplicar=True)
+        return
 
     def _executar_morfismo_em_tempo_real(self, valor_t=None):
         if self.operacao_var.get() != "Morfismo (interpolacao)":
@@ -433,9 +466,6 @@ class InterfaceInteracaoMixin:
 
         try:
             parametros = self._ler_parametros(definicao)
-            if nome_operacao == "Morfismo (interpolacao)" and parametros:
-                self._sincronizar_slider_morfismo(parametros[0], aplicar=False)
-                parametros[0] = self.var_slider_morfismo.get()
             resultado = definicao.executor(self.matriz_a, self.matriz_b, parametros)
             self._processar_resultado(resultado)
         except Exception as erro:
