@@ -58,8 +58,8 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
         for i in range(altura):
             for j in range(largura):
                 # PASSO 2: Mapeamento Inverso
-                # Subtrai o deslocamento para descobrir onde o pixel estava originalmente.
-                origem_i = i - deslocamento_y
+                # Em Y adotamos o sentido cartesiano: deslocamento positivo move para +Y (para cima).
+                origem_i = i + deslocamento_y
                 origem_j = j - deslocamento_x
 
                 # PASSO 3: Se a posição original estava dentro da imagem, copia a cor.
