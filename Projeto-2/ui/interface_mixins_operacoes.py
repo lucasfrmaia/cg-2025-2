@@ -104,7 +104,7 @@ class InterfaceOperacoesMixin:
             "Morfologia binaria - Bottom-hat",
             "Morfologia binaria - Hit-or-miss",
         ]:
-            mapeamento[nome] = {"a": ["binarias/forma_centrada.pgm", "forma_centrada.pgm"]}
+            mapeamento[nome] = {"a": ["binarias/imagem_base.pgm", "imagem_base.pgm"]}
 
         for nome in [
             "Morfologia cinza - Dilatacao",
@@ -742,7 +742,7 @@ class InterfaceOperacoesMixin:
         raise ValueError("Operacao morfologica binaria invalida.")
 
     def _executar_morfologia_cinza(self, matriz, tipo):
-        elemento = self.var_elemento_cinza.get().strip() if self.var_elemento_cinza is not None else None
+        elemento = self._ler_elemento_estruturante_cinza_como_texto()
 
         if tipo == "dilatacao":
             return self.morfologia_cinza.dilatacao_cinza(matriz, elemento)

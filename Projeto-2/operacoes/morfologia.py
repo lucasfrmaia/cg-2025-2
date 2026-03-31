@@ -447,26 +447,6 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
 class MorfologiaCinzaImagem(BaseMorfologiaImagem):
     RAIO_ELEMENTO_CIRCULAR = 2
-    TIPO_CIRCULO_FLAT = "circulo flat"
-    TIPO_DISTANCIA_EUCLIDIANA = "distancia euclidiana"
-
-    def obter_opcoes_elemento_estruturante(self):
-        return [
-            self.TIPO_CIRCULO_FLAT,
-            self.TIPO_DISTANCIA_EUCLIDIANA,
-        ]
-
-    def _normalizar_tipo_elemento_estruturante(self, tipo):
-        if tipo is None:
-            return self.TIPO_CIRCULO_FLAT
-
-        tipo_normalizado = " ".join(str(tipo).strip().lower().split())
-        if tipo_normalizado in {self.TIPO_CIRCULO_FLAT, "circular flat", "circulo"}:
-            return self.TIPO_CIRCULO_FLAT
-        if tipo_normalizado in {self.TIPO_DISTANCIA_EUCLIDIANA, "euclidiana", "distancia"}:
-            return self.TIPO_DISTANCIA_EUCLIDIANA
-
-        raise ValueError("Elemento estruturante em tons de cinza invalido.")
 
     def _gerar_elemento_estruturante_circular_flat(self):
         raio = self.RAIO_ELEMENTO_CIRCULAR
@@ -485,32 +465,8 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
 
         return mascara, (centro, centro)
 
-    def _gerar_elemento_estruturante_distancia_euclidiana(self):
-        raio = self.RAIO_ELEMENTO_CIRCULAR
-        tamanho = 2 * raio + 1
-        centro = raio
-        mascara = []
-
-        for i in range(tamanho):
-            linha = []
-            for j in range(tamanho):
-                # Elemento por distancia euclidiana estrita: x^2 + y^2 < r^2.
-                dentro = (i - centro) * (i - centro) + (j - centro) * (j - centro) < raio * raio
-                linha.append(1 if dentro else 0)
-            mascara.append(linha)
-
-        return mascara, (centro, centro)
-
-    def _obter_mascara_elemento_estruturante(self, tipo=None):
-        tipo_normalizado = self._normalizar_tipo_elemento_estruturante(tipo)
-
-        if tipo_normalizado == self.TIPO_DISTANCIA_EUCLIDIANA:
-            return self._gerar_elemento_estruturante_distancia_euclidiana()
-
-        return self._gerar_elemento_estruturante_circular_flat()
-
-    def obter_texto_elemento_estruturante(self, tipo=None):
-        mascara, (ci, cj) = self._obter_mascara_elemento_estruturante(tipo)
+    def obter_texto_elemento_estruturante(self):
+        mascara, (ci, cj) = self._gerar_elemento_estruturante_circular_flat()
         linhas = []
         
         # PASSO 1: Converte o círculo numérico para string, marcando o pixel do meio com "+1" para inspeção visual.
@@ -524,34 +480,18 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             linhas.append(" ".join(valores))
         return "\n".join(linhas)
 
-    def _aplicar_elemento_cinza(self, matriz, valor_borda, callback_vizinhanca, tipo_elemento=None):
-        self.validar_matriz(matriz)
-        altura = len(matriz)
-        largura = len(matriz[0])
-        mascara, origem = self._obter_mascara_elemento_estruturante(tipo_elemento)
-        eh, ew = len(mascara), len(mascara[0])
-        oi, oj = origem
-        saida = self.criar_matriz(altura, largura, 0)
+    def _resolver_elemento_estruturante_cinza(self, elemento_estruturante):
+        if elemento_estruturante is None:
+            return self.obter_texto_elemento_estruturante()
 
-        # PASSO 1: Percorre a imagem.
-        for i in range(altura):
-            for j in range(largura):
-                vizinhos = []
-                # PASSO 2: Posiciona o disco circular em cima do pixel. Pega todos os valores de brilho que o disco toca.
-                for ei in range(eh):
-                    for ej in range(ew):
-                        if mascara[ei][ej] == 0:
-                            continue
+        if isinstance(elemento_estruturante, str) and not elemento_estruturante.strip():
+            return self.obter_texto_elemento_estruturante()
 
-                        ii = i + (ei - oi)
-                        jj = j + (ej - oj)
-                        valor = self.obter_pixel_com_fundo(matriz, ii, jj, valor_borda)
-                        vizinhos.append(valor)
+        return elemento_estruturante
 
-                # PASSO 3: Entrega a lista de intensidades capturadas para o callback extrair o maior ou o menor valor.
-                saida[i][j] = callback_vizinhanca(vizinhos)
-
-        return saida
+    def _aplicar_elemento_cinza(self, matriz, valor_borda, callback_vizinhanca, elemento_estruturante=None):
+        elemento = self._resolver_elemento_estruturante_cinza(elemento_estruturante)
+        return self._aplicar_elemento(matriz, elemento, valor_borda, callback_vizinhanca)
 
     # =========================================================================
     # Operações em Tom de Cinza

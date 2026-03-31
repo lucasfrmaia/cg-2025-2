@@ -474,25 +474,6 @@ class InterfaceInteracaoMixin:
     def _operacao_usa_elemento_cinza_fixo(self, nome_operacao):
         return nome_operacao.startswith("Morfologia cinza")
 
-    def _obter_elemento_cinza_selecionado(self):
-        if self.var_elemento_cinza is None:
-            return self.morfologia_cinza.obter_opcoes_elemento_estruturante()[0]
-        return self.var_elemento_cinza.get().strip()
-
-    def _atualizar_texto_elemento_cinza(self):
-        if self.texto_elemento_cinza_fixo is None:
-            return
-
-        tipo = self._obter_elemento_cinza_selecionado()
-        texto = self.morfologia_cinza.obter_texto_elemento_estruturante(tipo)
-        self.texto_elemento_cinza_fixo.configure(state="normal")
-        self.texto_elemento_cinza_fixo.delete("1.0", tk.END)
-        self.texto_elemento_cinza_fixo.insert("1.0", texto)
-        self.texto_elemento_cinza_fixo.configure(state="disabled")
-
-    def _ao_mudar_elemento_cinza(self, _evento=None):
-        self._atualizar_texto_elemento_cinza()
-
     def _mostrar_elemento_estruturante(self, mostrar):
         if self.frame_elemento_estruturante is None:
             return
@@ -507,7 +488,6 @@ class InterfaceInteracaoMixin:
             return
 
         if mostrar:
-            self._atualizar_texto_elemento_cinza()
             self.frame_elemento_cinza_fixo.grid(row=4, column=0, columnspan=2, sticky="ew")
         else:
             self.frame_elemento_cinza_fixo.grid_remove()
@@ -524,6 +504,25 @@ class InterfaceInteracaoMixin:
                 entrada = self.entradas_elemento_estruturante[i][j]
                 entrada.delete(0, tk.END)
                 entrada.insert(0, padrao[i][j])
+
+    def _preencher_elemento_cinza_padrao(self):
+        if self.texto_elemento_cinza_fixo is None:
+            return
+
+        self.texto_elemento_cinza_fixo.delete("1.0", tk.END)
+        self.texto_elemento_cinza_fixo.insert(
+            "1.0",
+            self.morfologia_cinza.obter_texto_elemento_estruturante(),
+        )
+
+    def _ler_elemento_estruturante_cinza_como_texto(self):
+        if self.texto_elemento_cinza_fixo is None:
+            return self.morfologia_cinza.obter_texto_elemento_estruturante()
+
+        texto = self.texto_elemento_cinza_fixo.get("1.0", tk.END).strip()
+        if not texto:
+            return self.morfologia_cinza.obter_texto_elemento_estruturante()
+        return texto
 
     def _normalizar_token_elemento(self, texto):
         token = (texto or "").strip()
@@ -598,6 +597,7 @@ class InterfaceInteracaoMixin:
         self._cancelar_animacao_morfismo()
         self._resetar_pontos_morfismo()
         self._preencher_elemento_estruturante_padrao()
+        self._preencher_elemento_cinza_padrao()
         self._sincronizar_slider_morfismo(0.5, aplicar=False)
 
     def _mostrar_slider_morfismo(self, mostrar):

@@ -94,8 +94,6 @@ class AplicacaoPDI(
         self.frame_elemento_estruturante = None
         self.entradas_elemento_estruturante = []
         self.frame_elemento_cinza_fixo = None
-        self.var_elemento_cinza = tk.StringVar(value=self.morfologia_cinza.obter_opcoes_elemento_estruturante()[0])
-        self.combo_elemento_cinza = None
         self.texto_elemento_cinza_fixo = None
 
         self.painel_a = {}
