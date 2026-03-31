@@ -76,8 +76,7 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
         largura = len(matriz[0])
         
         # PASSO 1: Converte o ângulo para radianos
-        # O sinal negativo ajusta a direção da rotação para o padrão esperado.
-        angulo = math.radians(-angulo_graus)
+        angulo = math.radians(angulo_graus)
         cos_a = math.cos(angulo)
         sin_a = math.sin(angulo)
 
@@ -126,9 +125,9 @@ class TransformacoesGeometricasImagem(BaseOperacoesImagem):
                 xr = j - novo_cx
                 yr = i - novo_cy
 
-                # Aplica a ROTAÇÃO INVERSA (troca o sinal do seno) para achar a origem
-                x_origem = xr * cos_a + yr * sin_a
-                y_origem = -xr * sin_a + yr * cos_a
+                # Aplica a ROTAÇÃO para achar a origem
+                x_origem = xr * cos_a + -yr * sin_a
+                y_origem = xr * sin_a + yr * cos_a
 
                 # Devolve a coordenada calculada para o sistema original de matriz (0 a largura/altura)
                 # O int(round(...)) atua como a interpolação por Vizinho Mais Próximo
