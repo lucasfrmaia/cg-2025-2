@@ -208,9 +208,20 @@ class InterfaceLayoutMixin:
         self.frame_elemento_cinza_fixo = ttk.Frame(quadro)
         ttk.Label(
             self.frame_elemento_cinza_fixo,
-            text="Elemento estruturante fixo (tons de cinza): circulo flat",
+            text="Elemento estruturante (tons de cinza):",
             style="Hint.TLabel",
         ).grid(row=0, column=0, padx=6, pady=(4, 4), sticky="w")
+
+        self.combo_elemento_cinza = ttk.Combobox(
+            self.frame_elemento_cinza_fixo,
+            textvariable=self.var_elemento_cinza,
+            values=self.morfologia_cinza.obter_opcoes_elemento_estruturante(),
+            state="readonly",
+            width=28,
+            style="App.TCombobox",
+        )
+        self.combo_elemento_cinza.grid(row=0, column=1, padx=6, pady=(4, 4), sticky="w")
+        self.combo_elemento_cinza.bind("<<ComboboxSelected>>", self._ao_mudar_elemento_cinza)
 
         self.texto_elemento_cinza_fixo = tk.Text(
             self.frame_elemento_cinza_fixo,
@@ -223,8 +234,11 @@ class InterfaceLayoutMixin:
             borderwidth=1,
             highlightthickness=0,
         )
-        self.texto_elemento_cinza_fixo.grid(row=1, column=0, padx=6, pady=(0, 6), sticky="w")
-        self.texto_elemento_cinza_fixo.insert("1.0", self.morfologia_cinza.obter_texto_elemento_estruturante_circular_flat())
+        self.texto_elemento_cinza_fixo.grid(row=1, column=0, columnspan=2, padx=6, pady=(0, 6), sticky="w")
+        self.texto_elemento_cinza_fixo.insert(
+            "1.0",
+            self.morfologia_cinza.obter_texto_elemento_estruturante(self.var_elemento_cinza.get()),
+        )
         self.texto_elemento_cinza_fixo.configure(state="disabled")
         self.frame_elemento_cinza_fixo.grid(row=4, column=0, columnspan=2, sticky="w")
         self.frame_elemento_cinza_fixo.grid_remove()

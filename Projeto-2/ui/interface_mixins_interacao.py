@@ -359,10 +359,13 @@ class InterfaceInteracaoMixin:
 
         self._atualizar_parametros_operacao()
         self._restaurar_parametros_operacao(contexto=contexto, nome_operacao=self.operacao_var.get())
-        self._aplicar_imagens_padrao_operacao(
+        aplicou_por_operacao = self._aplicar_imagens_padrao_operacao(
             self.operacao_var.get(),
             apenas_ausentes=not (forcar_operacao_inicial or forcar_imagens_padrao),
         )
+
+        if (forcar_operacao_inicial or forcar_imagens_padrao) and not aplicou_por_operacao:
+            self._aplicar_imagens_padrao_contexto(apenas_ausentes=False)
 
     def _limpar_contexto_atual(self):
         contexto = self._obter_chave_contexto()
@@ -471,6 +474,25 @@ class InterfaceInteracaoMixin:
     def _operacao_usa_elemento_cinza_fixo(self, nome_operacao):
         return nome_operacao.startswith("Morfologia cinza")
 
+    def _obter_elemento_cinza_selecionado(self):
+        if self.var_elemento_cinza is None:
+            return self.morfologia_cinza.obter_opcoes_elemento_estruturante()[0]
+        return self.var_elemento_cinza.get().strip()
+
+    def _atualizar_texto_elemento_cinza(self):
+        if self.texto_elemento_cinza_fixo is None:
+            return
+
+        tipo = self._obter_elemento_cinza_selecionado()
+        texto = self.morfologia_cinza.obter_texto_elemento_estruturante(tipo)
+        self.texto_elemento_cinza_fixo.configure(state="normal")
+        self.texto_elemento_cinza_fixo.delete("1.0", tk.END)
+        self.texto_elemento_cinza_fixo.insert("1.0", texto)
+        self.texto_elemento_cinza_fixo.configure(state="disabled")
+
+    def _ao_mudar_elemento_cinza(self, _evento=None):
+        self._atualizar_texto_elemento_cinza()
+
     def _mostrar_elemento_estruturante(self, mostrar):
         if self.frame_elemento_estruturante is None:
             return
@@ -485,6 +507,7 @@ class InterfaceInteracaoMixin:
             return
 
         if mostrar:
+            self._atualizar_texto_elemento_cinza()
             self.frame_elemento_cinza_fixo.grid(row=4, column=0, columnspan=2, sticky="ew")
         else:
             self.frame_elemento_cinza_fixo.grid_remove()

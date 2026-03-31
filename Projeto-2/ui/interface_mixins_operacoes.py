@@ -1,3 +1,4 @@
+from pathlib import Path
 from tkinter import messagebox
 
 from operacoes.histograma import HistogramaImagem
@@ -91,7 +92,64 @@ class InterfaceOperacoesMixin:
 
         mapeamento["Geometrica - Cisalhamento Arnold"] = {"a": ["gato.pgm", "lena.pgm"]}
 
+        for nome in [
+            "Morfologia binaria - Dilatacao",
+            "Morfologia binaria - Erosao",
+            "Morfologia binaria - Abertura",
+            "Morfologia binaria - Fechamento",
+            "Morfologia binaria - Gradiente",
+            "Morfologia binaria - Contorno externo",
+            "Morfologia binaria - Contorno interno",
+            "Morfologia binaria - Top-hat",
+            "Morfologia binaria - Bottom-hat",
+            "Morfologia binaria - Hit-or-miss",
+        ]:
+            mapeamento[nome] = {"a": ["binarias/forma_centrada.pgm", "forma_centrada.pgm"]}
+
+        for nome in [
+            "Morfologia cinza - Dilatacao",
+            "Morfologia cinza - Erosao",
+            "Morfologia cinza - Abertura",
+            "Morfologia cinza - Fechamento",
+            "Morfologia cinza - Gradiente",
+            "Morfologia cinza - Contorno externo",
+            "Morfologia cinza - Contorno interno",
+            "Morfologia cinza - Top-hat",
+            "Morfologia cinza - Bottom-hat",
+        ]:
+            mapeamento[nome] = {"a": ["lena.pgm"]}
+
         return mapeamento
+
+    def _criar_mapeamento_imagens_padrao_contexto(self):
+        return {
+            ("Modulo 1 - Filtragem e Operacoes", "Filtragem em imagem unica"): {
+                "a": ["lena.pgm"],
+            },
+            ("Modulo 1 - Filtragem e Operacoes", "Operacoes entre duas imagens"): {
+                "a": ["lena.pgm"],
+                "b": ["Airplane.pgm", "airplane.pgm"],
+            },
+            ("Modulo 2 - Morfismo", ""): {
+                "a": ["crianca.pgm", "pessoa/crianca.pgm"],
+                "b": ["pessoa/jovem.pgm", "jovem.pgm"],
+            },
+            ("Modulo 3 - Transformacoes de Intensidade", ""): {
+                "a": ["lena.pgm"],
+            },
+            ("Modulo 4 - Histograma", ""): {
+                "a": ["lena.pgm"],
+            },
+            ("Modulo 5 - Morfologia", "Morfologia binaria"): {
+                "a": ["binarias/forma_centrada.pgm", "forma_centrada.pgm"],
+            },
+            ("Modulo 5 - Morfologia", "Morfologia em tons de cinza"): {
+                "a": ["lena.pgm"],
+            },
+            ("Modulo 6 - Transformacoes Geometricas", ""): {
+                "a": ["lena.pgm"],
+            },
+        }
 
     def _resolver_caminho_imagem_padrao(self, candidatos):
         base_imagens = self._diretorio_base / "imagens"
@@ -121,6 +179,8 @@ class InterfaceOperacoesMixin:
             messagebox.showerror("Erro de leitura", str(erro))
             return False
 
+        nome_arquivo = Path(caminho).name
+
         if self._contexto_morfologia_binaria_ativo():
             matriz = self.morfologia_binaria.binarizar(matriz)
             maximo = 255
@@ -132,16 +192,16 @@ class InterfaceOperacoesMixin:
             self.matriz_a = matriz
             if self.operacao_var.get() == "Morfismo (interpolacao)":
                 self._inicializar_pontos_morfismo_painel("A", matriz)
-            self.info_a.configure(text=f"Imagem A: {largura}x{altura} | max={maximo}")
-            self._atualizar_painel(self.painel_a, matriz, f"Imagem A: {largura}x{altura}")
+            self.info_a.configure(text=f"Imagem A: {nome_arquivo} | {largura}x{altura} | max={maximo}")
+            self._atualizar_painel(self.painel_a, matriz, f"Imagem A: {nome_arquivo} | {largura}x{altura}")
             return True
 
         if chave == "B":
             self.matriz_b = matriz
             if self.operacao_var.get() == "Morfismo (interpolacao)":
                 self._inicializar_pontos_morfismo_painel("B", matriz)
-            self.info_b.configure(text=f"Imagem B: {largura}x{altura} | max={maximo}")
-            self._atualizar_painel(self.painel_b, matriz, f"Imagem B: {largura}x{altura}")
+            self.info_b.configure(text=f"Imagem B: {nome_arquivo} | {largura}x{altura} | max={maximo}")
+            self._atualizar_painel(self.painel_b, matriz, f"Imagem B: {nome_arquivo} | {largura}x{altura}")
             return True
 
         raise ValueError("Painel de imagem invalido.")
@@ -149,19 +209,49 @@ class InterfaceOperacoesMixin:
     def _aplicar_imagens_padrao_operacao(self, nome_operacao, apenas_ausentes=True):
         padroes = self.imagens_padrao_por_operacao.get(nome_operacao)
         if not padroes:
-            return
+            return False
+
+        carregou_alguma = False
 
         candidatos_a = padroes.get("a", [])
         if candidatos_a and (not apenas_ausentes or self.matriz_a is None):
             caminho_a = self._resolver_caminho_imagem_padrao(candidatos_a)
             if caminho_a:
-                self._carregar_imagem_por_caminho(caminho_a, "A")
+                carregou_alguma = self._carregar_imagem_por_caminho(caminho_a, "A") or carregou_alguma
 
         candidatos_b = padroes.get("b", [])
         if candidatos_b and (not apenas_ausentes or self.matriz_b is None):
             caminho_b = self._resolver_caminho_imagem_padrao(candidatos_b)
             if caminho_b:
-                self._carregar_imagem_por_caminho(caminho_b, "B")
+                carregou_alguma = self._carregar_imagem_por_caminho(caminho_b, "B") or carregou_alguma
+
+        return carregou_alguma
+
+    def _aplicar_imagens_padrao_contexto(self, apenas_ausentes=True):
+        contexto = (self.questao_var.get(), self.subsessao_var.get())
+        padroes = self.imagens_padrao_por_contexto.get(contexto)
+
+        if padroes is None:
+            padroes = self.imagens_padrao_por_contexto.get((self.questao_var.get(), ""))
+
+        if not padroes:
+            return False
+
+        carregou_alguma = False
+        candidatos_a = padroes.get("a", [])
+        candidatos_b = padroes.get("b", [])
+
+        if candidatos_a and (not apenas_ausentes or self.matriz_a is None):
+            caminho_a = self._resolver_caminho_imagem_padrao(candidatos_a)
+            if caminho_a:
+                carregou_alguma = self._carregar_imagem_por_caminho(caminho_a, "A") or carregou_alguma
+
+        if candidatos_b and (not apenas_ausentes or self.matriz_b is None):
+            caminho_b = self._resolver_caminho_imagem_padrao(candidatos_b)
+            if caminho_b:
+                carregou_alguma = self._carregar_imagem_por_caminho(caminho_b, "B") or carregou_alguma
+
+        return carregou_alguma
 
     def _criar_definicoes_operacoes(self):
         def retorno(matriz, hist_original=None, hist_equalizado=None):
@@ -652,23 +742,25 @@ class InterfaceOperacoesMixin:
         raise ValueError("Operacao morfologica binaria invalida.")
 
     def _executar_morfologia_cinza(self, matriz, tipo):
+        elemento = self.var_elemento_cinza.get().strip() if self.var_elemento_cinza is not None else None
+
         if tipo == "dilatacao":
-            return self.morfologia_cinza.dilatacao_cinza(matriz)
+            return self.morfologia_cinza.dilatacao_cinza(matriz, elemento)
         if tipo == "erosao":
-            return self.morfologia_cinza.erosao_cinza(matriz)
+            return self.morfologia_cinza.erosao_cinza(matriz, elemento)
         if tipo == "abertura":
-            return self.morfologia_cinza.abertura_cinza(matriz)
+            return self.morfologia_cinza.abertura_cinza(matriz, elemento)
         if tipo == "fechamento":
-            return self.morfologia_cinza.fechamento_cinza(matriz)
+            return self.morfologia_cinza.fechamento_cinza(matriz, elemento)
         if tipo == "gradiente":
-            return self.morfologia_cinza.gradiente_cinza(matriz)
+            return self.morfologia_cinza.gradiente_cinza(matriz, elemento)
         if tipo == "contorno_externo":
-            return self.morfologia_cinza.contorno_externo_cinza(matriz)
+            return self.morfologia_cinza.contorno_externo_cinza(matriz, elemento)
         if tipo == "contorno_interno":
-            return self.morfologia_cinza.contorno_interno_cinza(matriz)
+            return self.morfologia_cinza.contorno_interno_cinza(matriz, elemento)
         if tipo == "top_hat":
-            return self.morfologia_cinza.top_hat_cinza(matriz)
+            return self.morfologia_cinza.top_hat_cinza(matriz, elemento)
         if tipo == "bottom_hat":
-            return self.morfologia_cinza.bottom_hat_cinza(matriz)
+            return self.morfologia_cinza.bottom_hat_cinza(matriz, elemento)
 
         raise ValueError("Operacao morfologica em tons de cinza invalida.")

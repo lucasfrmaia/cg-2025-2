@@ -192,6 +192,7 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 class MorfologiaBinariaImagem(BaseMorfologiaImagem):
     _SELETORES_3X3 = {"quadrado 3x3", "3x3", "3"}
     _SELETORES_5X5 = {"quadrado 5x5", "5x5", "5"}
+    
     MASCARAS_HIT_OR_MISS = {
         "Ponto isolado": [
             [0, 0, 0],
@@ -446,6 +447,26 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
 
 class MorfologiaCinzaImagem(BaseMorfologiaImagem):
     RAIO_ELEMENTO_CIRCULAR = 2
+    TIPO_CIRCULO_FLAT = "circulo flat"
+    TIPO_DISTANCIA_EUCLIDIANA = "distancia euclidiana"
+
+    def obter_opcoes_elemento_estruturante(self):
+        return [
+            self.TIPO_CIRCULO_FLAT,
+            self.TIPO_DISTANCIA_EUCLIDIANA,
+        ]
+
+    def _normalizar_tipo_elemento_estruturante(self, tipo):
+        if tipo is None:
+            return self.TIPO_CIRCULO_FLAT
+
+        tipo_normalizado = " ".join(str(tipo).strip().lower().split())
+        if tipo_normalizado in {self.TIPO_CIRCULO_FLAT, "circular flat", "circulo"}:
+            return self.TIPO_CIRCULO_FLAT
+        if tipo_normalizado in {self.TIPO_DISTANCIA_EUCLIDIANA, "euclidiana", "distancia"}:
+            return self.TIPO_DISTANCIA_EUCLIDIANA
+
+        raise ValueError("Elemento estruturante em tons de cinza invalido.")
 
     def _gerar_elemento_estruturante_circular_flat(self):
         raio = self.RAIO_ELEMENTO_CIRCULAR
@@ -464,8 +485,32 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
 
         return mascara, (centro, centro)
 
-    def obter_texto_elemento_estruturante_circular_flat(self):
-        mascara, (ci, cj) = self._gerar_elemento_estruturante_circular_flat()
+    def _gerar_elemento_estruturante_distancia_euclidiana(self):
+        raio = self.RAIO_ELEMENTO_CIRCULAR
+        tamanho = 2 * raio + 1
+        centro = raio
+        mascara = []
+
+        for i in range(tamanho):
+            linha = []
+            for j in range(tamanho):
+                # Elemento por distancia euclidiana estrita: x^2 + y^2 < r^2.
+                dentro = (i - centro) * (i - centro) + (j - centro) * (j - centro) < raio * raio
+                linha.append(1 if dentro else 0)
+            mascara.append(linha)
+
+        return mascara, (centro, centro)
+
+    def _obter_mascara_elemento_estruturante(self, tipo=None):
+        tipo_normalizado = self._normalizar_tipo_elemento_estruturante(tipo)
+
+        if tipo_normalizado == self.TIPO_DISTANCIA_EUCLIDIANA:
+            return self._gerar_elemento_estruturante_distancia_euclidiana()
+
+        return self._gerar_elemento_estruturante_circular_flat()
+
+    def obter_texto_elemento_estruturante(self, tipo=None):
+        mascara, (ci, cj) = self._obter_mascara_elemento_estruturante(tipo)
         linhas = []
         
         # PASSO 1: Converte o círculo numérico para string, marcando o pixel do meio com "+1" para inspeção visual.
@@ -479,11 +524,11 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
             linhas.append(" ".join(valores))
         return "\n".join(linhas)
 
-    def _aplicar_elemento_circular_flat(self, matriz, valor_borda, callback_vizinhanca):
+    def _aplicar_elemento_cinza(self, matriz, valor_borda, callback_vizinhanca, tipo_elemento=None):
         self.validar_matriz(matriz)
         altura = len(matriz)
         largura = len(matriz[0])
-        mascara, origem = self._gerar_elemento_estruturante_circular_flat()
+        mascara, origem = self._obter_mascara_elemento_estruturante(tipo_elemento)
         eh, ew = len(mascara), len(mascara[0])
         oi, oj = origem
         saida = self.criar_matriz(altura, largura, 0)
@@ -514,46 +559,56 @@ class MorfologiaCinzaImagem(BaseMorfologiaImagem):
     # na binária, ele utiliza a matemática do mínimo e do máximo local.
     # =========================================================================
 
-    def dilatacao_cinza(self, matriz, _elemento_estruturante=None):
+    def dilatacao_cinza(self, matriz, elemento_estruturante=None):
         # Passo Único: Pega o vizinho com o tom MAIS CLARO (max) tocado pelo carimbo.
-        return self._aplicar_elemento_circular_flat(matriz, 0, lambda vizinhos: max(vizinhos))
+        return self._aplicar_elemento_cinza(
+            matriz,
+            0,
+            lambda vizinhos: max(vizinhos),
+            elemento_estruturante,
+        )
 
-    def erosao_cinza(self, matriz, _elemento_estruturante=None):
+    def erosao_cinza(self, matriz, elemento_estruturante=None):
         # Passo Único: Pega o vizinho com o tom MAIS ESCURO (min) tocado pelo carimbo.
-        return self._aplicar_elemento_circular_flat(matriz, 255, lambda vizinhos: min(vizinhos))
+        return self._aplicar_elemento_cinza(
+            matriz,
+            255,
+            lambda vizinhos: min(vizinhos),
+            elemento_estruturante,
+        )
 
-    def abertura_cinza(self, matriz, _elemento_estruturante=None):
+    def abertura_cinza(self, matriz, elemento_estruturante=None):
         # Erode (escurece pontos finos claros) e depois Dilata (restaura o restante).
-        erodida = self.erosao_cinza(matriz)
-        return self.dilatacao_cinza(erodida)
+        erodida = self.erosao_cinza(matriz, elemento_estruturante)
+        return self.dilatacao_cinza(erodida, elemento_estruturante)
 
-    def fechamento_cinza(self, matriz, _elemento_estruturante=None):
+    def fechamento_cinza(self, matriz, elemento_estruturante=None):
         # Dilata (engole pontos finos escuros) e depois Erode (restaura o restante).
-        dilatada = self.dilatacao_cinza(matriz)
-        return self.erosao_cinza(dilatada)
+        dilatada = self.dilatacao_cinza(matriz, elemento_estruturante)
+        return self.erosao_cinza(dilatada, elemento_estruturante)
 
-    def gradiente_cinza(self, matriz, _elemento_estruturante=None):
+    def gradiente_cinza(self, matriz, elemento_estruturante=None):
         # Subtrai a versão mais escura (erodida) da mais clara (dilatada) para destacar as bordas visíveis.
-        dilatada = self.dilatacao_cinza(matriz)
-        erodida = self.erosao_cinza(matriz)
+        dilatada = self.dilatacao_cinza(matriz, elemento_estruturante)
+        erodida = self.erosao_cinza(matriz, elemento_estruturante)
         return self._subtrair_matrizes(dilatada, erodida)
 
-    def contorno_externo_cinza(self, matriz, _elemento_estruturante=None):
-        dilatada = self.dilatacao_cinza(matriz)
+    def contorno_externo_cinza(self, matriz, elemento_estruturante=None):
+        dilatada = self.dilatacao_cinza(matriz, elemento_estruturante)
         return self._subtrair_matrizes(dilatada, matriz)
 
-    def contorno_interno_cinza(self, matriz, _elemento_estruturante=None):
-        erodida = self.erosao_cinza(matriz)
+    def contorno_interno_cinza(self, matriz, elemento_estruturante=None):
+        erodida = self.erosao_cinza(matriz, elemento_estruturante)
         return self._subtrair_matrizes(matriz, erodida)
 
-    def top_hat_cinza(self, matriz, _elemento_estruturante=None):
+    def top_hat_cinza(self, matriz, elemento_estruturante=None):
         # Pega a imagem original e recorta (subtrai) a Abertura, deixando apenas 
         # as manchas claras ou reflexos finos que a abertura cortou.
-        aberta = self.abertura_cinza(matriz)
+        aberta = self.abertura_cinza(matriz, elemento_estruturante)
         return self._subtrair_matrizes(matriz, aberta)
 
-    def bottom_hat_cinza(self, matriz, _elemento_estruturante=None):
+    def bottom_hat_cinza(self, matriz, elemento_estruturante=None):
         # Pega o Fechamento e corta (subtrai) a imagem original, isolando e 
         # realçando os pequenos detalhes pretos que estavam no fundo claro.
-        fechada = self.fechamento_cinza(matriz)
+        fechada = self.fechamento_cinza(matriz, elemento_estruturante)
         return self._subtrair_matrizes(fechada, matriz)

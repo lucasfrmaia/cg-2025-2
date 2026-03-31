@@ -57,6 +57,7 @@ class AplicacaoPDI(
         self.definicoes = self._criar_definicoes_operacoes()
         self.sessoes = self._criar_sessoes()
         self.imagens_padrao_por_operacao = self._criar_mapeamento_imagens_padrao()
+        self.imagens_padrao_por_contexto = self._criar_mapeamento_imagens_padrao_contexto()
 
         self.questao_var = tk.StringVar()
         self.subsessao_var = tk.StringVar()
@@ -93,6 +94,8 @@ class AplicacaoPDI(
         self.frame_elemento_estruturante = None
         self.entradas_elemento_estruturante = []
         self.frame_elemento_cinza_fixo = None
+        self.var_elemento_cinza = tk.StringVar(value=self.morfologia_cinza.obter_opcoes_elemento_estruturante()[0])
+        self.combo_elemento_cinza = None
         self.texto_elemento_cinza_fixo = None
 
         self.painel_a = {}
