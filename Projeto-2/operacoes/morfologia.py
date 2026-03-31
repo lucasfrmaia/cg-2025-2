@@ -197,6 +197,7 @@ class BaseMorfologiaImagem(BaseOperacoesImagem):
 
 
 class MorfologiaBinariaImagem(BaseMorfologiaImagem):
+    ITERACOES_K = 3
 
     def _matriz_binaria_para_conjunto(self, matriz_binaria):
         self.validar_matriz(matriz_binaria)
@@ -221,48 +222,9 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
                 saida[i][j] = 255
         return saida
 
-    def _calcular_fator_escala_elemento(self, altura, largura):
-        # PASSO 1: Calcula o quão grande é a imagem e escala o elemento estruturante.
-        # Imagens maiores precisam de carimbos maiores para o efeito ser visível.
-        menor_dimensao = min(altura, largura)
-        fator = max(1, menor_dimensao // 80)
-        return min(7, fator)
-
-    def _escalar_mascara_elemento(self, mascara, origem, fator):
-        if fator == 1:
-            return mascara, origem
-
-        # PASSO 1: Multiplica o tamanho da matriz do carimbo pelo fator de escala.
-        altura_base = len(mascara)
-        largura_base = len(mascara[0])
-        altura_esc = altura_base * fator
-        largura_esc = largura_base * fator
-        mascara_esc = [[0] * largura_esc for _ in range(altura_esc)]
-
-        # PASSO 2: Preenche os "blocos" na nova matriz para manter o formato original do carimbo, só que maior.
-        for i in range(altura_base):
-            for j in range(largura_base):
-                if mascara[i][j] == 0:
-                    continue
-
-                inicio_i = i * fator
-                inicio_j = j * fator
-                
-                for ii in range(inicio_i, inicio_i + fator):
-                    for jj in range(inicio_j, inicio_j + fator):
-                        mascara_esc[ii][jj] = 1
-
-        # PASSO 3: Recalcula onde fica o centro do carimbo na nova matriz esticada.
-        oi, oj = origem
-        origem_esc = (oi * fator + (fator // 2), oj * fator + (fator // 2))
-
-        return mascara_esc, origem_esc
-
-    def _obter_offsets_elemento_estruturante(self, elemento_estruturante, altura, largura):
-        # PASSO 1: Padroniza o carimbo e ajusta o tamanho (escala).
+    def _obter_offsets_elemento_estruturante(self, elemento_estruturante):
+        # PASSO 1: Padroniza o carimbo sem escalar pelo tamanho da imagem.
         mascara, origem = self._normalizar_elemento_estruturante(elemento_estruturante)
-        fator_escala = self._calcular_fator_escala_elemento(altura, largura)
-        mascara, origem = self._escalar_mascara_elemento(mascara, origem, fator_escala)
         oi, oj = origem
 
         offsets = set()
@@ -275,6 +237,22 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
                     offsets.add((ei - oi, ej - oj))
 
         return offsets
+
+    def _normalizar_iteracoes(self, iteracoes):
+        if iteracoes is None:
+            iteracoes = self.ITERACOES_K
+
+        iteracoes = int(iteracoes)
+        if iteracoes < 1:
+            raise ValueError("K deve ser >= 1.")
+
+        return iteracoes
+
+    def _iterar_operacao(self, conjunto_inicial, offsets_b, altura, largura, operador, iteracoes):
+        resultado = conjunto_inicial
+        for _ in range(iteracoes):
+            resultado = operador(resultado, offsets_b, altura, largura)
+        return resultado
 
     def _dilatacao_binaria_conjunto(self, conjunto_a, offsets_b, altura, largura):
         resultado = set()
@@ -325,96 +303,174 @@ class MorfologiaBinariaImagem(BaseMorfologiaImagem):
     # lógica de conjuntos que comentamos acima, e devolvem a matriz final.
     # =========================================================================
 
-    def dilatacao_binaria(self, matriz_binaria, elemento_estruturante):
+    def dilatacao_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        
+        iteracoes = self._normalizar_iteracoes(iteracoes)
         
         # 1: Pega os pixels da imagem.
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
         # 2: Pega a estrutura do carimbo.
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
         # 3: Aplica a dilatação (expande a forma).
-        resultado = self._dilatacao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        resultado = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._dilatacao_binaria_conjunto,
+            iteracoes,
+        )
         # 4: Devolve a matriz pronta.
         return self._conjunto_para_matriz_binaria(resultado, altura, largura)
 
-    def erosao_binaria(self, matriz_binaria, elemento_estruturante):
+    def erosao_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Aplica a erosão (retrai a forma).
-        resultado = self._erosao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        resultado = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._erosao_binaria_conjunto,
+            iteracoes,
+        )
         return self._conjunto_para_matriz_binaria(resultado, altura, largura)
 
-    def abertura_binaria(self, matriz_binaria, elemento_estruturante):
+    def abertura_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Passo A: Erode para sumir com os ruídos finos.
-        erodida = self._erosao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        erodida = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._erosao_binaria_conjunto,
+            iteracoes,
+        )
         # Passo B: Dilata o que sobreviveu para restaurar o tamanho da forma.
-        aberta = self._dilatacao_binaria_conjunto(erodida, offsets_b, altura, largura)
+        aberta = self._iterar_operacao(
+            erodida,
+            offsets_b,
+            altura,
+            largura,
+            self._dilatacao_binaria_conjunto,
+            iteracoes,
+        )
         
         return self._conjunto_para_matriz_binaria(aberta, altura, largura)
 
-    def fechamento_binaria(self, matriz_binaria, elemento_estruturante):
+    def fechamento_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Passo A: Dilata para tampar buracos e fendas na forma.
-        dilatada = self._dilatacao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        dilatada = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._dilatacao_binaria_conjunto,
+            iteracoes,
+        )
         # Passo B: Erode para desinchar as bordas do objeto de volta ao normal.
-        fechada = self._erosao_binaria_conjunto(dilatada, offsets_b, altura, largura)
+        fechada = self._iterar_operacao(
+            dilatada,
+            offsets_b,
+            altura,
+            largura,
+            self._erosao_binaria_conjunto,
+            iteracoes,
+        )
         
         return self._conjunto_para_matriz_binaria(fechada, altura, largura)
 
-    def gradiente_binaria(self, matriz_binaria, elemento_estruturante):
+    def gradiente_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Passo A: Dilata a forma (imagem incha).
-        dilatada = self._dilatacao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        dilatada = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._dilatacao_binaria_conjunto,
+            iteracoes,
+        )
         # Passo B: Erode a forma (imagem murcha).
-        erodida = self._erosao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        erodida = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._erosao_binaria_conjunto,
+            iteracoes,
+        )
         
         # Passo C: Subtrai a forma murcha da forma inchada. O que sobra no meio é apenas a borda do objeto.
         gradiente = dilatada.difference(erodida)
         return self._conjunto_para_matriz_binaria(gradiente, altura, largura)
 
-    def contorno_externo_binaria(self, matriz_binaria, elemento_estruturante):
+    def contorno_externo_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Dilata a forma e subtrai a forma original (sobra a borda que cresceu para fora).
-        dilatada = self._dilatacao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        dilatada = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._dilatacao_binaria_conjunto,
+            iteracoes,
+        )
         contorno = dilatada.difference(conjunto_a)
         
         return self._conjunto_para_matriz_binaria(contorno, altura, largura)
 
-    def contorno_interno_binaria(self, matriz_binaria, elemento_estruturante):
+    def contorno_interno_binaria(self, matriz_binaria, elemento_estruturante, iteracoes=None):
         self.validar_matriz(matriz_binaria)
         altura, largura = len(matriz_binaria), len(matriz_binaria[0])
+        iteracoes = self._normalizar_iteracoes(iteracoes)
 
         conjunto_a = self._matriz_binaria_para_conjunto(matriz_binaria)
-        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante, altura, largura)
+        offsets_b = self._obter_offsets_elemento_estruturante(elemento_estruturante)
 
         # Erode a forma e subtrai a forma murcha da original (sobra a borda de dentro que foi engolida).
-        erodida = self._erosao_binaria_conjunto(conjunto_a, offsets_b, altura, largura)
+        erodida = self._iterar_operacao(
+            conjunto_a,
+            offsets_b,
+            altura,
+            largura,
+            self._erosao_binaria_conjunto,
+            iteracoes,
+        )
         contorno = conjunto_a.difference(erodida)
         
         return self._conjunto_para_matriz_binaria(contorno, altura, largura)
