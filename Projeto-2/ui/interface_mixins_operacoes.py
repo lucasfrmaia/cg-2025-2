@@ -130,12 +130,16 @@ class InterfaceOperacoesMixin:
 
         if chave == "A":
             self.matriz_a = matriz
+            if self.operacao_var.get() == "Morfismo (interpolacao)":
+                self._inicializar_pontos_morfismo_painel("A", matriz)
             self.info_a.configure(text=f"Imagem A: {largura}x{altura} | max={maximo}")
             self._atualizar_painel(self.painel_a, matriz, f"Imagem A: {largura}x{altura}")
             return True
 
         if chave == "B":
             self.matriz_b = matriz
+            if self.operacao_var.get() == "Morfismo (interpolacao)":
+                self._inicializar_pontos_morfismo_painel("B", matriz)
             self.info_b.configure(text=f"Imagem B: {largura}x{altura} | max={maximo}")
             self._atualizar_painel(self.painel_b, matriz, f"Imagem B: {largura}x{altura}")
             return True
@@ -259,7 +263,7 @@ class InterfaceOperacoesMixin:
 
         operacoes["Morfismo (interpolacao)"] = DefinicaoOperacao(
             "Morfismo (interpolacao)",
-            lambda a, b, p: retorno(self.morfismo.interpolar_morfismo(a, b, p[0])),
+            lambda a, b, p: retorno(self.morfismo.interpolar_morfismo(a, b, p[0], p[1] if len(p) > 1 else None)),
             parametros=[{"rotulo": "t (0 a 1)", "padrao": "0.5", "tipo": float}],
             requer_segunda=True,
         )

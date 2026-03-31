@@ -3,6 +3,128 @@ from tkinter import filedialog, messagebox
 
 
 class InterfaceInteracaoMixin:
+    def _morfismo_ativo(self):
+        return self.operacao_var.get() == "Morfismo (interpolacao)"
+
+    def _resetar_pontos_morfismo(self):
+        self._pontos_morfismo = {"A": [], "B": []}
+        self._arraste_ponto_morfismo = None
+
+    def _inicializar_pontos_morfismo_painel(self, chave_painel, matriz):
+        if chave_painel not in {"A", "B"}:
+            return
+
+        if not matriz or not matriz[0]:
+            return
+
+        altura = len(matriz)
+        largura = len(matriz[0])
+
+        self._pontos_morfismo[chave_painel] = [
+            [0.0, 0.0],
+            [float(largura - 1), 0.0],
+            [float(largura - 1), float(altura - 1)],
+            [0.0, float(altura - 1)],
+            [float((largura - 1) / 2.0), float((altura - 1) / 2.0)],
+        ]
+
+    def _obter_triangulos_morfismo_backend(self):
+        if not self._morfismo_ativo():
+            return None
+
+        if self.matriz_a is None or self.matriz_b is None:
+            return None
+
+        if len(self._pontos_morfismo.get("A", [])) != 5:
+            self._inicializar_pontos_morfismo_painel("A", self.matriz_a)
+        if len(self._pontos_morfismo.get("B", [])) != 5:
+            self._inicializar_pontos_morfismo_painel("B", self.matriz_b)
+
+        return {
+            "vertices_a": [tuple(ponto) for ponto in self._pontos_morfismo["A"]],
+            "vertices_b": [tuple(ponto) for ponto in self._pontos_morfismo["B"]],
+            "triangulos": list(self._triangulos_morfismo),
+        }
+
+    def _ao_press_canvas_morfismo(self, evento, chave_painel):
+        if not self._morfismo_ativo():
+            return
+        if chave_painel not in {"A", "B"}:
+            return
+
+        painel = self._obter_painel_por_chave(chave_painel)
+        if painel is None or not painel.get("matriz"):
+            return
+
+        matriz = painel["matriz"]
+        if len(self._pontos_morfismo.get(chave_painel, [])) != 5:
+            self._inicializar_pontos_morfismo_painel(chave_painel, matriz)
+
+        coords = self._coordenada_canvas_para_imagem(painel, evento.x, evento.y)
+        if coords is None:
+            return
+
+        x_img, y_img = coords
+        indice_mais_proximo = 0
+        menor_distancia = float("inf")
+
+        for indice, (px, py) in enumerate(self._pontos_morfismo[chave_painel]):
+            dx = px - x_img
+            dy = py - y_img
+            distancia = dx * dx + dy * dy
+            if distancia < menor_distancia:
+                menor_distancia = distancia
+                indice_mais_proximo = indice
+
+        self._arraste_ponto_morfismo = {
+            "chave": chave_painel,
+            "indice": indice_mais_proximo,
+        }
+        self._atualizar_ponto_morfismo_arraste(chave_painel, indice_mais_proximo, x_img, y_img)
+
+    def _ao_arrastar_canvas_morfismo(self, evento, chave_painel):
+        if not self._morfismo_ativo():
+            return
+
+        estado = self._arraste_ponto_morfismo
+        if not estado or estado.get("chave") != chave_painel:
+            return
+
+        painel = self._obter_painel_por_chave(chave_painel)
+        if painel is None or not painel.get("matriz"):
+            return
+
+        coords = self._coordenada_canvas_para_imagem(painel, evento.x, evento.y)
+        if coords is None:
+            return
+
+        x_img, y_img = coords
+        self._atualizar_ponto_morfismo_arraste(chave_painel, estado["indice"], x_img, y_img)
+
+    def _ao_soltar_canvas_morfismo(self, _evento, _chave_painel):
+        self._arraste_ponto_morfismo = None
+
+    def _atualizar_ponto_morfismo_arraste(self, chave_painel, indice, x_img, y_img):
+        painel = self._obter_painel_por_chave(chave_painel)
+        if painel is None or not painel.get("matriz"):
+            return
+
+        matriz = painel["matriz"]
+        largura = len(matriz[0])
+        altura = len(matriz)
+
+        x_img = max(0.0, min(float(largura - 1), float(x_img)))
+        y_img = max(0.0, min(float(altura - 1), float(y_img)))
+
+        if len(self._pontos_morfismo.get(chave_painel, [])) != 5:
+            self._inicializar_pontos_morfismo_painel(chave_painel, matriz)
+
+        self._pontos_morfismo[chave_painel][indice] = [x_img, y_img]
+        self._desenhar_imagem(painel["canvas"], matriz, chave_painel)
+
+        if self.matriz_resultado is not None or (self.matriz_a is not None and self.matriz_b is not None):
+            self._executar_morfismo_em_tempo_real(self._valor_morfismo_renderizado)
+
     def _obter_chave_contexto(self, nome_questao=None, nome_subsessao=None):
         questao = nome_questao if nome_questao is not None else self.questao_var.get()
         subsessao = nome_subsessao if nome_subsessao is not None else self.subsessao_var.get()
@@ -117,6 +239,14 @@ class InterfaceInteracaoMixin:
         self._atualizar_parametros_operacao()
         self._restaurar_parametros_operacao(contexto=contexto, nome_operacao=self.operacao_var.get())
         self._aplicar_imagens_padrao_operacao(self.operacao_var.get(), apenas_ausentes=True)
+
+        if self._morfismo_ativo():
+            if self.matriz_a is not None:
+                self._inicializar_pontos_morfismo_painel("A", self.matriz_a)
+                self._desenhar_imagem(self.painel_a["canvas"], self.matriz_a, "A")
+            if self.matriz_b is not None:
+                self._inicializar_pontos_morfismo_painel("B", self.matriz_b)
+                self._desenhar_imagem(self.painel_b["canvas"], self.matriz_b, "B")
 
     def _atualizar_sessao_ativa(self, forcar_imagens_padrao=False):
         nome_questao = self.questao_var.get()
@@ -388,6 +518,7 @@ class InterfaceInteracaoMixin:
         self.canvas_hist_equalizado.delete("all")
 
         self._cancelar_animacao_morfismo()
+        self._resetar_pontos_morfismo()
         self._preencher_elemento_estruturante_padrao()
         self._sincronizar_slider_morfismo(0.5, aplicar=False)
 
@@ -505,7 +636,11 @@ class InterfaceInteracaoMixin:
             valor_t = self.var_slider_morfismo.get()
 
         definicao = self.definicoes["Morfismo (interpolacao)"]
-        resultado = definicao.executor(self.matriz_a, self.matriz_b, [valor_t])
+        resultado = definicao.executor(
+            self.matriz_a,
+            self.matriz_b,
+            [valor_t, self._obter_triangulos_morfismo_backend()],
+        )
         self._processar_resultado(resultado)
 
     def _configurar_entrada(self, entrada, texto, habilitada, mostrar=True):
@@ -628,6 +763,9 @@ class InterfaceInteracaoMixin:
                     raise ValueError(f"Parametro invalido: {meta['rotulo']}") from erro
 
             valores.append(valor)
+
+        if self._morfismo_ativo():
+            valores.append(self._obter_triangulos_morfismo_backend())
 
         return valores
 

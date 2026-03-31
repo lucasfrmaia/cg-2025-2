@@ -276,6 +276,9 @@ class InterfaceLayoutMixin:
             highlightbackground=self.cores_ui["borda"],
             relief="flat",
         )
+        canvas.bind("<ButtonPress-1>", lambda evento, c=chave: self._ao_press_canvas_morfismo(evento, c))
+        canvas.bind("<B1-Motion>", lambda evento, c=chave: self._ao_arrastar_canvas_morfismo(evento, c))
+        canvas.bind("<ButtonRelease-1>", lambda evento, c=chave: self._ao_soltar_canvas_morfismo(evento, c))
         area_texto = ttk.Frame(quadro, style="Card.TFrame", width=self.LARGURA_PAINEL_MATRIZ, height=self.ALTURA_PAINEL_MATRIZ)
         area_texto.pack_propagate(False)
 
@@ -327,6 +330,7 @@ class InterfaceLayoutMixin:
             "info": info,
             "chave": chave,
             "matriz": None,
+            "mapa_exibicao": None,
         }
 
     def _montar_histograma(self):

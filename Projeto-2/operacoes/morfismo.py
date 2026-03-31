@@ -37,7 +37,84 @@ class MorfismoImagem(BaseOperacoesImagem):
 
         return [[adjunta[r][c] / det for c in range(3)] for r in range(3)]
 
-    def interpolar_morfismo(self, matriz_a, matriz_b, t=0.5):
+    def _malha_padrao(self, largura, altura):
+        vertices = [
+            (0.0, 0.0),
+            (float(largura - 1), 0.0),
+            (float(largura - 1), float(altura - 1)),
+            (0.0, float(altura - 1)),
+            (float(largura // 2), float(altura // 2)),
+        ]
+        triangulos = [
+            (0, 1, 4),
+            (1, 2, 4),
+            (2, 3, 4),
+            (3, 0, 4),
+        ]
+        return vertices, vertices[:], triangulos
+
+    def _normalizar_malha_customizada(self, largura, altura, malha):
+        vertices_a_padrao, vertices_b_padrao, triangulos_padrao = self._malha_padrao(largura, altura)
+        if not isinstance(malha, dict):
+            return vertices_a_padrao, vertices_b_padrao, triangulos_padrao
+
+        def normalizar_vertices(chave, fallback):
+            bruto = malha.get(chave)
+            if not isinstance(bruto, (list, tuple)) or len(bruto) < 3:
+                return fallback
+
+            vertices = []
+            for ponto in bruto:
+                if not isinstance(ponto, (list, tuple)) or len(ponto) < 2:
+                    return fallback
+
+                x = max(0.0, min(float(largura - 1), float(ponto[0])))
+                y = max(0.0, min(float(altura - 1), float(ponto[1])))
+                vertices.append((x, y))
+
+            return vertices
+
+        vertices_a = normalizar_vertices("vertices_a", vertices_a_padrao)
+        vertices_b = normalizar_vertices("vertices_b", vertices_b_padrao)
+
+        total_vertices = min(len(vertices_a), len(vertices_b))
+        if total_vertices < 3:
+            return vertices_a_padrao, vertices_b_padrao, triangulos_padrao
+
+        vertices_a = vertices_a[:total_vertices]
+        vertices_b = vertices_b[:total_vertices]
+
+        triangulos_brutos = malha.get("triangulos")
+        triangulos = []
+        if isinstance(triangulos_brutos, (list, tuple)):
+            for tri in triangulos_brutos:
+                if not isinstance(tri, (list, tuple)) or len(tri) != 3:
+                    continue
+                try:
+                    i0, i1, i2 = int(tri[0]), int(tri[1]), int(tri[2])
+                except (TypeError, ValueError):
+                    continue
+
+                if not (0 <= i0 < total_vertices and 0 <= i1 < total_vertices and 0 <= i2 < total_vertices):
+                    continue
+                if len({i0, i1, i2}) < 3:
+                    continue
+                triangulos.append((i0, i1, i2))
+
+        if not triangulos:
+            if total_vertices >= 5:
+                triangulos = [(0, 1, 4), (1, 2, 4), (2, 3, 4), (3, 0, 4)]
+            else:
+                triangulos = []
+                for indice in range(1, total_vertices - 1):
+                    triangulos.append((0, indice, indice + 1))
+
+        if not triangulos:
+            return vertices_a_padrao, vertices_b_padrao, triangulos_padrao
+
+        return vertices_a, vertices_b, triangulos
+
+    def interpolar_morfismo(self, matriz_a, matriz_b, t=0.5, malha=None):
         self.validar_matriz(matriz_a)
         self.validar_matriz(matriz_b)
 
@@ -64,33 +141,11 @@ class MorfismoImagem(BaseOperacoesImagem):
         if t >= 1.0:
             return [linha[:] for linha in img_b]
 
-        # PASSO 1 e 2: Definição de pontos de vértice v e w
-        # Aqui usamos 5 pontos (4 cantos + centro) para criar a estrutura básica.
-        # v representa os pontos na imagem inicial (criança) e w na final (adulto).
-        vertices_a = [
-            (0.0, 0.0),
-            (float(largura - 1), 0.0),
-            (float(largura - 1), float(altura - 1)),
-            (0.0, float(altura - 1)),
-            (float(largura // 2), float(altura // 2)),
-        ]
-
-        vertices_b = [
-            (0.0, 0.0),
-            (float(largura - 1), 0.0),
-            (float(largura - 1), float(altura - 1)),
-            (0.0, float(altura - 1)),
-            (float(largura // 2), float(altura // 2)),
-        ]
-
-        # PASSO 3 e 5: Triangulação
-        # Dividimos o retângulo em 4 triângulos conectando os cantos ao centro.
-        triangulos = [
-            (0, 1, 4),
-            (1, 2, 4),
-            (2, 3, 4),
-            (3, 0, 4),
-        ]
+        vertices_a, vertices_b, triangulos = self._normalizar_malha_customizada(
+            largura,
+            altura,
+            malha,
+        )
 
         # PASSO 4: Encontrar pontos de vértice u(t) no instante t
         # Implementa a Equação (9): u_i(t) = (1 - t)v_i + t*w_i

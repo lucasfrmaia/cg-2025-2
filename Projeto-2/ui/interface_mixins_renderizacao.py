@@ -92,12 +92,104 @@ class InterfaceRenderizacaoMixin:
 
         canvas.delete("all")
         canvas.update_idletasks()
+        canvas_altura = max(1, int(canvas.winfo_height()))
         canvas_largura = max(1, int(canvas.winfo_width()))
         x_origem = max(6, (canvas_largura - largura) // 2)
-        y_centro = int(canvas.winfo_height()) // 2
+        y_centro = canvas_altura // 2
+        y_origem = max(0, y_centro - (altura // 2))
         canvas.create_image(x_origem, y_centro, image=imagem, anchor="w")
 
+        painel = self._obter_painel_por_chave(chave)
+        if painel is not None:
+            painel["mapa_exibicao"] = {
+                "x_origem": x_origem,
+                "y_origem": y_origem,
+                "largura_exib": largura,
+                "altura_exib": altura,
+                "largura_img": len(matriz[0]),
+                "altura_img": len(matriz),
+                "escala_x": largura / max(1, len(matriz[0])),
+                "escala_y": altura / max(1, len(matriz)),
+            }
+
+        self._desenhar_overlay_morfismo(canvas, chave)
+
         self.imagens_tk[chave] = imagem
+
+    def _desenhar_overlay_morfismo(self, canvas, chave):
+        if self.operacao_var.get() != "Morfismo (interpolacao)":
+            return
+        if chave not in {"A", "B"}:
+            return
+
+        painel = self._obter_painel_por_chave(chave)
+        if painel is None or not painel.get("matriz"):
+            return
+
+        mapa = painel.get("mapa_exibicao")
+        if not mapa:
+            return
+
+        pontos = self._pontos_morfismo.get(chave, [])
+        if len(pontos) != 5:
+            self._inicializar_pontos_morfismo_painel(chave, painel["matriz"])
+            pontos = self._pontos_morfismo.get(chave, [])
+
+        if len(pontos) != 5:
+            return
+
+        for a, b, c in self._triangulos_morfismo:
+            px1, py1 = self._coordenada_imagem_para_canvas(painel, pontos[a][0], pontos[a][1])
+            px2, py2 = self._coordenada_imagem_para_canvas(painel, pontos[b][0], pontos[b][1])
+            px3, py3 = self._coordenada_imagem_para_canvas(painel, pontos[c][0], pontos[c][1])
+            canvas.create_line(px1, py1, px2, py2, fill="#f39c12", width=2)
+            canvas.create_line(px2, py2, px3, py3, fill="#f39c12", width=2)
+            canvas.create_line(px3, py3, px1, py1, fill="#f39c12", width=2)
+
+        for indice, (x_img, y_img) in enumerate(pontos):
+            px, py = self._coordenada_imagem_para_canvas(painel, x_img, y_img)
+            raio = 6
+            canvas.create_oval(
+                px - raio,
+                py - raio,
+                px + raio,
+                py + raio,
+                fill="#e74c3c",
+                outline="#ffffff",
+                width=1,
+            )
+            canvas.create_text(px, py - 11, text=str(indice + 1), fill="#0f4c81", font=("Segoe UI", 8, "bold"))
+
+    def _coordenada_imagem_para_canvas(self, painel, x_img, y_img):
+        mapa = painel.get("mapa_exibicao")
+        if not mapa:
+            return 0, 0
+
+        px = mapa["x_origem"] + float(x_img) * mapa["escala_x"]
+        py = mapa["y_origem"] + float(y_img) * mapa["escala_y"]
+        return px, py
+
+    def _coordenada_canvas_para_imagem(self, painel, x_canvas, y_canvas):
+        mapa = painel.get("mapa_exibicao")
+        if not mapa:
+            return None
+
+        x_rel = float(x_canvas) - mapa["x_origem"]
+        y_rel = float(y_canvas) - mapa["y_origem"]
+
+        if mapa["largura_exib"] <= 0 or mapa["altura_exib"] <= 0:
+            return None
+
+        x_rel = max(0.0, min(float(mapa["largura_exib"] - 1), x_rel))
+        y_rel = max(0.0, min(float(mapa["altura_exib"] - 1), y_rel))
+
+        x_img = x_rel / max(1e-9, mapa["escala_x"])
+        y_img = y_rel / max(1e-9, mapa["escala_y"])
+
+        x_img = max(0.0, min(float(mapa["largura_img"] - 1), x_img))
+        y_img = max(0.0, min(float(mapa["altura_img"] - 1), y_img))
+
+        return x_img, y_img
 
     def _redimensionar_para_visualizacao(self, matriz, largura_limite, altura_limite):
         altura = len(matriz)
